@@ -1,0 +1,226 @@
+html,
+body,
+body > div:first-child,
+div#__next,
+div#__next > div {
+  height: 100%;
+}
+
+.invalid-feedback,
+.is-invalid ~ .invalid-feedback,
+.is-invalid ~ .invalid-tooltip,
+.was-validated :invalid ~ .invalid-feedback,
+.was-validated :invalid ~ .invalid-tooltip {
+  display: block !important;
+}
+
+.react-horizontal-scrolling-menu--scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.react-horizontal-scrolling-menu--scroll-container {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+[style*="--aspect-ratio"] > img {
+  height: auto;
+}
+
+[style*="--aspect-ratio"] {
+  position: relative;
+}
+
+[style*="--aspect-ratio"] > :first-child {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
+[style*="--aspect-ratio"]::before {
+  content: "";
+  display: block;
+  width: 100%;
+}
+
+@supports not (aspect-ratio: 1/1) {
+  [style*="--aspect-ratio"]::before {
+    height: 0;
+    padding-bottom: calc(100% / (var(--aspect-ratio)));
+  }
+}
+
+@supports (aspect-ratio: 1/1) {
+  [style*="--aspect-ratio"]::before {
+    aspect-ratio: calc(var(--aspect-ratio));
+  }
+}
+
+.cursor-alias {
+  cursor: alias;
+}
+.cursor-all-scroll {
+  cursor: all-scroll;
+}
+.cursor-auto {
+  cursor: auto;
+}
+.cursor-cell {
+  cursor: cell;
+}
+.cursor-context-menu {
+  cursor: context-menu;
+}
+.cursor-col-resize {
+  cursor: col-resize;
+}
+.cursor-copy {
+  cursor: copy;
+}
+.cursor-crosshair {
+  cursor: crosshair;
+}
+.cursor-default {
+  cursor: default;
+}
+.cursor-e-resize {
+  cursor: e-resize;
+}
+.cursor-ew-resize {
+  cursor: ew-resize;
+}
+.cursor-grab {
+  cursor: -webkit-grab;
+  cursor: grab;
+}
+.cursor-grabbing {
+  cursor: -webkit-grabbing;
+  cursor: grabbing;
+}
+.cursor-help {
+  cursor: help;
+}
+.cursor-move {
+  cursor: move;
+}
+.cursor-n-resize {
+  cursor: n-resize;
+}
+.cursor-ne-resize {
+  cursor: ne-resize;
+}
+.cursor-nesw-resize {
+  cursor: nesw-resize;
+}
+.cursor-ns-resize {
+  cursor: ns-resize;
+}
+.cursor-nw-resize {
+  cursor: nw-resize;
+}
+.cursor-nwse-resize {
+  cursor: nwse-resize;
+}
+.cursor-no-drop {
+  cursor: no-drop;
+}
+.cursor-none {
+  cursor: none;
+}
+.cursor-not-allowed {
+  cursor: not-allowed;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.cursor-progress {
+  cursor: progress;
+}
+.cursor-row-resize {
+  cursor: row-resize;
+}
+.cursor-s-resize {
+  cursor: s-resize;
+}
+.cursor-se-resize {
+  cursor: se-resize;
+}
+.cursor-sw-resize {
+  cursor: sw-resize;
+}
+.cursor-text {
+  cursor: text;
+}
+.cursor-w-resize {
+  cursor: w-resize;
+}
+.cursor-wait {
+  cursor: wait;
+}
+.cursor-zoom-in {
+  cursor: zoom-in;
+}
+.cursor-zoom-out {
+  cursor: zoom-out;
+}
+
+.heart {
+  -webkit-animation: animateHeart 2.5s infinite;
+  animation: animateHeart 2.5s infinite;
+}
+.heart:before,
+.heart:after {
+  -webkit-transform: rotate(-45deg) translateZ(0);
+  transform: rotate(-45deg) translateZ(0);
+  -webkit-transform-origin: 0 100%;
+  transform-origin: 0 100%;
+}
+.heart:after {
+  left: 26%;
+  -webkit-transform: rotate(45deg) translateZ(0);
+  transform: rotate(45deg) translateZ(0);
+  -webkit-transform-origin: 100% 100%;
+  transform-origin: 100% 100%;
+}
+@-webkit-keyframes animateHeart {
+  0% {
+    -webkit-transform: scale(0.8);
+  }
+  5% {
+    -webkit-transform: scale(0.9);
+  }
+  10% {
+    -webkit-transform: scale(0.8);
+  }
+  15% {
+    -webkit-transform: scale(1);
+  }
+  50% {
+    -webkit-transform: scale(0.8);
+  }
+  100% {
+    -webkit-transform: scale(0.8);
+  }
+}
+@keyframes animateHeart {
+  0% {
+    transform: scale(0.8);
+  }
+  5% {
+    transform: scale(0.9);
+  }
+  10% {
+    transform: scale(0.8);
+  }
+  15% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.8);
+  }
+  100% {
+    transform: scale(0.8);
+  }
+}

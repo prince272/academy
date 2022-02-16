@@ -1,0 +1,115 @@
+﻿@model (string Subject, User User, ConfirmAccountModel Account)
+@{
+    Layout = "_EmailLayout";
+}
+
+@section head {
+
+}
+
+@section body {
+<!-- preview-text -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+    <tbody>
+        <tr>
+            <td class="o_hide" align="center">For security reasons, your email address has to be verified. If you didn’t request this email, there’s nothing to worry about — you can safely ignore it.</td>
+        </tr>
+    </tbody>
+</table>
+}
+
+<!-- content-lg-left -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+    <tbody>
+        <tr>
+            <td class="o_bg-light o_px-xs" align="center">
+                <!--[if mso]><table width="800" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+                <table class="o_block-lg" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+                    <tbody>
+                        <tr>
+                            <td class="o_bg-white o_px-md o_py" align="center">
+                                <!--[if mso]><table width="584" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td align="left"><![endif]-->
+                                <div class="o_col-6s o_sans o_text o_text-secondary o_left">
+                                    <h2 class="o_heading o_text-dark o_mb-xs">Confirm your email address</h2>
+                                    <p>Hi @(Model.User.FullName),<br />Your security code is below — No changes have been made to your account yet.</p>
+                                </div>
+                                <!--[if mso]></td></tr></table><![endif]-->
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!--[if mso]></td></tr></table><![endif]-->
+            </td>
+        </tr>
+    </tbody>
+</table>
+<!-- label-lg -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+    <tbody>
+        <tr>
+            <td class="o_bg-light o_px-xs" align="center">
+                <!--[if mso]><table width="800" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+                <table class="o_block-lg" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+                    <tbody>
+                        <tr>
+                            <td class="o_bg-white o_px-md o_py o_sans o_text-xs o_text-light" align="center">
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                    <tbody>
+                                        <tr>
+                                            <td width="284" class="o_bg-ultra_light o_br o_text-lg o_sans o_px-xs o_py-md" align="center">
+                                                <p class="o_text-dark"><strong>@(Model.Account.Code)</strong></p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!--[if mso]></td></tr></table><![endif]-->
+            </td>
+        </tr>
+    </tbody>
+</table>
+<!-- content-lg-left -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+    <tbody>
+        <tr>
+            <td class="o_bg-light o_px-xs" align="center">
+                <!--[if mso]><table width="800" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+                <table class="o_block-lg" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+                    <tbody>
+                        <tr>
+                            <td class="o_bg-white o_px-md o_py" align="center">
+                                <!--[if mso]><table width="584" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td align="left"><![endif]-->
+                                <div class="o_col-6s o_sans o_text o_text-secondary o_left">
+                                    <p>If you didn’t request this email, there’s nothing to worry about — you can safely ignore it.</p>
+                                </div>
+                                <!--[if mso]></td></tr></table><![endif]-->
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!--[if mso]></td></tr></table><![endif]-->
+            </td>
+        </tr>
+    </tbody>
+</table>
+<!-- spacer-lg -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+    <tbody>
+        <tr>
+            <td class="o_bg-light o_px-xs" align="center">
+                <!--[if mso]><table width="800" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+                <table class="o_block-lg" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+                    <tbody>
+                        <tr>
+                            <td class="o_bg-white" style="font-size: 48px; line-height: 48px; height: 48px;">&nbsp; </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!--[if mso]></td></tr></table><![endif]-->
+            </td>
+        </tr>
+    </tbody>
+</table>
