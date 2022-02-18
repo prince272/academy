@@ -101,7 +101,9 @@ namespace Academy.Server
                     BitRules = new List<BitRule>
                     {
                         new BitRule(BitRuleType.CompleteLesson, 10, "Complete a lesson"),
-                        new BitRule(BitRuleType.AnswerQuestionCorrectly, 5, "Answer question correctly")
+                        new BitRule(BitRuleType.AnswerQuestionCorrectly, 5, "Answer question correctly"),
+                        new BitRule(BitRuleType.AnswerQuestionWrongly, -15, "Answer question wrongly"),
+                        new BitRule(BitRuleType.FindQuestionAnswer, -5, "Find question answer")
                     }
                 };
             });
@@ -326,7 +328,6 @@ namespace Academy.Server
                 options.RootPathFormat = "/Templates/{0}";
             });
 
-
             services.AddPaySwitchPaymentProcessor(options =>
             {
                 options.ClientId = "neimart5f4d2b7fb7841";
@@ -334,6 +335,11 @@ namespace Academy.Server
 
                 options.MerchantId = "TTM-00004303";
                 options.MerchantSecret = "4547088902741e671744f2eaff4f341d";
+            });
+
+            services.AddMemoryCacheManager(options =>
+            {
+                options.CacheTime = TimeSpan.FromMinutes(30);
             });
         }
 

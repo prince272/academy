@@ -78,6 +78,7 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Upload(int mediaId)
         {
             var offset = long.Parse(Request.Headers["Upload-Offset"]);
+            var path = Request.Headers["Upload-Path"].ToString();
 
             var media = await unitOfWork.Query<Media>().FirstOrDefaultAsync(_ => _.Id == mediaId);
             if (media == null) return Result.Failed(StatusCodes.Status404NotFound);

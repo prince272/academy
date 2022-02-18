@@ -38,7 +38,7 @@ namespace Academy.Server.Controllers
         }
 
         [HttpGet("/")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             object[] GetEnumerations<TEnum>() where TEnum : struct, Enum => Enum.GetValues<TEnum>().Select(@enum =>
             {
@@ -52,9 +52,20 @@ namespace Academy.Server.Controllers
                 };
             }).ToArray();
 
-            var CourseSubjects = GetEnumerations<CourseSubject>();
+            var CourseSubjects = await Enum.GetValues<CourseSubject>().SelectAsync(async subject =>
+            {
+                var count = await unitOfWork.Query<Course>().CountAsync(_ => _.Subject == subject && _.Published != null);
+                var display = AttributeHelper.GetMemberAttribute<DisplayAttribute>(subject.GetType().GetMember(subject.ToString())[0]);
+
+                return new
+                {
+                    Name = display?.Name ?? subject.ToString().Humanize(),
+                    Description = display?.Description,
+                    Value = subject,
+                    Count = count
+                };
+            });
             var CourseSorts = GetEnumerations<CourseSort>();
-            var CourseSubmissions = GetEnumerations<CourseSubmission>();
             var Company = settings.Company;
             var Currency = settings.Currency;
 
@@ -64,7 +75,6 @@ namespace Academy.Server.Controllers
                 Currency,
                 CourseSorts,
                 CourseSubjects,
-                CourseSubmissions
             });
         }
 

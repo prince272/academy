@@ -19,8 +19,6 @@ namespace Academy.Server.Data.Entities
 
         public CourseSubject Subject { get; set; }
 
-        public CourseSubmission Submission { get; set; }
-
         public DateTimeOffset Created { get; set; }
 
         public DateTimeOffset? Updated { get; set; }
@@ -68,12 +66,5 @@ namespace Academy.Server.Data.Entities
 
         [Display(Name = "Languages")]
         Languages
-    }
-
-    public enum CourseSubmission
-    {
-        Pending,
-        Approved,
-        Rejected,
     }
 }

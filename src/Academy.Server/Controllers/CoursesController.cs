@@ -151,62 +151,72 @@ namespace Academy.Server.Controllers
 
         [Authorize]
         [HttpPost("/courses/{courseId}/progress")]
-        public async Task<IActionResult> Progress(int courseId, [FromBody] ProgressModel form)
+        public async Task<IActionResult> Progresss(int courseId, [FromBody] ProgressModel form)
         {
-            var courseModel = await GetModel(courseId);
-            if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
-
             var user = await HttpContext.GetCurrentUserAsync();
-
             var progress = user.Progresses.FirstOrDefault(_ => _.Type == form.Type && _.Id == form.Id);
             if (progress == null) user.Progresses.Add(progress = new Progress(form.Type, form.Id));
+            progress.Choices.Add(new Progress.Choice(form.Force, form.Answers));
+            user.Progresses.Move(user.Progresses.IndexOf(progress), 0);
 
-            if (progress.Type == ProgressType.Question) progress.Choices.Add(new ProgressChoice { Force = form.Force, Answers = form.Answers ?? Array.Empty<string>() });
-
-            // Move the progress to the last position to ensure that we receive the recent progress.
-            user.Progresses.Move(user.Progresses.IndexOf(progress), user.Progresses.Count - 1);
-            await unitOfWork.UpdateAsync(user);
-
-            var lessons = courseModel.Sections.SelectMany(_ => _.Lessons).ToList();
-
-            var lesson = lessons.FirstOrDefault(_ =>
-            form.Type == ProgressType.Lesson ? _.Id == form.Id :
-            form.Type == ProgressType.Question && _.Questions.Any(question => question.Id == form.Id));
-
-            if (lesson != null && lesson.Status == CourseStatus.Completed)
+            if (form.Force)
             {
-                progress = user.Progresses.First(_ => _.Type == ProgressType.Lesson && _.Id == lesson.Id);
-
-                if (!progress.Rewarded)
+                var remainingBits = user.Bits + settings.Currency.BitRules.First(_ => _.Type == BitRuleType.FindQuestionAnswer).Value;
+                if (remainingBits < 0)
                 {
-                    progress.Rewarded = true;
-
-                    user.Bits += settings.Currency.BitRules.First(_ => _.Type == BitRuleType.CompleteLesson).Value;
-                    await unitOfWork.UpdateAsync(user);
+                    return Result.Failed(StatusCodes.Status400BadRequest, $"You need {Math.Abs(remainingBits)} more {"bit".ToQuantity(Math.Abs(remainingBits), ShowQuantityAs.None)} to find the answer.");
+                }
+                else
+                {
+                    user.Bits = remainingBits;
                 }
             }
 
+            var course = await GetModel(courseId);
+            var lesson = course.Sections.SelectMany(_ => _.Lessons)
+                .FirstOrDefault(lesson => form.Type == ProgressType.Lesson ? lesson.Id == form.Id :
+                                          form.Type == ProgressType.Question && lesson.Questions.Any(question => question.Id == form.Id));
+            var question = lesson?.Questions.FirstOrDefault(question => form.Type == ProgressType.Question && question.Id == form.Id);
 
-            var question = lessons.SelectMany(_ => _.Questions).FirstOrDefault(_ =>
-            form.Type == ProgressType.Question && _.Id == form.Id);
+            if (lesson.Status == CourseStatus.Completed)
+            {
+                progress = user.Progresses.FirstOrDefault(_ => _.Type == ProgressType.Lesson && _.Id == lesson.Id);
+
+                if (progress != null)
+                {
+                    if (!progress.Completed)
+                    {
+                        progress.Completed = true;
+
+                        user.Bits += settings.Currency.BitRules.First(_ => _.Type == BitRuleType.CompleteLesson).Value;
+                    }
+                }
+            }
 
             if (question != null && question.Status == CourseStatus.Completed)
             {
-                progress = user.Progresses.First(_ => _.Type == ProgressType.Question && _.Id == question.Id);
+                progress = user.Progresses.FirstOrDefault(_ => _.Type == ProgressType.Question && _.Id == question.Id);
 
-                if (!progress.Rewarded)
+                if (progress != null)
                 {
-                    progress.Rewarded = true;
+                    if (!progress.Completed)
+                    {
+                        progress.Completed = true;
 
-                    if (question.Choices.FirstOrDefault())
-                        user.Bits += settings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionCorrectly).Value;
-
-                    await unitOfWork.UpdateAsync(user);
+                        if (!progress.Force)
+                        {
+                            user.Bits += (question.Choices.FirstOrDefault() ?
+                                settings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionCorrectly).Value :
+                                settings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionWrongly).Value);
+                        }
+                    }
                 }
             }
 
-            return Result.Succeed(data: new { course = await GetModel(courseId), user = mapper.Map<CurrentUserModel>(user) });
+            await unitOfWork.UpdateAsync(user);
+            return Result.Succeed(data: new { course, user = mapper.Map<CurrentUserModel>(user) });
         }
+
 
         [Authorize]
         [HttpPost("/courses/{courseId}/certificate")]
@@ -229,7 +239,13 @@ namespace Academy.Server.Controllers
                 await unitOfWork.CreateAsync(certificate);
             }
 
+            var certificateFields = new Dictionary<string, object>();
+            certificateFields.Add("UserFullName", user.FullName);
+            certificateFields.Add("CourseTitle", courseModel.Title);
+
             using var certificateTemplateStream = await storageProvider.GetStreamAsync(courseModel.Entity.CertificateTemplate.Path);
+            using var certificateStream = new MemoryStream();
+            await documentProcessor.MergeAsync(certificateTemplateStream, certificateStream, certificateFields);
 
             async Task<Media> CreateMediaAsync(DocumentFormat format)
             {
@@ -251,7 +267,7 @@ namespace Academy.Server.Controllers
                 fields.Add("CourseTitle", courseModel.Title);
 
                 using var certificateStream = new MemoryStream();
-                await documentProcessor.MergeAsync(certificateTemplateStream, certificateStream, format, fields);
+                // await documentProcessor.MergeAsync(certificateTemplateStream, certificateStream, format, fields);
                 await storageProvider.WriteAsync(mediaPath, certificateStream);
 
                 return new Media()
@@ -279,17 +295,13 @@ namespace Academy.Server.Controllers
             var query = unitOfWork.Query<Course>().Include(_ => _.Image).AsQueryable();
 
             // If the user is has a manager role, Allow filtering by submission.
-            if ((user?.UserRoles.Any(_ => _.Role.Name == RoleNames.Manager) ?? false))
-            {
-                if (search?.Submission != null) query = query.Where(_ => _.Submission == search.Submission);
-            }
-            else if ((user?.UserRoles.Any(_ => _.Role.Name == RoleNames.Teacher) ?? false))
+            
+            if ((user?.UserRoles.Any(_ => _.Role.Name == RoleNames.Teacher) ?? false))
             {
 
             }
             else
             {
-                query = query.Where(_ => _.Submission == CourseSubmission.Approved);
                 query = query.Where(course => course.Published != null);
             }
 
@@ -878,10 +890,9 @@ namespace Academy.Server.Controllers
                             return answerModel;
                         }).ToArray();
 
-
                         if (progress != null)
                         {
-                            questionModel.Choices = progress.Choices.Select(_ => _.Force || question.CheckAnswer(_.Answers)).ToArray();
+                            questionModel.Choices = progress.Choices.Select(_ => _.Skip || question.CheckAnswer(_.Answers)).ToArray();
                             questionModel.Status = CourseStatus.Completed;
                         }
                         else

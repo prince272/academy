@@ -71,19 +71,26 @@ namespace Academy.Server.Data.Entities
 
         public int Id { get; set; }
 
-        public bool Rewarded { get; set; }
+        public bool Completed { get; set; }
 
-        public List<ProgressChoice> Choices { get; set; } = new List<ProgressChoice>();
+        public bool Force => Choices.FirstOrDefault()?.Skip ?? false;
 
+        public List<Choice> Choices { get; set; } = new List<Choice>();
 
+        public class Choice
+        {
+            public Choice(bool skip, string[] answers)
+            {
+                Skip = skip;
+                Answers = answers;
+            }
+
+            public bool Skip { get; set; }
+
+            public string[] Answers { get; set; }
+        }
     }
 
-    public class ProgressChoice
-    {
-        public string[] Answers { get; set; }
-
-        public bool Force { get; set; }
-    }
 
     public enum ProgressType
     {

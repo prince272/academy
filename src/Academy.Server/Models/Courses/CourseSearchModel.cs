@@ -9,8 +9,6 @@ namespace Academy.Server.Models.Courses
 
         public CourseSubject? Subject { get; set; }
 
-        public CourseSubmission? Submission { get; set; }
-
         public CourseSort Sort { get; set; }
     }
 
