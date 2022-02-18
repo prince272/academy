@@ -1,4 +1,5 @@
-﻿using Academy.Server.Extensions.DocumentProcessor;
+﻿using Academy.Server.Extensions.CacheManager;
+using Academy.Server.Extensions.DocumentProcessor;
 using Academy.Server.Extensions.EmailSender;
 using Academy.Server.Extensions.PaymentProcessor;
 using Academy.Server.Extensions.StorageProvider;
@@ -68,6 +69,13 @@ namespace Academy.Server.Services
 
             services.AddScoped<IPaymentProcessor, PaySwitchPaymentProcessor>();
             services.AddHostedService<PaySwitchPaymentHostedService>();
+        }
+
+        public static void AddMemoryCacheManager(this IServiceCollection services, Action<MemoryCacheManagerOptions> configure)
+        {
+            services.Configure(configure);
+            services.AddMemoryCache();
+            services.AddScoped<ICacheManager, MemoryCacheManager>();
         }
     }
 }
