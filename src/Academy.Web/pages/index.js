@@ -1,15 +1,17 @@
-import { useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { BsArrowRight, BsHeartFill } from 'react-icons/bs';
+import { BsHeartFill, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { SvgBookLoverIllus, SvgOptionsIllus, SvgTeachingIllus, SvgCertificateIllus, SvgTeacherIllus, SvgExamsIllus, SvgQuizIllus, SvgFaqIllus } from '../resources/images/illustrations';
 import { AspectRatio } from 'react-aspect-ratio';
 import { Accordion } from 'react-bootstrap';
 import { ModalPathPrefix } from '../modals';
-
+import { useSettings } from '../utils/settings';
+import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
 const HomePage = () => {
+  const settings = useSettings();
 
   return (
     <>
@@ -29,6 +31,68 @@ const HomePage = () => {
           </div>
         </div>
       </div>
+
+      <section id="subjects" className="bg-white">
+        <div className="container py-5">
+          <ScrollMenu
+            LeftArrow={(() => {
+              const {
+                isFirstItemVisible,
+                scrollPrev,
+                visibleItemsWithoutSeparators,
+                initComplete
+              } = useContext(VisibilityContext);
+
+              const [disabled, setDisabled] = useState(
+                !initComplete || (initComplete && isFirstItemVisible)
+              );
+
+              useEffect(() => {
+                // NOTE: detect if whole component visible
+                if (visibleItemsWithoutSeparators.length) {
+                  setDisabled(isFirstItemVisible);
+                }
+              }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
+
+              return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
+            })}
+
+            RightArrow={() => {
+              const {
+                isLastItemVisible,
+                scrollNext,
+                visibleItemsWithoutSeparators
+              } = useContext(VisibilityContext);
+
+              // console.log({ isLastItemVisible });
+              const [disabled, setDisabled] = useState(
+                !visibleItemsWithoutSeparators.length && isLastItemVisible
+              );
+              useEffect(() => {
+                if (visibleItemsWithoutSeparators.length) {
+                  setDisabled(isLastItemVisible);
+                }
+              }, [isLastItemVisible, visibleItemsWithoutSeparators]);
+
+
+              return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
+            }}
+            wrapperClassName=""
+            scrollContainerClassName="">
+            {settings.courseSubjects.map((subject, index) => {
+              const colors = ["#d1102b", "#101620", "#135ec3", "#653c20", "#009843", "#056647", "#071f5d", "#783dbe"];
+
+              return (
+                <Link href={{ pathname: "/courses", query: { subject: subject.value } }} key={`scroll-item-${index}`} itemId={`scroll-item-${index}`}>
+                  <a className="d-flex flex-colunm justify-content-center text-center text-white rounded p-3 mx-2" style={{ backgroundColor: colors[index % colors.length] }}>
+                    <div className="text-nowrap">{subject.name}</div>
+                  </a>
+                </Link>
+              );
+            })}
+          </ScrollMenu>
+        </div>
+      </section>
 
       <section className="position-relative" style={{
         backgroundImage: "url('/img/img1.jpg')",
@@ -177,18 +241,6 @@ const HomePage = () => {
                     <Accordion.Header>1. What is Academy of Ours?</Accordion.Header>
                     <Accordion.Body>
                       Academy of Ours is an e-learning platform that helps you to learn a variety of courses and concepts through interactive checkpoints, lessons, and videos with certificates awarded automatically after each course.
-                    </Accordion.Body>
-                  </Accordion.Item>
-                  <Accordion.Item eventKey="1">
-                    <Accordion.Header>2. How can I provide feedback?</Accordion.Header>
-                    <Accordion.Body>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                      tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-                      veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-                      commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-                      velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-                      cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id
-                      est laborum.
                     </Accordion.Body>
                   </Accordion.Item>
                 </Accordion>

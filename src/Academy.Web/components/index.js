@@ -44,14 +44,14 @@ const Header = () => {
                                         </div>
 
                                         <hr />
-                                        <div className="h6 mb-3">How to earn more bits:</div>
+                                        <div className="h6 mb-3">How you may earn or lose bits:</div>
                                         <div className="vstack gap-2 small">
                                             {settings.currency.bitRules.map((bitRule) => {
 
                                                 return (
                                                     <div key={bitRule.type} className="hstack gap-3 justify-content-between align-items-center text-nowrap">
                                                         <div className="text-muted">{bitRule.description}</div>
-                                                        <div className="fw-bold text-nowrap">{bitRule.value} {bitRule.value > 1 ? 'Bits' : 'Bit'}</div>
+                                                        <div className="fw-bold text-nowrap">{(bitRule.value <= 0 ? "" : "+") + bitRule.value} {bitRule.value == 1 ? 'Bit' : 'Bits'}</div>
                                                     </div>
                                                 );
                                             })}
@@ -72,8 +72,18 @@ const Header = () => {
                 <Navbar.Collapse className="flex-grow-0">
                     <Nav>
                         <Nav.Item>
-                            <Link href="/courses"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2">Courses</a></Link>
+                            <Dropdown>
+                                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Courses</Dropdown.Toggle>
+
+                                <Dropdown.Menu>
+                                    <Link href={{ pathname: "/courses" }} passHref><Dropdown.Item>All</Dropdown.Item></Link>
+                                    {settings.courseSubjects.map((subject => (
+                                        <Link key={subject.value} href={{ pathname: "/courses", query: { subject: subject.value } }} passHref><Dropdown.Item>{subject.name}</Dropdown.Item></Link>
+                                    )))}
+                                </Dropdown.Menu>
+                            </Dropdown>
                         </Nav.Item>
+
                         {client.user ? (
                             <>
                                 <Nav.Item>

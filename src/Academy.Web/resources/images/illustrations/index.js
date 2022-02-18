@@ -20,6 +20,7 @@ import SvgWalletIllus from '../illustrations/wallet.svg';
 import SvgTakeoutBoxesIllus from '../illustrations/takeout-boxes.svg';
 import SvgWellDoneIllus from '../illustrations/well-done.svg';
 import SvgCompleteIllus from '../illustrations/complete.svg';
+import SvgWebSearchIllus from '../illustrations/web-search.svg';
 
 export {
     SvgOnlineLearningIllus,
@@ -43,5 +44,6 @@ export {
     SvgWalletIllus,
     SvgTakeoutBoxesIllus,
     SvgWellDoneIllus,
-    SvgCompleteIllus
+    SvgCompleteIllus,
+    SvgWebSearchIllus
 };

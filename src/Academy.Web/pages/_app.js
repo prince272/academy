@@ -44,7 +44,7 @@ export default function MyApp({ Component, pageProps, settings }) {
                 {pageSettings.showFooter && <Footer />}
               </div>
               <Toaster position="top-center" reverseOrder={true} toastOptions={{
-                className: 'bg-dark text-white',
+                className: 'bg-light text-dark',
               }} />
             </ModalProvider>
           </DialogProvider>

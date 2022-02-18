@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { useContext, useEffect, useState } from 'react';
 import { useClient } from '../../utils/client';
@@ -16,12 +17,15 @@ import { useForm } from 'react-hook-form';
 import { sentenceCase } from 'change-case';
 import { useSettings } from '../../utils/settings';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { cleanObject } from '../../utils/helpers';
+import { SvgWebSearchIllus } from '../../resources/images/illustrations';
 
 const CoursesPage = withRemount((props) => {
     const { remount } = props;
     const modal = useModal();
     const [loading, setLoading] = useState({});
     const [page, setPage] = useState(null);
+    const router = useRouter();
     const client = useClient();
 
     const settings = useSettings();
@@ -45,8 +49,10 @@ const CoursesPage = withRemount((props) => {
     const searchParams = search.watch();
 
     useEffect(() => {
-        load(searchParams);
-    }, [useAlternativePrevious(searchParams)]);
+        search.reset();
+        Object.entries(router.query).forEach(([name, value]) => { search.setValue(name, value); });
+        load(router.query);
+    }, [router.query]);
 
     useEffect(() => {
 
@@ -115,47 +121,19 @@ const CoursesPage = withRemount((props) => {
             <Dropdown className="mx-2 pe-auto">
                 <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Subject`))(settings.courseSubjects.find(item => item.value == search.watch('subject')))}</Dropdown.Toggle>
                 <Dropdown.Menu style={{ margin: 0 }}>
-                    {[{ name: 'Any', value: undefined }, ...settings.courseSubjects].map(item => (
-                        <Dropdown.Item key={item.value || 'undefined'} as="div" className={`cursor-pointer ${item.value == search.watch('subject') ? 'bg-soft-primary' : ''}`} onClick={() => search.setValue('subject', item.value)}>{item.name}</Dropdown.Item>
+                    {[{ name: 'Any', value: null }, ...settings.courseSubjects].map(item => (
+                        <Link key={item.value || 'null'} href={{ pathname: router.basePath, query: cleanObject({ ...searchParams, subject: item.value }) }} passHref><Dropdown.Item className={`cursor-pointer ${item.value == search.watch('subject') ? 'bg-soft-primary' : ''}`}>{item.name}</Dropdown.Item></Link>
                     ))}
                 </Dropdown.Menu>
             </Dropdown>
         ));
 
-        if (client.user && client.user.roles.some(role => role == 'manager')) {
-            items.push(() => (
-                <Dropdown className="mx-2 pe-auto">
-                    <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Submission`))(settings.courseSubmissions.find(item => item.value == search.watch('submission')))}</Dropdown.Toggle>
-                    <Dropdown.Menu style={{ margin: 0 }}>
-                        {[{ name: 'Any', value: undefined }, ...settings.courseSubmissions].map(item => (
-                            <Dropdown.Item key={item.value || 'undefined'} as="div" className={`cursor-pointer ${item.value == search.watch('submission') ? 'bg-soft-primary' : ''}`} onClick={() => search.setValue('submission', item.value)}>{item.name}</Dropdown.Item>
-                        ))}
-                    </Dropdown.Menu>
-                </Dropdown>
-            ));
-        }
-
-        if (client.user && client.user.roles.some(role => role == 'teacher')) {
-            const courseUsers = [{ name: 'My Courses', value: client.user.id }];
-            items.push(() => (
-                <Dropdown className="mx-2 pe-auto">
-                    <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `All Courses`))(courseUsers.find(item => item.value == search.watch('userId')))}</Dropdown.Toggle>
-                    <Dropdown.Menu style={{ margin: 0 }}>
-                        {[{ name: 'All Courses', value: undefined }, ...courseUsers].map(item => (
-                            <Dropdown.Item key={item.value || 'undefined'} as="div" className={`cursor-pointer ${item.value == search.watch('userId') ? 'bg-soft-primary' : ''}`} onClick={() => search.setValue('userId', item.value)}>{item.name}</Dropdown.Item>
-                        ))}
-                    </Dropdown.Menu>
-                </Dropdown>
-            ));
-        }
-
-
         items.push(() => (
             <Dropdown className="mx-2 pe-auto">
                 <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Sort`))(settings.courseSorts.find(item => item.value == search.watch('sort')))}</Dropdown.Toggle>
                 <Dropdown.Menu style={{ margin: 0 }}>
-                    {[{ name: 'Any', value: undefined }, ...settings.courseSorts].map(item => (
-                        <Dropdown.Item key={item.value || 'undefined'} as="div" className={`cursor-pointer ${item.value == search.watch('sort') ? 'bg-soft-primary' : ''}`} onClick={() => search.setValue('sort', item.value)}>{item.name}</Dropdown.Item>
+                    {[{ name: 'Any', value: null }, ...settings.courseSorts].map(item => (
+                        <Link key={item.value || 'null'} href={{ pathname: router.basePath, query: cleanObject({ ...searchParams, sort: item.value }) }} passHref><Dropdown.Item className={`cursor-pointer ${item.value == search.watch('sort') ? 'bg-soft-primary' : ''}`}>{item.name}</Dropdown.Item></Link>
                     ))}
                 </Dropdown.Menu>
             </Dropdown>
@@ -233,27 +211,39 @@ const CoursesPage = withRemount((props) => {
                         }}
 
                         wrapperClassName="position-absolute w-100 h-75"
-                        scrollContainerClassName="h-100 justify-content-center w-100">
+                        scrollContainerClassName="h-100 mx-auto w-100">
                         {scrollItems.map((ScrollItem, scrollItemIndex) => <ScrollItem key={`scroll-item-${scrollItemIndex}`} itemId={`scroll-item-${scrollItemIndex}`} />)}
                     </ScrollMenu>
 
-                    <InfiniteScroll
-                        className="row g-3 py-6 pe-auto h-100"
-                        dataLength={page ? page.items.length : 0}
-                        next={() => load({ ...searchParams, pageNumber: page ? (page.pageNumber + 1) : 1 }, true)}
-                        hasMore={page ? ((page.pageNumber + 1) <= page.totalPages) : true}
-                        loader={(loading ? (<Loader {...loading} />) : <></>)}>
-                        {page?.items.map((course) => {
-                            return (
-                                <div key={course.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
-                                    <CourseItem course={course} />
+                    {(!page || page.items.length) ? (
+                        <InfiniteScroll
+                            className="row g-3 pt-6 pe-auto h-100"
+                            dataLength={page ? page.items.length : 0}
+                            next={() => load({ ...searchParams, pageNumber: page ? (page.pageNumber + 1) : 1 }, true)}
+                            hasMore={page ? ((page.pageNumber + 1) <= page.totalPages) : true}
+                            loader={(loading ? (<Loader {...loading} />) : <></>)}>
+                            {page?.items.map((course) => {
+                                return (
+                                    <div key={course.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <CourseItem course={course} />
+                                    </div>
+                                );
+                            })}
+                        </InfiniteScroll>
+                    ) : (
+                        <>
+                            <div className="d-flex flex-column text-center justify-content-center pt-10 mt-10">
+                                <div className="mb-4">
+                                    <SvgWebSearchIllus style={{ width: "auto", height: "128px" }} />
                                 </div>
-                            );
-                        })}
-                    </InfiniteScroll>
+                                <div className="mb-3">There are not courses here.</div>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
-            {client.user && client.user.roles.some(role => role == 'teacher') &&
+            {
+                client.user && client.user.roles.some(role => role == 'teacher') &&
                 (<div className="position-fixed bottom-0 end-0 w-100 zi-3 pe-none">
                     <div className="container py-3">
                         <div className="row justify-content-center">

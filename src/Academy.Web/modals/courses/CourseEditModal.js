@@ -151,8 +151,8 @@ const CourseEditModal = withRemount((props) => {
                                 </OverlayTrigger>
                                 (<span>{form.watch('cost') != 0 ? 'paid' : 'free'}</span> course)
                             </label>
-                            <div class="input-group input-group-merge">
-                                <div class="input-group-prepend input-group-text">{settings.currency.symbol}</div>
+                            <div className="input-group input-group-merge">
+                                <div className="input-group-prepend input-group-text">{settings.currency.symbol}</div>
                                 <FormController name="cost" control={form.control}
                                     render={({ field }) => {
                                         return (

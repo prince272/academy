@@ -22,6 +22,7 @@ import Plyr from 'plyr-react';
 import 'plyr-react/dist/plyr.css';
 import _ from 'lodash';
 import { useClient } from '../../utils/client';
+import { useDialog } from '../../utils/dialog';
 
 const LessonView = (props) => {
     const { lesson, setLesson } = props;
@@ -221,7 +222,7 @@ const QuestionView = (props) => {
 
                                                             </div>
 
-                                                            <div className="d-flex align-items-center flex-grow-1 cursor-default">
+                                                            <div className="d-flex align-items-center flex-grow-1 cursor-default py-2 pe-3">
                                                                 <div className="flex-grow-1">
                                                                     <div>{answer.text}</div>
                                                                 </div>
@@ -239,14 +240,14 @@ const QuestionView = (props) => {
                     </Droppable>
                 </DragDropContext>
                 {question._submitted && (
-                    <div class={`alert alert-${question._alert.type == 'error' ? 'danger' : question._alert.type}`} role="alert">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-shrink-0">
+                    <div className={`alert alert-${question._alert.type == 'error' ? 'danger' : question._alert.type}`} role="alert">
+                        <div className="d-flex align-items-center">
+                            <div className="flex-shrink-0">
                                 <span className="svg-icon svg-icon-sm text-white">
                                     {question._alert.type == 'error' ? <BsXCircleFill /> : question._alert.type == 'success' ? <BsCheckCircleFill /> : <></>}
                                 </span>
                             </div>
-                            <div class="flex-grow-1 ms-3">
+                            <div className="flex-grow-1 ms-3">
                                 <div>{question._alert.message}</div>
                             </div>
                         </div>
@@ -262,6 +263,7 @@ const LessonViewModal = withRemount((props) => {
     const { route, modal, remount } = props;
     const router = useRouter();
     const client = useClient();
+    const dialog = useDialog();
 
     const [loading, setLoading] = useState({});
     const [submitting, setSubmitting] = useState(false);
@@ -377,7 +379,7 @@ const LessonViewModal = withRemount((props) => {
 
             if (_correctAnswer) confetti.fire();
 
-            let answers = null;
+            let answers = currentView.answers;
 
             if (currentView.type == 'singleChoice' || currentView.type == 'multipleChoice') {
                 answers = currentView.answers.map(answer => ({
@@ -463,7 +465,16 @@ const LessonViewModal = withRemount((props) => {
                         <div className="d-flex gap-3 justify-content-end w-100">
                             {currentView._type == 'question' && !currentView._correctAnswer && (
                                 <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Find answer</Tooltip>}>
-                                    <button className="btn btn-secondary btn-icon" onClick={() => moveForward(true)}><span className="svg-icon svg-icon-xs"><BsLightbulb /></span></button>
+                                    <button className="btn btn-secondary btn-icon" disabled={submitting} onClick={async () => {
+                                       const confirmed = await dialog.confirm({
+                                            title: 'Find the answer',
+                                            body: <>Use your bits to find the answer. (You have <span className="svg-icon svg-icon-xs d-inline-block me-1"><SvgBitCube /></span>{client.user.bits})</>
+                                        });
+
+                                        if (confirmed) {
+                                            moveForward(true);
+                                        }
+                                    }}><span className="svg-icon svg-icon-xs"><BsLightbulb /></span></button>
                                 </OverlayTrigger>
                             )}
                             <button className={`btn btn-primary  px-5 w-100 w-sm-auto`} type="button" disabled={submitting} onClick={() => moveForward()}>

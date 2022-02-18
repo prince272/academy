@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import Oidc, { UserManager, WebStorageStateStore } from 'oidc-client';
+import Oidc, { UserManager, WebStorageStateStore } from 'oidc-client-ts';
 import { AsyncLocker, createEventDispatcher } from './helpers';
 import queryString from 'qs';
 import { useAsyncState, useSessionState } from './hooks';
