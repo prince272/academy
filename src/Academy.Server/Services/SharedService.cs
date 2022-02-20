@@ -23,7 +23,7 @@ namespace Academy.Server.Services
 
             if (lesson.Title != null) duration += Sanitizer.GetHtmlReadingDuration(lesson.Title);
             if (lesson.Document != null) duration += Sanitizer.GetHtmlReadingDuration(lesson.Document);
-            if (lesson.Media != null) duration += lesson.Media.Length;
+            if (lesson.Media != null) duration += lesson.Media.Duration.GetValueOrDefault();
 
             return new ValueTask<long>(duration);
         }

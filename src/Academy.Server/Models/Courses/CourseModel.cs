@@ -30,11 +30,7 @@ namespace Academy.Server.Models.Courses
 
         public DateTimeOffset? Published { get; set; }
 
-        public int? ImageId { get; set; }
-
-        public string ImageUrl { get; set; }
-
-        public int? CertificateTemplateId { get; set; }
+        public MediaModel Image { get; set; }
 
         public CertificateModel Certificate { get; set; }
 
@@ -160,6 +156,8 @@ namespace Academy.Server.Models.Courses
 
         public long Size { get; set; }
 
+        public long? Duration { get; set; }
+
         public string Url { get; set; }
 
     }
@@ -234,7 +232,7 @@ namespace Academy.Server.Models.Courses
         public MediaModelProfile(IServiceProvider serviceProvider)
         {
             var storageProvider = serviceProvider.GetRequiredService<IStorageProvider>();
-            CreateMap<Media, MediaModel>()
+            CreateMap<OwnedMedia, MediaModel>()
                 .ForMember(dest => dest.Url, opt => opt.MapFrom(src => storageProvider.GetUrl(src.Path)));
         }
     }

@@ -85,7 +85,7 @@ namespace Academy.Server.Controllers
                     if (media.Type == MediaType.Video || media.Type == MediaType.Audio)
                     {
                         var mediaInfo = await FFProbe.AnalyseAsync(outputStream);
-                        media.Length = mediaInfo.Duration.Ticks;
+                        media.Duration = mediaInfo.Duration.Ticks;
                         await unitOfWork.UpdateAsync(media);
                     }
                 }

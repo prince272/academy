@@ -8,6 +8,7 @@ namespace Academy.Server.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Lesson> builder)
         {
+            builder.OwnsOne(_ => _.Media);
         }
     }
 }

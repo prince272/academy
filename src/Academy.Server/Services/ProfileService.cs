@@ -46,7 +46,6 @@ namespace Academy.Server.Services
             }
 
             var user = await userManager.Users
-                .Include(_ => _.Avatar)
                 .Include(_ => _.UserRoles).ThenInclude(_ => _.Role)
                 .FirstOrDefaultAsync(_ => _.Id.ToString() == sub);
 

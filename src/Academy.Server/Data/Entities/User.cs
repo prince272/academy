@@ -19,9 +19,7 @@ namespace Academy.Server.Data.Entities
 
         public int Bits { get; set; }
 
-        public Media Avatar { get; set; }
-
-        public int? AvatarId { get; set; }
+        public OwnedMedia Avatar { get; set; }
 
         public List<CourseProgress> Progresses { get; set; } = new List<CourseProgress>();
 

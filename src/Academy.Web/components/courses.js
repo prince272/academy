@@ -23,8 +23,8 @@ const CourseItem = ({ course }) => {
         <div className="card shadow-sm">
             <div className="card-img-top pt-2 px-2">
                 <AspectRatio ratio="3/2">
-                    {course.imageUrl ?
-                        (<Image className="rounded" priority unoptimized loader={({ src }) => src} src={course.imageUrl} layout="fill" objectFit="cover" alt={course.title} />) :
+                    {course.image ?
+                        (<Image className="rounded" priority unoptimized loader={({ src }) => src} src={course.image.url} layout="fill" objectFit="cover" alt={course.title} />) :
                         (<div className="rounded svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center"><BsCardImage /></div>)}
                 </AspectRatio>
             </div>

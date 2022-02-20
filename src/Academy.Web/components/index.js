@@ -91,8 +91,8 @@ const Header = () => {
                                         <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">
                                             <div className="d-flex align-items-center justify-content-center">
 
-                                                {client.user.avatarUrl ?
-                                                    (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={client.user.avatarUrl} width={32} height={32} objectFit="cover" alt={`${client.user.firstName} ${client.user.lastName}`} />) :
+                                                {client.user.avatar ?
+                                                    (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={client.user.avatar.url} width={32} height={32} objectFit="cover" alt={`${client.user.firstName} ${client.user.lastName}`} />) :
                                                     (
                                                         <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "32px", height: "32px" }}>
                                                             <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>

@@ -25,7 +25,6 @@ namespace Academy.Server.Utilities
                 var sub = userManager.GetUserId(httpContext.User);
 
                 currentUser = await userManager.Users
-                    .Include(_ => _.Avatar)
                     .Include(_ => _.UserRoles).ThenInclude(_ => _.Role)
                     .Include(_ => _.Certificates)
                     .FirstOrDefaultAsync(_ => _.Id.ToString() == sub);

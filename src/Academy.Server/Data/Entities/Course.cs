@@ -26,13 +26,9 @@ namespace Academy.Server.Data.Entities
 
         public DateTimeOffset? Published { get; set; }
 
-        public virtual Media Image { get; set; }
+        public OwnedMedia Image { get; set; }
 
-        public int? ImageId { get; set; }
-
-        public virtual Media CertificateTemplate { get; set; }
-
-        public int? CertificateTemplateId { get; set; }
+        public OwnedMedia CertificateTemplate { get; set; }
 
         public decimal Cost { get; set; }
 

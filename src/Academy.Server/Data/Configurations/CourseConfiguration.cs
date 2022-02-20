@@ -8,6 +8,8 @@ namespace Academy.Server.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Course> builder)
         {
+            builder.OwnsOne(_ => _.Image);
+            builder.OwnsOne(_ => _.CertificateTemplate);
         }
     }
 }

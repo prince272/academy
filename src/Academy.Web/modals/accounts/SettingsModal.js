@@ -21,7 +21,10 @@ const EditProfileTab = ({ }) => {
     const [loading, setLoading] = useState({});
 
     const prepareModal = () => {
-        form.reset(client.user);
+        form.reset({
+            ...client.user,
+            avatarId: client.user.avatar?.id
+        });
         setLoading(null);
     };
 

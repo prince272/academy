@@ -32,9 +32,7 @@ namespace Academy.Server.Models.Accounts
 
         public string Bio { get; set; }
 
-        public int? AvatarId { get; set; }
-
-        public string AvatarUrl { get; set; }
+        public MediaModel Avatar { get; set; }
     }
 
     public class CurrentUserProfile : AutoMapper.Profile
@@ -43,7 +41,6 @@ namespace Academy.Server.Models.Accounts
         {
             var storageProvider = serviceProvider.GetRequiredService<IStorageProvider>();
             CreateMap<User, CurrentUserModel>()
-                .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.Avatar != null ? storageProvider.GetUrl(src.Avatar.Path) : null))
                 .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.UserRoles.Select(ur => ur.Role.Name.Camelize())));
         }
     }

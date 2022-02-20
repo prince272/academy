@@ -44,7 +44,12 @@ const CourseEditModal = withRemount((props) => {
                 return;
             }
 
-            form.reset({ ...result.data, published: !!result.data.published });
+            form.reset({
+                ...result.data, 
+                imageId: result.data.image?.id,
+                documentId:  result.data.document?.id,
+                published: !!result.data.published
+            });
             setLoading(null);
         }
         else {

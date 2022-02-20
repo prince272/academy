@@ -10,8 +10,8 @@ namespace Academy.Server.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Certificate> builder)
         {
-            builder.Property(_ => _.Image).HasJsonValueConversion();
-            builder.Property(_ => _.Document).HasJsonValueConversion();
+            builder.OwnsOne(_ => _.Image);
+            builder.OwnsOne(_ => _.Document);
         }
     }
 }

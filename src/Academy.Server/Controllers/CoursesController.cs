@@ -59,8 +59,9 @@ namespace Academy.Server.Controllers
             course.Published = form.Published ? course.Published ?? DateTimeOffset.UtcNow : null;
             course.Cost = Math.Round(form.Cost, 2, MidpointRounding.AwayFromZero);
 
-            course.ImageId = form.ImageId;
-            course.CertificateTemplateId = form.CertificateTemplateId;
+            course.Image = (await unitOfWork.FindAsync<Media>(form.ImageId))?.AsOwned();
+            course.CertificateTemplate = (await unitOfWork.FindAsync<Media>(form.CertificateTemplateId))?.AsOwned();
+
             course.UserId = user.Id; // Set the owner of the course.
 
             await unitOfWork.CreateAsync(course);
@@ -90,8 +91,8 @@ namespace Academy.Server.Controllers
             course.Published = form.Published ? course.Published ?? DateTimeOffset.UtcNow : null;
             course.Cost = Math.Round(form.Cost, 2, MidpointRounding.AwayFromZero);
 
-            course.ImageId = form.ImageId;
-            course.CertificateTemplateId = form.CertificateTemplateId;
+            course.Image = (await unitOfWork.FindAsync<Media>(form.ImageId))?.AsOwned();
+            course.CertificateTemplate = (await unitOfWork.FindAsync<Media>(form.CertificateTemplateId))?.AsOwned();
 
             await unitOfWork.UpdateAsync(course);
 
@@ -123,8 +124,6 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Export(int courseId)
         {
             var course = await unitOfWork.Query<Course>()
-                .Include(_ => _.Image)
-                .Include(_ => _.CertificateTemplate)
                 .Include(_ => _.Sections)
                 .FirstOrDefaultAsync(_ => _.Id == courseId);
 
@@ -240,13 +239,12 @@ namespace Academy.Server.Controllers
                 using var certificateStream = new MemoryStream();
                 await documentProcessor.ConvertAsync(certificateMergedStream, certificateStream, format);
                 var media = new Media(type, $"{courseModel.Title} Certificate.{format.ToString().ToLowerInvariant()}", certificateStream.Length);
-                await unitOfWork.CreateAsync(media);
                 await storageProvider.WriteAsync(media.Path, certificateStream);
                 return media;
             }
 
-            certificate.Document = await CreateMedia(MediaType.Document, DocumentFormat.Pdf);
-            certificate.Image = await CreateMedia(MediaType.Image, DocumentFormat.Jpg);
+            certificate.Document = (await CreateMedia(MediaType.Document, DocumentFormat.Pdf)).AsOwned();
+            certificate.Image = (await CreateMedia(MediaType.Image, DocumentFormat.Jpg)).AsOwned();
             await unitOfWork.UpdateAsync(certificate);
 
             return Result.Succeed(data: await GetModel(courseId));
@@ -257,7 +255,7 @@ namespace Academy.Server.Controllers
         {
             var user = await HttpContext.GetCurrentUserAsync();
 
-            var query = unitOfWork.Query<Course>().Include(_ => _.Image).AsQueryable();
+            var query = unitOfWork.Query<Course>();
 
             // If the user is has a manager role, Allow filtering by submission.
 
@@ -526,8 +524,7 @@ namespace Academy.Server.Controllers
             var lesson = new Lesson();
             lesson.Title = form.Title;
             lesson.Document = Sanitizer.SanitizeHtml(form.Document);
-            lesson.MediaId = form.MediaId;
-            lesson.Media = await unitOfWork.FindAsync<Media>(form.MediaId);
+            lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId))?.AsOwned();
             lesson.SectionId = section.Id;  // Set the owner of the lesson.
 
             lesson.Duration = await sharedService.CalculateDurationAsync(lesson);
@@ -560,8 +557,7 @@ namespace Academy.Server.Controllers
 
             lesson.Title = form.Title;
             lesson.Document = Sanitizer.SanitizeHtml(form.Document);
-            lesson.MediaId = form.MediaId;
-            lesson.Media = await unitOfWork.FindAsync<Media>(form.MediaId);
+            lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId))?.AsOwned();
 
             // Calculate lesson duration.
             lesson.Duration = await sharedService.CalculateDurationAsync(lesson);
@@ -751,9 +747,7 @@ namespace Academy.Server.Controllers
             async Task<Course> GetCourse()
             {
                 var course = await unitOfWork.Query<Course>()
-                    .Include(_ => _.User).ThenInclude(_ => _.Avatar)
-                    .Include(_ => _.Image)
-                    .Include(_ => _.CertificateTemplate)
+                    .Include(_ => _.User)
                     .FirstOrDefaultAsync(_ => _.Id == courseId);
 
                 if (course != null)
@@ -768,7 +762,6 @@ namespace Academy.Server.Controllers
                         section.Lessons = await unitOfWork.Query<Lesson>()
                             .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
                             .Where(_ => _.SectionId == section.Id)
-                            .Include(_ => _.Media)
                             .ProjectTo<Lesson>(new MapperConfiguration(config =>
                             {
                                 var map = config.CreateMap<Lesson, Lesson>();
@@ -829,7 +822,6 @@ namespace Academy.Server.Controllers
             var courseModel = mapper.Map<CourseModel>(course);
             courseModel.Entity = course;
             courseModel.Certificate = mapper.Map<CertificateModel>(user?.Certificates.FirstOrDefault(_ => _.CourseId == course.Id));
-            courseModel.ImageUrl = course.Image != null ? storageProvider.GetUrl(course.Image.Path) : null;
             courseModel.Cost = userCanManageCourse ? course.Cost : null;
             courseModel.Price = await sharedService.CalculatePriceAsync(course);
             courseModel.Duration = course.Sections.SelectMany(_ => _.Lessons).Select(_ => _.Duration).Sum();

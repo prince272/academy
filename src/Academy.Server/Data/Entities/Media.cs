@@ -1,5 +1,6 @@
 ﻿using Academy.Server.Utilities;
 using Humanizer;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -23,6 +24,10 @@ namespace Academy.Server.Data.Entities
                           $"/{mediaTypeShortName.ToUpperInvariant()}-{Compute.GenerateNumber(8)}{System.IO.Path.GetExtension(name).ToLowerInvariant()}";
         }
 
+        public Media()
+        {
+        }
+
         public int Id { get; set; }
 
         public string Name { get; set; }
@@ -33,7 +38,38 @@ namespace Academy.Server.Data.Entities
 
         public string ContentType { get; set; }
 
-        public long Length { get; set; }
+        public long? Duration { get; set; }
+
+        public long Size { get; set; }
+
+        public OwnedMedia AsOwned()
+        {
+            return new OwnedMedia
+            {
+                Id = Id,
+                Name = Name,
+                Path = Path,
+                Type = Type,
+                ContentType = ContentType,
+                Duration = Duration,
+                Size = Size
+            };
+        }
+    }
+
+    public class OwnedMedia
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string Path { get; set; }
+
+        public MediaType Type { get; set; }
+
+        public string ContentType { get; set; }
+
+        public long? Duration { get; set; }
 
         public long Size { get; set; }
     }

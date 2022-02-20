@@ -29,12 +29,6 @@ namespace Academy.Server.Data.Migrations
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Document")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Image")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("Number")
                         .HasColumnType("int");
 
@@ -55,9 +49,6 @@ namespace Academy.Server.Data.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("CertificateTemplateId")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("Cost")
                         .HasPrecision(18, 6)
                         .HasColumnType("decimal(18,6)");
@@ -67,9 +58,6 @@ namespace Academy.Server.Data.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ImageId")
-                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("Published")
                         .HasColumnType("datetimeoffset");
@@ -87,10 +75,6 @@ namespace Academy.Server.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CertificateTemplateId");
-
-                    b.HasIndex("ImageId");
 
                     b.HasIndex("UserId");
 
@@ -113,9 +97,6 @@ namespace Academy.Server.Data.Migrations
                     b.Property<int>("Index")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MediaId")
-                        .HasColumnType("int");
-
                     b.Property<int>("SectionId")
                         .HasColumnType("int");
 
@@ -123,8 +104,6 @@ namespace Academy.Server.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MediaId");
 
                     b.HasIndex("SectionId");
 
@@ -141,7 +120,7 @@ namespace Academy.Server.Data.Migrations
                     b.Property<string>("ContentType")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("Length")
+                    b.Property<long?>("Duration")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Name")
@@ -235,9 +214,6 @@ namespace Academy.Server.Data.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ImageId")
-                        .HasColumnType("int");
-
                     b.Property<DateTimeOffset?>("Published")
                         .HasColumnType("datetimeoffset");
 
@@ -251,8 +227,6 @@ namespace Academy.Server.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ImageId");
 
                     b.HasIndex("UserId");
 
@@ -376,9 +350,6 @@ namespace Academy.Server.Data.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<int?>("AvatarId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Bio")
                         .HasColumnType("nvarchar(max)");
 
@@ -444,8 +415,6 @@ namespace Academy.Server.Data.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AvatarId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -670,24 +639,164 @@ namespace Academy.Server.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.OwnsOne("Academy.Server.Data.Entities.OwnedMedia", "Document", b1 =>
+                        {
+                            b1.Property<int>("CertificateId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                            b1.Property<string>("ContentType")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long?>("Duration")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Id")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Name")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Path")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long>("Size")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Type")
+                                .HasColumnType("int");
+
+                            b1.HasKey("CertificateId");
+
+                            b1.ToTable("Certificate");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CertificateId");
+                        });
+
+                    b.OwnsOne("Academy.Server.Data.Entities.OwnedMedia", "Image", b1 =>
+                        {
+                            b1.Property<int>("CertificateId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                            b1.Property<string>("ContentType")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long?>("Duration")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Id")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Name")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Path")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long>("Size")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Type")
+                                .HasColumnType("int");
+
+                            b1.HasKey("CertificateId");
+
+                            b1.ToTable("Certificate");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CertificateId");
+                        });
+
+                    b.Navigation("Document");
+
+                    b.Navigation("Image");
+
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Academy.Server.Data.Entities.Course", b =>
                 {
-                    b.HasOne("Academy.Server.Data.Entities.Media", "CertificateTemplate")
-                        .WithMany()
-                        .HasForeignKey("CertificateTemplateId");
-
-                    b.HasOne("Academy.Server.Data.Entities.Media", "Image")
-                        .WithMany()
-                        .HasForeignKey("ImageId");
-
                     b.HasOne("Academy.Server.Data.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.OwnsOne("Academy.Server.Data.Entities.OwnedMedia", "CertificateTemplate", b1 =>
+                        {
+                            b1.Property<int>("CourseId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                            b1.Property<string>("ContentType")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long?>("Duration")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Id")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Name")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Path")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long>("Size")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Type")
+                                .HasColumnType("int");
+
+                            b1.HasKey("CourseId");
+
+                            b1.ToTable("Course");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CourseId");
+                        });
+
+                    b.OwnsOne("Academy.Server.Data.Entities.OwnedMedia", "Image", b1 =>
+                        {
+                            b1.Property<int>("CourseId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                            b1.Property<string>("ContentType")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long?>("Duration")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Id")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Name")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Path")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long>("Size")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Type")
+                                .HasColumnType("int");
+
+                            b1.HasKey("CourseId");
+
+                            b1.ToTable("Course");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CourseId");
+                        });
 
                     b.Navigation("CertificateTemplate");
 
@@ -698,15 +807,47 @@ namespace Academy.Server.Data.Migrations
 
             modelBuilder.Entity("Academy.Server.Data.Entities.Lesson", b =>
                 {
-                    b.HasOne("Academy.Server.Data.Entities.Media", "Media")
-                        .WithMany()
-                        .HasForeignKey("MediaId");
-
                     b.HasOne("Academy.Server.Data.Entities.Section", "Section")
                         .WithMany("Lessons")
                         .HasForeignKey("SectionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.OwnsOne("Academy.Server.Data.Entities.OwnedMedia", "Media", b1 =>
+                        {
+                            b1.Property<int>("LessonId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                            b1.Property<string>("ContentType")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long?>("Duration")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Id")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Name")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Path")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long>("Size")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Type")
+                                .HasColumnType("int");
+
+                            b1.HasKey("LessonId");
+
+                            b1.ToTable("Lesson");
+
+                            b1.WithOwner()
+                                .HasForeignKey("LessonId");
+                        });
 
                     b.Navigation("Media");
 
@@ -756,15 +897,47 @@ namespace Academy.Server.Data.Migrations
 
             modelBuilder.Entity("Academy.Server.Data.Entities.Post", b =>
                 {
-                    b.HasOne("Academy.Server.Data.Entities.Media", "Image")
-                        .WithMany()
-                        .HasForeignKey("ImageId");
-
                     b.HasOne("Academy.Server.Data.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.OwnsOne("Academy.Server.Data.Entities.OwnedMedia", "Image", b1 =>
+                        {
+                            b1.Property<int>("PostId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                            b1.Property<string>("ContentType")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long?>("Duration")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Id")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Name")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Path")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long>("Size")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Type")
+                                .HasColumnType("int");
+
+                            b1.HasKey("PostId");
+
+                            b1.ToTable("Post");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PostId");
+                        });
 
                     b.Navigation("Image");
 
@@ -806,9 +979,41 @@ namespace Academy.Server.Data.Migrations
 
             modelBuilder.Entity("Academy.Server.Data.Entities.User", b =>
                 {
-                    b.HasOne("Academy.Server.Data.Entities.Media", "Avatar")
-                        .WithMany()
-                        .HasForeignKey("AvatarId");
+                    b.OwnsOne("Academy.Server.Data.Entities.OwnedMedia", "Avatar", b1 =>
+                        {
+                            b1.Property<int>("UserId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                            b1.Property<string>("ContentType")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long?>("Duration")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Id")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Name")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Path")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<long>("Size")
+                                .HasColumnType("bigint");
+
+                            b1.Property<int>("Type")
+                                .HasColumnType("int");
+
+                            b1.HasKey("UserId");
+
+                            b1.ToTable("AspNetUsers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId");
+                        });
 
                     b.Navigation("Avatar");
                 });

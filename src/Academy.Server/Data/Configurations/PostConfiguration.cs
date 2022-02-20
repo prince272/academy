@@ -8,6 +8,7 @@ namespace Academy.Server.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Post> builder)
         {
+            builder.OwnsOne(_ => _.Image);
         }
     }
 }
