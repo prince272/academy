@@ -28,7 +28,7 @@ const LessonView = (props) => {
     const { lesson, setLesson } = props;
 
     useEffect(() => {
-        const newLesson = { ...lesson, _submitted: false, _data: { id: lesson.id, type: 'lesson' } };
+        const newLesson = { ...lesson, _submitted: false, _data: { lessonId: lesson.id } };
         setLesson(newLesson);
     }, []);
 
@@ -136,7 +136,7 @@ LessonView.displayName = 'LessonView';
 
 const QuestionView = (props) => {
     const client = useClient();
-    const { question, setQuestion } = props;
+    const { lesson, question, setQuestion } = props;
 
     useEffect(() => {
         // shuffle answers.
@@ -146,26 +146,34 @@ const QuestionView = (props) => {
             ...question, answers,
             _submitted: false,
             _data: {
-                id: question.id,
-                type: 'question',
+                lessonId: lesson.id,
+                questionId: question.id,
                 answers: question.type == 'reorder' ? answers.map(answer => answer.id) : []
             }
         };
         setQuestion(newQuestion);
     }, []);
 
-    const handleChoice = (index) => {
+    const handleAnswer = (index) => {
 
-        if (question.type == 'singleChoice' || question.type == 'multipleChoice') {
+        if (question.type == 'singleAnswer' || question.type == 'multipleAnswer') {
 
             const answers = ({
-                'singleChoice': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : false })),
-                'multipleChoice': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : answer.checked })),
+                'singleAnswer': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : false })),
+                'multipleAnswer': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : answer.checked })),
             })[question.type] ?? null;
 
             answers.forEach((answer, answerIndex) => { answer.index = answerIndex; });
 
-            const newQuestion = { ...question, answers, _submitted: false, _data: { id: question.id, type: 'question', answers: answers.filter(answer => answer.checked).map(answer => answer.id) } };
+            const newQuestion = {
+                ...question, answers,
+                _submitted: false,
+                _data: {
+                    lessonId: lesson.id,
+                    questionId: question.id,
+                    answers: answers.filter(answer => answer.checked).map(answer => answer.id)
+                }
+            };
             setQuestion(newQuestion);
         }
     };
@@ -191,7 +199,13 @@ const QuestionView = (props) => {
         arrayMove(answers, source.index, destination.index);
         answers.forEach((answer, answerIndex) => { answer.index = answerIndex; });
 
-        const newQuestion = { ...question, answers, _submitted: false, _data: { id: question.id, type: 'question', answers: answers.map(answer => answer.id) } };
+        const newQuestion = {
+            ...question, answers, _submitted: false, _data: {
+                lessonId: lesson.id,
+                questionId: question.id,
+                answers: answers.map(answer => answer.id)
+            }
+        };
         setQuestion(newQuestion);
     };
 
@@ -210,7 +224,7 @@ const QuestionView = (props) => {
                                             {(provided) => (
                                                 <div ref={provided.innerRef} {...provided.draggableProps} className="pb-3">
                                                     <div className={`card shadow-sm bg-white text-body ${answer.checked ? `${question._submitted ? (answer.correct ? 'border-success bg-soft-success' : 'border-danger bg-soft-danger') : 'border-primary bg-soft-primary'}` : `btn-outline-primary`}`}
-                                                        style={{ borderLeftWidth: "5px", borderColor: "transparent" }} onClick={() => handleChoice(answer.index)}>
+                                                        style={{ borderLeftWidth: "5px", borderColor: "transparent" }} onClick={() => handleAnswer(answer.index)}>
                                                         <div className="d-flex justify-content-between align-items-stretch border-bottom-0" style={{ minHeight: "52px" }}>
                                                             <div className="px-2 py-1 d-flex align-items-center hstack gap-2">
 
@@ -328,7 +342,7 @@ const LessonViewModal = withRemount((props) => {
         }
     };
 
-    const moveForward = async (force) => {
+    const moveForward = async (skip) => {
 
         let progress = null;
 
@@ -349,10 +363,10 @@ const LessonViewModal = withRemount((props) => {
             modal.events.emit(`editCourse`, progress.course);
             client.updateUser(progress.user);
         }
-        else if (currentView._type == 'question' && (!currentView._submitted || (force && !currentView._correctAnswer))) {
+        else if (currentView._type == 'question' && (!currentView._submitted || (skip && !currentView._correctAnswer))) {
 
             setSubmitting(true);
-            let result = await client.post(`/courses/${courseId}/progress`, { ...currentView._data, force });
+            let result = await client.post(`/courses/${courseId}/progress`, { ...currentView._data, skip });
             setSubmitting(false);
 
             if (result.error) {
@@ -381,10 +395,10 @@ const LessonViewModal = withRemount((props) => {
 
             let answers = currentView.answers;
 
-            if (currentView.type == 'singleChoice' || currentView.type == 'multipleChoice') {
+            if (currentView.type == 'singleAnswer' || currentView.type == 'multipleAnswer') {
                 answers = currentView.answers.map(answer => ({
                     ...answer,
-                    [force ? 'checked' : undefined]: question.answers.find(_answer => _answer.id == answer.id).checked,
+                    [skip ? 'checked' : undefined]: question.answers.find(_answer => _answer.id == answer.id).checked,
                     correct: question.answers.find(_answer => _answer.id == answer.id).checked,
                 }));
             }
@@ -392,7 +406,7 @@ const LessonViewModal = withRemount((props) => {
 
                 // Reorder the answers accordingly.
 
-                if (force) {
+                if (skip) {
                     answers = currentView.answers.sort(function (a, b) {
                         return question.answers.findIndex(answer => answer.id == a.id) - question.answers.findIndex(answer => answer.id == b.id);
                     });
@@ -456,7 +470,7 @@ const LessonViewModal = withRemount((props) => {
             <Modal.Body className="bg-light position-static">
                 <>
                     {currentView._type == 'lesson' && <LessonView key={currentView.id} {...{ course, lesson: currentView, setLesson: setCurrentView, moveBackward, moveForward }} />}
-                    {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, question: currentView, setQuestion: setCurrentView, moveBackward, moveForward }} />}
+                    {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, lesson, question: currentView, setQuestion: setCurrentView, moveBackward, moveForward }} />}
                 </>
             </Modal.Body>
             <Modal.Footer className="bg-light zi-1 py-3">
@@ -466,7 +480,7 @@ const LessonViewModal = withRemount((props) => {
                             {currentView._type == 'question' && !currentView._correctAnswer && (
                                 <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Find answer</Tooltip>}>
                                     <button className="btn btn-secondary btn-icon" disabled={submitting} onClick={async () => {
-                                       const confirmed = await dialog.confirm({
+                                        const confirmed = await dialog.confirm({
                                             title: 'Find the answer',
                                             body: <>Use your bits to find the answer. (You have <span className="svg-icon svg-icon-xs d-inline-block me-1"><SvgBitCube /></span>{client.user.bits})</>
                                         });

@@ -25,7 +25,7 @@ namespace Academy.Server.Data.Entities
 
         public bool CheckAnswer(string[] answers)
         {
-            if (Type == QuestionType.SingleChoice || Type == QuestionType.MultipleChoice)
+            if (Type == QuestionType.SingleAnswer || Type == QuestionType.MultipleAnswer)
                 return Enumerable.SequenceEqual(Answers.Where(_ => _.Checked).Select(_ => _.Id.ToString()).OrderBy(_ => _), answers.OrderBy(_ => _));
 
             else if (Type == QuestionType.Reorder)
@@ -37,8 +37,8 @@ namespace Academy.Server.Data.Entities
 
     public enum QuestionType
     {
-        SingleChoice,
-        MultipleChoice,
+        SingleAnswer,
+        MultipleAnswer,
         Reorder,
         Text
     }

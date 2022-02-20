@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace Academy.Server.Data.Entities
 {
@@ -36,6 +37,27 @@ namespace Academy.Server.Data.Entities
         public decimal Cost { get; set; }
 
         public virtual ICollection<Section> Sections { get; set; } = new List<Section>();
+    }
+
+    public class CourseProgress
+    {
+        public int CourseId { get; set; }
+
+        public CourseProgressType Type { get; set; }
+
+        public int Id { get; set; }
+
+        public DateTimeOffset? Completed { get; set; }
+
+        public DateTimeOffset Started { get; set; }
+
+        public List<(bool Skip, string[] Answers)> Choices { get; set; } = new List<(bool, string[])>();
+    }
+
+    public enum CourseProgressType
+    {
+        Lesson,
+        Question
     }
 
     public enum CourseSubject

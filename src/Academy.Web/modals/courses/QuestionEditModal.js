@@ -78,7 +78,7 @@ const QuestionEditModal = withRemount((props) => {
         }
         else {
 
-            form.reset({ type: 'singleChoice' });
+            form.reset({ type: 'singleAnswer' });
             setLoading(null);
         }
     };
@@ -152,8 +152,8 @@ const QuestionEditModal = withRemount((props) => {
                                             field.onChange(e.target.value);
                                             answersController.fields.forEach((f, i) => { form.setValue(`answers[${i}].checked`, false); });
                                         }}>
-                                            <option value="singleChoice">Single choice</option>
-                                            <option value="multipleChoice">Multiple choice</option>
+                                            <option value="singleAnswer">Single answer</option>
+                                            <option value="multipleAnswer">Multiple answer</option>
                                             <option value="reorder">Reorder</option>
                                         </select>
                                     );
@@ -163,7 +163,7 @@ const QuestionEditModal = withRemount((props) => {
                             <div className="invalid-feedback">{formState.errors.type?.message}</div>
                         </div>
                         <div className="col-6">
-                            {(form.watch('type') == 'singleChoice' || form.watch('type') == 'multipleChoice' || form.watch('type') == 'reorder') && (
+                            {(form.watch('type') == 'singleAnswer' || form.watch('type') == 'multipleAnswer' || form.watch('type') == 'reorder') && (
                                 <div className="d-flex align-items-end justify-content-end w-100 h-100">
                                     <button type="button" className="btn btn-primary" onClick={() => {
                                         answersController.prepend({
@@ -175,7 +175,7 @@ const QuestionEditModal = withRemount((props) => {
                                 </div>
                             )}
                         </div>
-                        {(form.watch('type') == 'singleChoice' || form.watch('type') == 'multipleChoice' || form.watch('type') == 'reorder') && (
+                        {(form.watch('type') == 'singleAnswer' || form.watch('type') == 'multipleAnswer' || form.watch('type') == 'reorder') && (
                             <div className="col-12">
                                 <DragDropContext onDragEnd={handleDragEnd}>
                                     <Droppable droppableId={`question`} direction="vertical" type="lesson">
@@ -197,7 +197,7 @@ const QuestionEditModal = withRemount((props) => {
                                                                                     </div>
                                                                                 </div>
 
-                                                                                {(form.watch('type') == 'singleChoice' || form.watch('type') == 'multipleChoice') && (
+                                                                                {(form.watch('type') == 'singleAnswer' || form.watch('type') == 'multipleAnswer') && (
                                                                                     <div>
                                                                                         <FormController name={`answers[${answerFieldIndex}].checked`} control={form.control}
                                                                                             render={({ field }) => {
@@ -205,7 +205,7 @@ const QuestionEditModal = withRemount((props) => {
                                                                                                     <div className="form-check mb-0">
                                                                                                         <input type="checkbox" className={`form-check-input ${_.get(formState.errors, `answers[${answerFieldIndex}].checked`) ? 'is-invalid' : ''}`} checked={field.value} onChange={(e) => {
                                                                                                             const answers = form.watch('answers');
-                                                                                                            if (form.watch('type') == 'singleChoice') {
+                                                                                                            if (form.watch('type') == 'singleAnswer') {
                                                                                                                 answers.forEach((answer, answerIndex) => {
                                                                                                                     if (answerIndex != answerFieldIndex)
                                                                                                                         form.setValue(`answers[${answerIndex}].checked`, false);

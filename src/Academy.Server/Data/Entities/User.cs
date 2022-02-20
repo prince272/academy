@@ -23,7 +23,7 @@ namespace Academy.Server.Data.Entities
 
         public int? AvatarId { get; set; }
 
-        public List<Progress> Progresses { get; set; } = new List<Progress>();
+        public List<CourseProgress> Progresses { get; set; } = new List<CourseProgress>();
 
         public ICollection<Certificate> Certificates { get; set; } = new List<Certificate>();
 
@@ -37,64 +37,10 @@ namespace Academy.Server.Data.Entities
         }
     }
 
-    public class Certificate : IEntity
-    {
-        public virtual User User { get; set; }
-
-        public int UserId { get; set; }
-
-        public int CourseId { get; set; }
-
-        public int Id { get; set; }
-
-        public Media Image { get; set; }
-
-        public Media Document { get; set; }
-    }
-
     public class UserRole : IdentityUserRole<int>
     {
         public virtual User User { get; set; }
 
         public virtual Role Role { get; set; }
-    }
-
-    public class Progress
-    {
-        public Progress(ProgressType type, int id)
-        {
-            Type = type;
-            Id = id;
-        }
-
-        public ProgressType Type { get; set; }
-
-        public int Id { get; set; }
-
-        public bool Completed { get; set; }
-
-        public bool Force => Choices.FirstOrDefault()?.Skip ?? false;
-
-        public List<Choice> Choices { get; set; } = new List<Choice>();
-
-        public class Choice
-        {
-            public Choice(bool skip, string[] answers)
-            {
-                Skip = skip;
-                Answers = answers;
-            }
-
-            public bool Skip { get; set; }
-
-            public string[] Answers { get; set; }
-        }
-    }
-
-
-    public enum ProgressType
-    {
-        Lesson,
-        Question
     }
 }

@@ -50,6 +50,10 @@ namespace Academy.Server.Models.Courses
 
         public decimal? Price { get; set; }
 
+        public DateTimeOffset? Started { get; set; }
+
+        public DateTimeOffset? Completed { get; set; }
+
         [JsonIgnore]
         public Course Entity { get; set; }
     }
@@ -94,14 +98,9 @@ namespace Academy.Server.Models.Courses
 
         public long Duration { get; set; }
 
-        [JsonIgnore]
-        public CourseStatus[] Statuses { get; set; }
-
         public CourseStatus Status { get; set; }
 
         public QuestionModel[] Questions { get; set; }
-
-        public double Progress { get; set; }
 
         [JsonIgnore]
         public Lesson Entity { get; set; }

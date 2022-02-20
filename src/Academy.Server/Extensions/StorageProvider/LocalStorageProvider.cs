@@ -66,10 +66,14 @@ namespace Academy.Server.Extensions.StorageProvider
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
+            var position = stream.Position;
+
             string sourcePath = GetSourcePath(path);
             using var sourceStream = File.Open(sourcePath, FileMode.CreateNew, FileAccess.Write);
             sourceStream.Seek(0, SeekOrigin.Begin);
             await stream.CopyToAsync(sourceStream);
+
+            stream.Position = position;
         }
 
         public Task DeleteAsync(string path)

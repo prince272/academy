@@ -1,5 +1,6 @@
 ﻿using Academy.Server.Data;
 using Academy.Server.Data.Entities;
+using Academy.Server.Extensions.CacheManager;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Utilities;
 using FFMpegCore;
@@ -24,12 +25,14 @@ namespace Academy.Server.Controllers
     public class MediasController : ControllerBase
     {
         private readonly IStorageProvider storageProvider;
+        private readonly ICacheManager cacheManager;
         private readonly IUnitOfWork unitOfWork;
         private readonly Settings settings;
 
         public MediasController(IServiceProvider serviceProvider)
         {
             storageProvider = serviceProvider.GetRequiredService<IStorageProvider>();
+            cacheManager = serviceProvider.GetRequiredService<ICacheManager>();
             unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
             settings = serviceProvider.GetRequiredService<IOptions<Settings>>().Value;
         }
@@ -55,19 +58,8 @@ namespace Academy.Server.Controllers
                 return Result.Failed(StatusCodes.Status400BadRequest, message: "The file size is too large.");
 
             var mediaType = mediaRule.Type;
-            var mediaTypeShortName = AttributeHelper.GetEnumAttribute<MediaType, DisplayAttribute>(mediaType).ShortName;
 
-            var mediaPath = $"/media/{mediaType.ToString().Pluralize()}/{Guid.NewGuid()}{Path.GetExtension(mediaName)}".ToLower();
-
-            var media = new Media
-            {
-                Name = mediaName,
-                Size = mediaSize,
-                Path = mediaPath,
-                Type = mediaType,
-                ContentType = MimeTypeMap.GetMimeType(mediaName)
-            };
-
+            var media = new Media(mediaType, mediaName, mediaSize);
             await unitOfWork.CreateAsync(media);
 
             return Result.Succeed(media);
@@ -78,9 +70,10 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Upload(int mediaId)
         {
             var offset = long.Parse(Request.Headers["Upload-Offset"]);
-            var path = Request.Headers["Upload-Path"].ToString();
 
-            var media = await unitOfWork.Query<Media>().FirstOrDefaultAsync(_ => _.Id == mediaId);
+            var mediaCacheKey = $"{nameof(MediasController)}.{nameof(Upload)}-{mediaId}";
+            var media = await cacheManager.GetAsync(mediaCacheKey, () => unitOfWork.Query<Media>().FirstOrDefaultAsync(_ => _.Id == mediaId));
+
             if (media == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var inputStream = (Stream)new MemoryStream(await IOHelper.ConvertToBytesAsync(Request.Body));

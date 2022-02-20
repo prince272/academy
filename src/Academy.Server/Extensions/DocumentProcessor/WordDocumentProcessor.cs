@@ -21,14 +21,14 @@ namespace Academy.Server.Extensions.DocumentProcessor
 
         public Task MergeAsync(Stream source, Stream destination, IDictionary<string, object> fields)
         {
-            using var wordDocument = new WordDocument(source, FormatType.Automatic);
-            // Performs the mail merge.
-            wordDocument.MailMerge.Execute(fields.Keys.ToArray(), fields.Values.Select(_ => _?.ToString()).ToArray());
-
             var sourcePosition = source.Position;
             var destinationPosition = destination.Position;
 
-            wordDocument.Save(destination, FormatType.Automatic);
+            using var wordDocument = new WordDocument(source, FormatType.Docx);
+            // Performs the mail merge.
+            wordDocument.MailMerge.Execute(fields.Keys.ToArray(), fields.Values.Select(_ => _?.ToString()).ToArray());
+
+            wordDocument.Save(destination, FormatType.Docx);
             wordDocument.Close();
 
             source.Position = sourcePosition;
@@ -39,7 +39,7 @@ namespace Academy.Server.Extensions.DocumentProcessor
 
         public Task ConvertAsync(Stream source, Stream destination, DocumentFormat format)
         {
-            using var wordDocument = new WordDocument(source, FormatType.Automatic);
+            using var wordDocument = new WordDocument(source, FormatType.Docx);
 
             var sourcePosition = source.Position;
             var destinationPosition = destination.Position;

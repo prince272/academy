@@ -55,7 +55,7 @@ namespace Academy.Server.Controllers
 
             user.FirstName = form.FirstName;
             user.LastName = form.LastName;
-            user.UserName = await ComputeHelper.GenerateSlugAsync($"{form.FirstName} {form.LastName}", slug => userManager.Users.AnyAsync(_ => _.UserName == slug));
+            user.UserName = await Compute.GenerateSlugAsync($"{form.FirstName} {form.LastName}", slug => userManager.Users.AnyAsync(_ => _.UserName == slug));
             user.Registered = DateTimeOffset.UtcNow;
 
             (await userManager.CreateAsync(user, form.Password)).ThrowIfFailed();

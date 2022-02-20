@@ -151,70 +151,50 @@ namespace Academy.Server.Controllers
 
         [Authorize]
         [HttpPost("/courses/{courseId}/progress")]
-        public async Task<IActionResult> Progresss(int courseId, [FromBody] ProgressModel form)
+        public async Task<IActionResult> Progresss(int courseId, [FromBody] CourseProgressModel form)
         {
             var user = await HttpContext.GetCurrentUserAsync();
-            var progress = user.Progresses.FirstOrDefault(_ => _.Type == form.Type && _.Id == form.Id);
-            if (progress == null) user.Progresses.Add(progress = new Progress(form.Type, form.Id));
-            progress.Choices.Add(new Progress.Choice(form.Force, form.Answers));
-            user.Progresses.Move(user.Progresses.IndexOf(progress), 0);
+            var lessonProgress = user.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Lesson && _.Id == form.LessonId);
+            if (lessonProgress == null) user.Progresses.Add(lessonProgress = new CourseProgress() { CourseId = courseId, Type = CourseProgressType.Lesson, Id = form.LessonId, Started = DateTimeOffset.UtcNow });
+            user.Progresses.Move(user.Progresses.IndexOf(lessonProgress), 0);
 
-            if (form.Force)
+            CourseProgress questionProgress = null;
+
+            if (form.QuestionId != null)
             {
-                var remainingBits = user.Bits + settings.Currency.BitRules.First(_ => _.Type == BitRuleType.FindQuestionAnswer).Value;
-                if (remainingBits < 0)
+                questionProgress = user.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Question && _.Id == form.QuestionId);
+                if (questionProgress == null) user.Progresses.Add(questionProgress = new CourseProgress() { CourseId = courseId, Type = CourseProgressType.Question, Id = form.QuestionId.Value, Started = DateTimeOffset.UtcNow });
+                questionProgress.Choices.Add((form.Skip, form.Answers));
+                user.Progresses.Move(user.Progresses.IndexOf(questionProgress), 0);
+            }
+
+            var courseModel = await GetModel(courseId);
+            var lessonModel = courseModel.Sections.SelectMany(_ => _.Lessons).FirstOrDefault(_ => _.Id == form.LessonId);
+            var questionModel = courseModel.Sections.SelectMany(_ => _.Lessons).SelectMany(_ => _.Questions).FirstOrDefault(_ => _.Id == form.QuestionId);
+
+            if (lessonModel.Status == CourseStatus.Completed)
+            {
+                if (lessonProgress.Completed == null)
                 {
-                    return Result.Failed(StatusCodes.Status400BadRequest, $"You need {Math.Abs(remainingBits)} more {"bit".ToQuantity(Math.Abs(remainingBits), ShowQuantityAs.None)} to find the answer.");
-                }
-                else
-                {
-                    user.Bits = remainingBits;
+                    user.Bits += settings.Currency.BitRules.First(_ => _.Type == BitRuleType.CompleteLesson).Value;
+                    lessonProgress.Completed = DateTimeOffset.UtcNow;
                 }
             }
 
-            var course = await GetModel(courseId);
-            var lesson = course.Sections.SelectMany(_ => _.Lessons)
-                .FirstOrDefault(lesson => form.Type == ProgressType.Lesson ? lesson.Id == form.Id :
-                                          form.Type == ProgressType.Question && lesson.Questions.Any(question => question.Id == form.Id));
-            var question = lesson?.Questions.FirstOrDefault(question => form.Type == ProgressType.Question && question.Id == form.Id);
-
-            if (lesson.Status == CourseStatus.Completed)
+            if (questionModel != null && questionModel.Status == CourseStatus.Completed)
             {
-                progress = user.Progresses.FirstOrDefault(_ => _.Type == ProgressType.Lesson && _.Id == lesson.Id);
-
-                if (progress != null)
+                if (questionProgress.Completed == null)
                 {
-                    if (!progress.Completed)
-                    {
-                        progress.Completed = true;
+                    user.Bits += (questionModel.Choices.FirstOrDefault() ?
+                        settings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionCorrectly).Value :
+                        settings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionWrongly).Value);
 
-                        user.Bits += settings.Currency.BitRules.First(_ => _.Type == BitRuleType.CompleteLesson).Value;
-                    }
-                }
-            }
-
-            if (question != null && question.Status == CourseStatus.Completed)
-            {
-                progress = user.Progresses.FirstOrDefault(_ => _.Type == ProgressType.Question && _.Id == question.Id);
-
-                if (progress != null)
-                {
-                    if (!progress.Completed)
-                    {
-                        progress.Completed = true;
-
-                        if (!progress.Force)
-                        {
-                            user.Bits += (question.Choices.FirstOrDefault() ?
-                                settings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionCorrectly).Value :
-                                settings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionWrongly).Value);
-                        }
-                    }
+                    questionProgress.Completed = DateTimeOffset.UtcNow;
                 }
             }
 
             await unitOfWork.UpdateAsync(user);
-            return Result.Succeed(data: new { course, user = mapper.Map<CurrentUserModel>(user) });
+            return Result.Succeed(data: new { course = courseModel, user = mapper.Map<CurrentUserModel>(user) });
         }
 
 
@@ -235,53 +215,38 @@ namespace Academy.Server.Controllers
             var certificate = user.Certificates.FirstOrDefault(_ => _.CourseId == courseModel.Id);
             if (certificate == null)
             {
-                user.Certificates.Add(certificate = new Certificate { UserId = user.Id, CourseId = courseModel.Id });
+                user.Certificates.Add(certificate = new Certificate
+                {
+                    UserId = user.Id,
+                    CourseId = courseModel.Id,
+                    Number = DateTimeOffset.UtcNow.Year + Compute.GenerateNumber(8)
+                });
                 await unitOfWork.CreateAsync(certificate);
             }
 
             var certificateFields = new Dictionary<string, object>();
             certificateFields.Add("UserFullName", user.FullName);
             certificateFields.Add("CourseTitle", courseModel.Title);
+            certificateFields.Add("CourseStarted", courseModel.Started);
+            certificateFields.Add("CourseCompleted", courseModel.Completed);
+            certificateFields.Add("CertificateNumber", certificate.Number);
 
             using var certificateTemplateStream = await storageProvider.GetStreamAsync(courseModel.Entity.CertificateTemplate.Path);
-            using var certificateStream = new MemoryStream();
-            await documentProcessor.MergeAsync(certificateTemplateStream, certificateStream, certificateFields);
+            using var certificateMergedStream = new MemoryStream();
+            await documentProcessor.MergeAsync(certificateTemplateStream, certificateMergedStream, certificateFields);
 
-            async Task<Media> CreateMediaAsync(DocumentFormat format)
+            async Task<Media> CreateMedia(MediaType type, DocumentFormat format)
             {
-                var mediaName = $"{courseModel.Title} Certificate.{format.ToString().ToLower()}";
-                var mediaType = ((Func<MediaType>)(() =>
-                {
-                    return format switch
-                    {
-                        DocumentFormat.Doc or DocumentFormat.Docx => MediaType.Document,
-                        DocumentFormat.Jpg or DocumentFormat.Png => MediaType.Image,
-                        _ => MediaType.Other,
-                    };
-                }))();
-
-                var mediaPath = $"/media/certificates/{Guid.NewGuid()}{Path.GetExtension(mediaName)}".ToLower();
-
-                var fields = new Dictionary<string, string>();
-                fields.Add("UserName", user.FullName);
-                fields.Add("CourseTitle", courseModel.Title);
-
                 using var certificateStream = new MemoryStream();
-                // await documentProcessor.MergeAsync(certificateTemplateStream, certificateStream, format, fields);
-                await storageProvider.WriteAsync(mediaPath, certificateStream);
-
-                return new Media()
-                {
-                    Name = mediaName,
-                    Size = certificateStream.Length,
-                    Path = mediaPath,
-                    Type = mediaType,
-                    ContentType = MimeTypeMap.GetMimeType(mediaName)
-                };
+                await documentProcessor.ConvertAsync(certificateMergedStream, certificateStream, format);
+                var media = new Media(type, $"{courseModel.Title} Certificate.{format.ToString().ToLowerInvariant()}", certificateStream.Length);
+                await unitOfWork.CreateAsync(media);
+                await storageProvider.WriteAsync(media.Path, certificateStream);
+                return media;
             }
 
-            certificate.Document = await CreateMediaAsync(DocumentFormat.Pdf);
-            certificate.Image = await CreateMediaAsync(DocumentFormat.Jpg);
+            certificate.Document = await CreateMedia(MediaType.Document, DocumentFormat.Pdf);
+            certificate.Image = await CreateMedia(MediaType.Image, DocumentFormat.Jpg);
             await unitOfWork.UpdateAsync(certificate);
 
             return Result.Succeed(data: await GetModel(courseId));
@@ -295,7 +260,7 @@ namespace Academy.Server.Controllers
             var query = unitOfWork.Query<Course>().Include(_ => _.Image).AsQueryable();
 
             // If the user is has a manager role, Allow filtering by submission.
-            
+
             if ((user?.UserRoles.Any(_ => _.Role.Name == RoleNames.Teacher) ?? false))
             {
 
@@ -783,7 +748,7 @@ namespace Academy.Server.Controllers
         [NonAction]
         private async Task<CourseModel> GetModel(int? courseId, int? sectionId = null, int? lessonId = null, int? questionId = null)
         {
-            async Task<Course> GetEntity()
+            async Task<Course> GetCourse()
             {
                 var course = await unitOfWork.Query<Course>()
                     .Include(_ => _.User).ThenInclude(_ => _.Avatar)
@@ -840,12 +805,27 @@ namespace Academy.Server.Controllers
             }
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var course = await GetEntity();
+            var course = await GetCourse();
             var userCanManageCourse = user?.CanManageCourse(course) ?? false;
+
             if (course == null)
                 return null;
 
+            CourseStatus GetStatus(CourseStatus[] statuses)
+            {
+                return statuses.Any(status => status == CourseStatus.Started) ? CourseStatus.Started :
+                  statuses.All(status => status == CourseStatus.Completed) &&
+                  statuses.Any() ? CourseStatus.Completed : CourseStatus.Locked;
+            }
+
+            double GetProgress(CourseStatus[] statuses)
+            {
+                var complete = statuses.Count(status => status == CourseStatus.Completed);
+                return (Math.Round(complete / (double)Math.Max(statuses.Count(), 1), 2, MidpointRounding.ToZero));
+            };
+
             var started = true;
+
             var courseModel = mapper.Map<CourseModel>(course);
             courseModel.Entity = course;
             courseModel.Certificate = mapper.Map<CertificateModel>(user?.Certificates.FirstOrDefault(_ => _.CourseId == course.Id));
@@ -860,28 +840,16 @@ namespace Academy.Server.Controllers
                 sectionModel.Duration = section.Lessons.Select(_ => _.Duration).Sum();
                 sectionModel.Lessons = section.Lessons.Select(lesson =>
                 {
+                    var progress = user?.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Lesson && _.Id == lesson.Id);
+
                     var lessonModel = mapper.Map<LessonModel>(lesson);
                     lessonModel.Entity = lesson;
-
-                    var progress = user?.Progresses.FirstOrDefault(_ => _.Type == ProgressType.Lesson && _.Id == lesson.Id);
-
-                    if (progress != null)
-                    {
-                        lessonModel.Status = CourseStatus.Completed;
-                    }
-                    else
-                    {
-                        lessonModel.Status = started ? CourseStatus.Started : CourseStatus.Locked;
-                        started = false;
-                    }
-
                     lessonModel.Questions = lesson.Questions.Select(question =>
                     {
-                        var progress = user?.Progresses.FirstOrDefault(_ => _.Type == ProgressType.Question && _.Id == question.Id);
+                        var progress = user?.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Question && _.Id == question.Id);
 
                         var questionModel = mapper.Map<QuestionModel>(question);
                         questionModel.Entity = question;
-
                         questionModel.Answers = question.Answers.Select((answer, answerIndex) =>
                         {
                             var answerModel = mapper.Map<QuestionAnswerModel>(answer);
@@ -898,48 +866,52 @@ namespace Academy.Server.Controllers
                         else
                         {
                             questionModel.Choices = Array.Empty<bool>();
-                            questionModel.Status = started ? CourseStatus.Started : CourseStatus.Locked;
-                            started = false;
+                            questionModel.Status = CourseStatus.Locked;
                         }
 
                         return questionModel;
-
                     }).ToArray();
+                    lessonModel.Status = GetStatus(lessonModel.Questions.Select(question => question.Status)
+                        .Prepend(progress != null ? CourseStatus.Completed : CourseStatus.Locked).ToArray());
 
-                    var statuses = lessonModel.Questions.Select(_ => _.Status).Prepend(lessonModel.Status).ToArray();
+                    if (lessonModel.Status == CourseStatus.Locked && started)
+                    {
+                        lessonModel.Status = CourseStatus.Started;
+                        lessonModel.Questions.ForEach(questionModel =>
+                        {
+                            if (questionModel.Status == CourseStatus.Locked && started)
+                            {
+                                questionModel.Status = CourseStatus.Started;
+                                started = false;
+                            }
 
-                    lessonModel.Statuses = statuses;
-                    lessonModel.Status = statuses.Any(status => status == CourseStatus.Started) ? CourseStatus.Started :
-                                         statuses.All(status => status == CourseStatus.Completed) &&
-                                         statuses.Any() ? CourseStatus.Completed : CourseStatus.Locked;
+                        });
+                        started = false;
+                    }
 
-                    var complete = statuses.Count(status => status == CourseStatus.Completed);
-                    lessonModel.Progress = (Math.Round(complete / (double)Math.Max(statuses.Count(), 1), 2, MidpointRounding.ToZero));
                     return lessonModel;
-
                 }).ToArray();
 
+                var statuses = sectionModel.Lessons
+                .SelectMany(lessonModel => lessonModel.Questions.Select(questionModel => questionModel.Status).Prepend(lessonModel.Status))
+                .ToArray();
 
-                var statuses = sectionModel.Lessons.SelectMany(_ => _.Statuses).ToArray();
-                sectionModel.Status = statuses.Any(status => status == CourseStatus.Started) ? CourseStatus.Started :
-                                      statuses.All(status => status == CourseStatus.Completed) &&
-                                      statuses.Any() ? CourseStatus.Completed : CourseStatus.Locked;
-
-                var complete = statuses.Count(status => status == CourseStatus.Completed);
-                sectionModel.Progress = (Math.Round(complete / (double)Math.Max(statuses.Count(), 1), 2, MidpointRounding.ToZero));
+                sectionModel.Status = GetStatus(statuses);
+                sectionModel.Progress = GetProgress(statuses);
 
                 return sectionModel;
 
             }).ToArray();
 
+            courseModel.Started = user?.Progresses.Where(_ => _.CourseId == course.Id).OrderBy(_ => _.Started).FirstOrDefault()?.Started;
+            courseModel.Completed = user?.Progresses.Where(_ => _.CourseId == course.Id).OrderByDescending(_ => _.Completed).FirstOrDefault()?.Completed;
 
-            var statuses = courseModel.Sections.SelectMany(_ => _.Lessons).SelectMany(_ => _.Statuses).ToArray();
-            courseModel.Status = statuses.Any(status => status == CourseStatus.Started) ? CourseStatus.Started :
-                                  statuses.All(status => status == CourseStatus.Completed) &&
-                                  statuses.Any() ? CourseStatus.Completed : CourseStatus.Locked;
+            var statuses = courseModel.Sections.SelectMany(_ => _.Lessons)
+                .SelectMany(lessonModel => lessonModel.Questions.Select(questionModel => questionModel.Status).Prepend(lessonModel.Status))
+                .ToArray();
 
-            var complete = statuses.Count(status => status == CourseStatus.Completed);
-            courseModel.Progress = (Math.Round(complete / (double)Math.Max(statuses.Count(), 1), 2, MidpointRounding.ToZero));
+            courseModel.Status = GetStatus(statuses);
+            courseModel.Progress = GetProgress(statuses);
 
             return courseModel;
         }

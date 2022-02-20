@@ -75,7 +75,7 @@ namespace Academy.Server.Services
         {
             services.Configure(configure);
             services.AddMemoryCache();
-            services.AddScoped<ICacheManager, MemoryCacheManager>();
+            services.AddSingleton<ICacheManager, MemoryCacheManager>();
         }
     }
 }

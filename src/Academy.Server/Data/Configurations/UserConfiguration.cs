@@ -11,7 +11,7 @@ namespace Academy.Server.Data.Configurations
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.HasMany(_ => _.UserRoles).WithOne(_ => _.User).HasForeignKey(_ => _.UserId).IsRequired();
-            builder.Property(_ => _.Progresses).HasJsonValueConversion().HasDefaultValue(new List<Progress>());
+            builder.Property(_ => _.Progresses).HasJsonValueConversion().HasDefaultValue(new List<CourseProgress>());
         }
     }
 

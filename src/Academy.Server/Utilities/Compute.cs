@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Academy.Server.Utilities
 {
-    public static class ComputeHelper
+    public static class Compute
     {
         public static async Task<string> GenerateSlugAsync(string text, Func<string, Task<bool>> exists)
         {
@@ -111,6 +111,13 @@ namespace Academy.Server.Utilities
             var randomNumberBuffer = new byte[10];
             new RNGCryptoServiceProvider().GetBytes(randomNumberBuffer);
             return new Random(BitConverter.ToInt32(randomNumberBuffer, 0)).Next(min, max);
+        }
+
+        public static int GenerateNumber(int length)
+        {
+            var min = (int)Math.Pow(10, length - 1);
+            var max = (int)Math.Pow(10, length) - 1;
+            return GenerateNumber(min, max);
         }
 
         // source: How to make random string of numbers and letters with a length of 5? [duplicate]

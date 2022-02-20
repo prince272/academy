@@ -531,7 +531,7 @@ const CoursePage = withRemount(({ remount }) => {
                                         <div className={`svg-icon svg-icon-lg ${(course.status == 'completed') ? 'bg-soft-primary text-primary' : 'bg-light text-muted'} p-3 mb-3`}><BsAward /></div>
                                         <div className="flex-grow-1 mb-3">
                                             <div className="mb-2">{(course.status == 'completed') ? 'We are happy to present your certificate to you for completing this course.' : 'Complete the course to get a certificate. A certificate is a valuable way to prove what you\'ve learnt.'}</div>
-                                            <div className="hstack gap-2"><ProgressBar className="flex-grow-1" now={course.progress * 100} style={{ height: "6px" }} /><div>{course.progress * 100}%</div></div>
+                                            <div className="hstack gap-2"><ProgressBar className="flex-grow-1" now={(course.progress * 100).toFixed(0)} style={{ height: "6px" }} /><div>{(course.progress * 100).toFixed(0)}%</div></div>
                                         </div>
                                     </div>
                                     <div className="d-flex gap-3 justify-content-end w-100">
