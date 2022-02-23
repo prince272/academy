@@ -19,6 +19,7 @@ import { useSettings } from '../../utils/settings';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { cleanObject } from '../../utils/helpers';
 import { SvgWebSearchIllus } from '../../resources/images/illustrations';
+import Mounted from '../../components/Mounted';
 
 const CoursesPage = withRemount((props) => {
     const { remount } = props;
@@ -151,78 +152,79 @@ const CoursesPage = withRemount((props) => {
                     <div className="d-flex align-items-center py-2">
                         <div className="h3 mb-0">Courses</div>
                     </div>
-                    <ScrollMenu
-                        LeftArrow={(() => {
-                            const {
-                                isFirstItemVisible,
-                                scrollPrev,
-                                visibleItemsWithoutSeparators,
-                                initComplete
-                            } = useContext(VisibilityContext);
+                    <Mounted>
+                        <ScrollMenu
+                            LeftArrow={(() => {
+                                const {
+                                    isFirstItemVisible,
+                                    scrollPrev,
+                                    visibleItemsWithoutSeparators,
+                                    initComplete
+                                } = useContext(VisibilityContext);
 
-                            const [disabled, setDisabled] = useState(
-                                !initComplete || (initComplete && isFirstItemVisible)
-                            );
+                                const [disabled, setDisabled] = useState(
+                                    !initComplete || (initComplete && isFirstItemVisible)
+                                );
 
-                            useEffect(() => {
-                                // NOTE: detect if whole component visible
-                                if (visibleItemsWithoutSeparators.length) {
-                                    setDisabled(isFirstItemVisible);
+                                useEffect(() => {
+                                    // NOTE: detect if whole component visible
+                                    if (visibleItemsWithoutSeparators.length) {
+                                        setDisabled(isFirstItemVisible);
+                                    }
+                                }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
+
+                                return (<div className={`p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
+                            })}
+
+                            RightArrow={() => {
+                                const {
+                                    isLastItemVisible,
+                                    scrollNext,
+                                    visibleItemsWithoutSeparators
+                                } = useContext(VisibilityContext);
+
+                                // console.log({ isLastItemVisible });
+                                const [disabled, setDisabled] = useState(
+                                    !visibleItemsWithoutSeparators.length && isLastItemVisible
+                                );
+                                useEffect(() => {
+                                    if (visibleItemsWithoutSeparators.length) {
+                                        setDisabled(isLastItemVisible);
+                                    }
+                                }, [isLastItemVisible, visibleItemsWithoutSeparators]);
+
+
+                                return (<div className={`p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
+                            }}
+
+                            onWheel={(apiObj, ev) => {
+                                const isThouchpad = Math.abs(ev.deltaX) !== 0 || Math.abs(ev.deltaY) < 15;
+
+                                if (isThouchpad) {
+                                    ev.stopPropagation();
+                                    return;
                                 }
-                            }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
 
-                            return (<div className={`p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
-                        })}
-
-                        RightArrow={() => {
-                            const {
-                                isLastItemVisible,
-                                scrollNext,
-                                visibleItemsWithoutSeparators
-                            } = useContext(VisibilityContext);
-
-                            // console.log({ isLastItemVisible });
-                            const [disabled, setDisabled] = useState(
-                                !visibleItemsWithoutSeparators.length && isLastItemVisible
-                            );
-                            useEffect(() => {
-                                if (visibleItemsWithoutSeparators.length) {
-                                    setDisabled(isLastItemVisible);
+                                if (ev.deltaY < 0) {
+                                    apiObj.scrollNext();
+                                } else if (ev.deltaY > 0) {
+                                    apiObj.scrollPrev();
                                 }
-                            }, [isLastItemVisible, visibleItemsWithoutSeparators]);
+                            }}
 
-
-                            return (<div className={`p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
-                        }}
-
-                        onWheel={(apiObj, ev) => {
-                            const isThouchpad = Math.abs(ev.deltaX) !== 0 || Math.abs(ev.deltaY) < 15;
-
-                            if (isThouchpad) {
-                                ev.stopPropagation();
-                                return;
-                            }
-
-                            if (ev.deltaY < 0) {
-                                apiObj.scrollNext();
-                            } else if (ev.deltaY > 0) {
-                                apiObj.scrollPrev();
-                            }
-                        }}
-
-                        wrapperClassName="position-absolute w-100 h-75"
-                        scrollContainerClassName="h-100 mx-auto w-100">
-                        {scrollItems.map((ScrollItem, scrollItemIndex) => <ScrollItem key={`scroll-item-${scrollItemIndex}`} itemId={`scroll-item-${scrollItemIndex}`} />)}
-                    </ScrollMenu>
-
+                            wrapperClassName="position-absolute w-100 h-75"
+                            scrollContainerClassName="h-100 mx-auto w-100">
+                            {scrollItems.map((ScrollItem, scrollItemIndex) => <ScrollItem key={`scroll-item-${scrollItemIndex}`} itemId={`scroll-item-${scrollItemIndex}`} />)}
+                        </ScrollMenu>
+                    </Mounted>
                     {(!page || page.items.length) ? (
                         <InfiniteScroll
                             className="row g-3 pt-6 pe-auto h-100"
                             dataLength={page ? page.items.length : 0}
                             next={() => load({ ...searchParams, pageNumber: page ? (page.pageNumber + 1) : 1 }, true)}
-                            hasMore={page ? ((page.pageNumber + 1) <= page.totalPages) : true}
+                            hasMore={page ? ((page.pageNumber + 1) <= page.totalPages) : false}
                             loader={(loading ? (<Loader {...loading} />) : <></>)}>
-                            {page?.items.map((course) => {
+                            {page?.items.map((course, courseIndex) => {
                                 return (
                                     <div key={course.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
                                         <CourseItem course={course} />

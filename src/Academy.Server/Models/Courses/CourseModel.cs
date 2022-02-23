@@ -1,7 +1,9 @@
 ﻿using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Models.Accounts;
+using Academy.Server.Utilities;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
@@ -11,10 +13,7 @@ namespace Academy.Server.Models.Courses
 {
     public class CourseModel
     {
-
         public UserModel User { get; set; }
-
-        public int UserId { get; set; }
 
         public int Id { get; set; }
 
@@ -32,15 +31,17 @@ namespace Academy.Server.Models.Courses
 
         public MediaModel Image { get; set; }
 
+        public MediaModel CertificateTemplate { get; set; }
+
         public CertificateModel Certificate { get; set; }
 
-        public long Duration { get; set; }
+        public long? Duration { get; set; }
 
-        public double Progress { get; set; }
+        public double? Progress { get; set; }
 
         public SectionModel[] Sections { get; set; }
 
-        public CourseStatus Status { get; set; }
+        public CourseStatus? Status { get; set; }
 
         public decimal? Cost { get; set; }
 
@@ -51,7 +52,7 @@ namespace Academy.Server.Models.Courses
         public DateTimeOffset? Completed { get; set; }
 
         [JsonIgnore]
-        public Course Entity { get; set; }
+        public Course Course { get; set; }
     }
 
     public class SectionModel
@@ -64,16 +65,13 @@ namespace Academy.Server.Models.Courses
 
         public string Title { get; set; }
 
-        public double Progress { get; set; }
+        public double? Progress { get; set; }
 
-        public long Duration { get; set; }
+        public long? Duration { get; set; }
 
-        public CourseStatus Status { get; set; }
+        public CourseStatus? Status { get; set; }
 
         public LessonModel[] Lessons { get; set; }
-
-        [JsonIgnore]
-        public Section Entity { get; set; }
     }
 
     public class LessonModel
@@ -90,16 +88,11 @@ namespace Academy.Server.Models.Courses
 
         public MediaModel Media { get; set; }
 
-        public int? MediaId { get; set; }
-
         public long Duration { get; set; }
 
-        public CourseStatus Status { get; set; }
+        public CourseStatus? Status { get; set; }
 
         public QuestionModel[] Questions { get; set; }
-
-        [JsonIgnore]
-        public Lesson Entity { get; set; }
     }
 
     public class QuestionModel
@@ -114,16 +107,13 @@ namespace Academy.Server.Models.Courses
 
         public QuestionType Type { get; set; }
 
-        public CourseStatus Status { get; set; }
+        public CourseStatus? Status { get; set; }
 
         public long Duration { get; set; }
 
         public QuestionAnswerModel[] Answers { get; set; }
 
         public bool[] Choices { get; set; }
-
-        [JsonIgnore]
-        public Question Entity { get; set; }
     }
 
     public class QuestionAnswerModel
@@ -137,9 +127,6 @@ namespace Academy.Server.Models.Courses
         public string Text { get; set; }
 
         public bool? Checked { get; set; }
-
-        [JsonIgnore]
-        public QuestionAnswer Entity { get; set; }
     }
 
     public class MediaModel
@@ -147,8 +134,6 @@ namespace Academy.Server.Models.Courses
         public int Id { get; set; }
 
         public string Name { get; set; }
-
-        public string Path { get; set; }
 
         public MediaType Type { get; set; }
 
@@ -185,10 +170,12 @@ namespace Academy.Server.Models.Courses
 
     public class CourseModelProfile : Profile
     {
-        public CourseModelProfile()
+        public CourseModelProfile(IServiceProvider serviceProvider)
         {
-            CreateMap<Course, CourseModel>()
-                .ForMember(_ => _.Sections, _ => _.Ignore());
+            var httpContext = serviceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext;
+            var user = TaskHelper.RunSync(() => httpContext.GetCurrentUserAsync());
+            CreateMap<Course, CourseModel>().ForMember(_ => _.Cost,
+                _ => _.MapFrom(course => (user != null && user.CanManageCourse(course)) ? course.Cost : (decimal?)null));
         }
     }
 
@@ -196,8 +183,7 @@ namespace Academy.Server.Models.Courses
     {
         public SectionModelProfile()
         {
-            CreateMap<Section, SectionModel>()
-                .ForMember(_ => _.Lessons, _ => _.Ignore());
+            CreateMap<Section, SectionModel>();
         }
     }
 
@@ -205,8 +191,7 @@ namespace Academy.Server.Models.Courses
     {
         public LessonModelProfile()
         {
-            CreateMap<Lesson, LessonModel>()
-                .ForMember(_ => _.Questions, _ => _.Ignore());
+            CreateMap<Lesson, LessonModel>();
         }
     }
 
@@ -214,8 +199,7 @@ namespace Academy.Server.Models.Courses
     {
         public QuestionModelProfile()
         {
-            CreateMap<Question, QuestionModel>()
-                .ForMember(_ => _.Answers, _ => _.Ignore());
+            CreateMap<Question, QuestionModel>();
         }
     }
 
@@ -232,7 +216,7 @@ namespace Academy.Server.Models.Courses
         public MediaModelProfile(IServiceProvider serviceProvider)
         {
             var storageProvider = serviceProvider.GetRequiredService<IStorageProvider>();
-            CreateMap<OwnedMedia, MediaModel>()
+            CreateMap<Media, MediaModel>()
                 .ForMember(dest => dest.Url, opt => opt.MapFrom(src => storageProvider.GetUrl(src.Path)));
         }
     }

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { FilePond, registerPlugin } from 'react-filepond';
+import { FilePond, registerPlugin } from './filepond';
 import 'filepond/dist/filepond.min.css';
 
 import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation';

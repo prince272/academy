@@ -10,20 +10,6 @@ namespace Academy.Server.Data.Entities
 {
     public class Media : IEntity
     {
-        public Media(MediaType type, string name, long size)
-        {
-            Name = name;
-            Type = type;
-            Size = size;
-            ContentType = MimeTypeMap.GetMimeType(name);
-
-            var mediaTypeShortName = AttributeHelper.GetEnumAttribute<MediaType, DisplayAttribute>(type).ShortName;
-            Path = $"/media" +
-                          $"/{DateTimeOffset.UtcNow.Year}" +
-                          $"/{type.ToString().Pluralize().ToLowerInvariant()}" +
-                          $"/{mediaTypeShortName.ToUpperInvariant()}-{Compute.GenerateNumber(8)}{System.IO.Path.GetExtension(name).ToLowerInvariant()}";
-        }
-
         public Media()
         {
         }
@@ -40,36 +26,9 @@ namespace Academy.Server.Data.Entities
 
         public long? Duration { get; set; }
 
-        public long Size { get; set; }
+        public int? Width { get; set; }
 
-        public OwnedMedia AsOwned()
-        {
-            return new OwnedMedia
-            {
-                Id = Id,
-                Name = Name,
-                Path = Path,
-                Type = Type,
-                ContentType = ContentType,
-                Duration = Duration,
-                Size = Size
-            };
-        }
-    }
-
-    public class OwnedMedia
-    {
-        public int Id { get; set; }
-
-        public string Name { get; set; }
-
-        public string Path { get; set; }
-
-        public MediaType Type { get; set; }
-
-        public string ContentType { get; set; }
-
-        public long? Duration { get; set; }
+        public int? Height { get; set; }
 
         public long Size { get; set; }
     }

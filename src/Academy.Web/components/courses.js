@@ -17,7 +17,7 @@ import * as moment from 'moment';
 const CourseItem = ({ course }) => {
     const settings = useSettings();
     const client = useClient();
-    const editable = (client.user && ((client.user.roles.some(role => role == 'teacher') && client.user.id == course.userId) || client.user.roles.some(role => role == 'manager')));
+    const editable = (client.user && ((client.user.roles.some(role => role == 'teacher') && client.user.id == course.user.id) || client.user.roles.some(role => role == 'manager')));
 
     return (
         <div className="card shadow-sm">

@@ -18,6 +18,7 @@ import * as https from 'https';
 import * as fs from 'fs';
 
 import axios from 'axios';
+import { SSRProvider } from 'react-bootstrap';
 
 export default function MyApp({ Component, pageProps, settings }) {
 
@@ -32,24 +33,26 @@ export default function MyApp({ Component, pageProps, settings }) {
         <title>Academy - Home</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
       </Head>
-      <SettingsProvider {...{ settings }}>
-        <ClientProvider>
-          <DialogProvider>
-            <ModalProvider>
-              <div className="pt-8 pb-5 position-relative">
-                {pageSettings.showHeader && <Header />}
-                <Body>
-                  <Component {...pageProps} />
-                </Body>
-                {pageSettings.showFooter && <Footer />}
-              </div>
-              <Toaster position="top-center" reverseOrder={true} toastOptions={{
-                className: 'bg-light text-dark',
-              }} />
-            </ModalProvider>
-          </DialogProvider>
-        </ClientProvider>
-      </SettingsProvider>
+      <SSRProvider>
+        <SettingsProvider {...{ settings }}>
+          <ClientProvider>
+            <DialogProvider>
+              <ModalProvider>
+                <div className="pt-8 pb-5 position-relative">
+                  {pageSettings.showHeader && <Header />}
+                  <Body>
+                    <Component {...pageProps} />
+                  </Body>
+                  {pageSettings.showFooter && <Footer />}
+                </div>
+                <Toaster position="top-center" reverseOrder={true} toastOptions={{
+                  className: 'bg-light text-dark',
+                }} />
+              </ModalProvider>
+            </DialogProvider>
+          </ClientProvider>
+        </SettingsProvider>
+      </SSRProvider>
     </>
   );
 }

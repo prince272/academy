@@ -19,13 +19,19 @@ namespace Academy.Server.Data.Entities
 
         public int Bits { get; set; }
 
-        public OwnedMedia Avatar { get; set; }
+        public Media Avatar { get; set; }
 
         public List<CourseProgress> Progresses { get; set; } = new List<CourseProgress>();
 
         public ICollection<Certificate> Certificates { get; set; } = new List<Certificate>();
 
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+
+        public bool CanManageCourses()
+        {
+            var canManage = UserRoles.Any(_ => _.Role.Name == RoleNames.Manager) || UserRoles.Any(_ => _.Role.Name == RoleNames.Teacher);
+            return canManage;
+        }
 
         public bool CanManageCourse(Course course)
         {

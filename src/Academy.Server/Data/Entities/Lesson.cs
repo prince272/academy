@@ -18,7 +18,7 @@ namespace Academy.Server.Data.Entities
 
         public string Document { get; set; }
 
-        public OwnedMedia Media { get; set; }
+        public Media Media { get; set; }
 
         public long Duration { get; set; }
 

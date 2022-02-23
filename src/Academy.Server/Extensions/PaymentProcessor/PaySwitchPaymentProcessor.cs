@@ -28,7 +28,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
         private readonly HttpClient httpClient;
         private readonly ILogger<PaySwitchPaymentProcessor> logger;
         private readonly IUnitOfWork unitOfWork;
-        private readonly Settings appSettings;
+        private readonly AppSettings appSettings;
 
         public PaySwitchPaymentProcessor(IServiceProvider serviceProvider)
         {
@@ -41,7 +41,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
             httpClient.DefaultRequestHeaders.Add("Merchant-Id", paymentOptions.MerchantId);
             logger = serviceProvider.GetRequiredService<ILogger<PaySwitchPaymentProcessor>>();
             unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
-            appSettings = serviceProvider.GetRequiredService<IOptions<Settings>>().Value;
+            appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
         }
 
         public string Name => "PaySwitch";

@@ -19,34 +19,37 @@ const useClientProvider = () => {
     const [user, setUser] = useAsyncState(null);
     const [userContext, setUserContext] = useAsyncState(null);
 
-    const useApi = (apiSettings) => {
+    const requestConfig = {
+        baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+        paramsSerializer: params => {
+            return queryString.stringify(params)
+        },
+        withCredentials: true,
+        headers: (() => {
+            const accessToken = userContext?.access_token;
+            const headers = {
+                ...(!accessToken ? {} : { 'Authorization': `Bearer ${accessToken}` })
+            }
+            return headers;
+        })(),
+    };
 
-        const request = async (config) => {
-            config = Object.assign({}, {
-                baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
-                paramsSerializer: params => {
-                    return queryString.stringify(params)
-                },
-                withCredentials: true,
-                headers: (() => {
-                    const accessToken = userContext?.access_token;
-                    const headers = {
-                        ...(!accessToken ? {} : { 'Authorization': `Bearer ${accessToken}` })
-                    }
-                    return headers;
-                })(),
-            }, config);
+    const useApi = () => {
 
-            const api = axios.create(config);
+        const request = async ({ throwIfError, ...config }) => {
+            config = Object.assign({}, requestConfig, config);
 
-            if (!apiSettings.safeResponse) {
-                return (await api.request(config));
+            const httpClient = axios.create(config);
+
+            if (throwIfError) {
+                await loadUserManager();
+                return (await httpClient.request(config));
             }
             else {
 
                 try {
                     await loadUserManager();
-                    return (await api.request(config)).data;
+                    return (await httpClient.request(config)).data;
                 }
                 catch (ex) {
                     if (ex.response) {
@@ -81,17 +84,16 @@ const useClientProvider = () => {
         };
     }
 
-    const api = useApi({});
-
     const loadUserManager = async () => {
         const lock = userManagerLocker.createLock();
         try {
             await lock.promise;
 
             if (!userManagerRef.current) {
+                const httpClient = axios.create(requestConfig);
                 const currentSettings = settings || await (async () => {
                     const currentSettings = {
-                        client: (await api.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/clients/${clientId}`)).data
+                        client: (await httpClient.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/clients/${clientId}`)).data
                     };
                     setSettings(currentSettings);
                     return currentSettings;
@@ -131,12 +133,13 @@ const useClientProvider = () => {
     };
 
     const loadUserContext = async (context) => {
-        const currentUser = (await api.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/accounts/profile`)).data.data;
+        const httpClient = axios.create(requestConfig);
+        const currentUser = (await httpClient.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/accounts/profile`)).data.data;
         await setUser(currentUser);
         await setUserContext(context);
     };
 
-    const  unloadUserContext = async () => {
+    const unloadUserContext = async () => {
         await setUser(null);
         await setUserContext(null);
     };
@@ -177,10 +180,11 @@ const useClientProvider = () => {
         accessToken: userContext?.access_token,
 
         user: user,
-        updateUser: (user) => {
-            setUser(user);
+        reloadUser: async () => {
+            const httpClient = axios.create(requestConfig);
+            const currentUser = (await httpClient.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/accounts/profile`)).data.data;
+            await setUser(currentUser);
         },
-
         signin: async (state) => {
             let userManager = null
             try { userManager = await loadUserManager(); }
@@ -283,7 +287,7 @@ const useClientProvider = () => {
             }
         },
 
-        ...useApi({ safeResponse: true })
+        ...useApi()
     };
 };
 

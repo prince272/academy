@@ -10,6 +10,8 @@ import { Accordion } from 'react-bootstrap';
 import { ModalPathPrefix } from '../modals';
 import { useSettings } from '../utils/settings';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
+import Mounted from '../components/Mounted';
+
 const HomePage = () => {
   const settings = useSettings();
 
@@ -34,63 +36,65 @@ const HomePage = () => {
 
       <section id="subjects" className="bg-white">
         <div className="container py-5">
-          <ScrollMenu
-            LeftArrow={(() => {
-              const {
-                isFirstItemVisible,
-                scrollPrev,
-                visibleItemsWithoutSeparators,
-                initComplete
-              } = useContext(VisibilityContext);
+          <Mounted>
+            <ScrollMenu
+              LeftArrow={(() => {
+                const {
+                  isFirstItemVisible,
+                  scrollPrev,
+                  visibleItemsWithoutSeparators,
+                  initComplete
+                } = useContext(VisibilityContext);
 
-              const [disabled, setDisabled] = useState(
-                !initComplete || (initComplete && isFirstItemVisible)
-              );
+                const [disabled, setDisabled] = useState(
+                  !initComplete || (initComplete && isFirstItemVisible)
+                );
 
-              useEffect(() => {
-                // NOTE: detect if whole component visible
-                if (visibleItemsWithoutSeparators.length) {
-                  setDisabled(isFirstItemVisible);
-                }
-              }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
+                useEffect(() => {
+                  // NOTE: detect if whole component visible
+                  if (visibleItemsWithoutSeparators.length) {
+                    setDisabled(isFirstItemVisible);
+                  }
+                }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
 
-              return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
-            })}
+                return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
+              })}
 
-            RightArrow={() => {
-              const {
-                isLastItemVisible,
-                scrollNext,
-                visibleItemsWithoutSeparators
-              } = useContext(VisibilityContext);
+              RightArrow={() => {
+                const {
+                  isLastItemVisible,
+                  scrollNext,
+                  visibleItemsWithoutSeparators
+                } = useContext(VisibilityContext);
 
-              // console.log({ isLastItemVisible });
-              const [disabled, setDisabled] = useState(
-                !visibleItemsWithoutSeparators.length && isLastItemVisible
-              );
-              useEffect(() => {
-                if (visibleItemsWithoutSeparators.length) {
-                  setDisabled(isLastItemVisible);
-                }
-              }, [isLastItemVisible, visibleItemsWithoutSeparators]);
+                // console.log({ isLastItemVisible });
+                const [disabled, setDisabled] = useState(
+                  !visibleItemsWithoutSeparators.length && isLastItemVisible
+                );
+                useEffect(() => {
+                  if (visibleItemsWithoutSeparators.length) {
+                    setDisabled(isLastItemVisible);
+                  }
+                }, [isLastItemVisible, visibleItemsWithoutSeparators]);
 
 
-              return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
-            }}
-            wrapperClassName=""
-            scrollContainerClassName="">
-            {settings.courseSubjects.map((subject, index) => {
-              const colors = ["#d1102b", "#101620", "#135ec3", "#653c20", "#009843", "#056647", "#071f5d", "#783dbe"];
+                return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
+              }}
+              wrapperClassName=""
+              scrollContainerClassName="">
+              {settings.courseSubjects.map((subject, index) => {
+                const colors = ["#d1102b", "#101620", "#135ec3", "#653c20", "#009843", "#056647", "#071f5d", "#783dbe"];
 
-              return (
-                <Link href={{ pathname: "/courses", query: { subject: subject.value } }} key={`scroll-item-${index}`} itemId={`scroll-item-${index}`}>
-                  <a className="d-flex flex-colunm justify-content-center text-center text-white rounded p-3 mx-2" style={{ backgroundColor: colors[index % colors.length] }}>
-                    <div className="text-nowrap">{subject.name}</div>
-                  </a>
-                </Link>
-              );
-            })}
-          </ScrollMenu>
+                return (
+                  <Link href={{ pathname: "/courses", query: { subject: subject.value } }} key={`scroll-item-${index}`} itemId={`scroll-item-${index}`}>
+                    <a className="d-flex flex-colunm justify-content-center text-center text-white rounded p-3 mx-2" style={{ backgroundColor: colors[index % colors.length] }}>
+                      <div className="text-nowrap">{subject.name}</div>
+                    </a>
+                  </Link>
+                );
+              })}
+            </ScrollMenu>
+          </Mounted>
         </div>
       </section>
 

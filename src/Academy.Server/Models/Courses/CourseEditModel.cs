@@ -27,7 +27,7 @@ namespace Academy.Server.Models.Courses
     {
         public CourseEditValidator(IServiceProvider serviceProvider)
         {
-            var settings = serviceProvider.GetRequiredService<IOptions<Settings>>().Value;
+            var settings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
 
             RuleFor(_ => _.Title).NotEmpty();
 

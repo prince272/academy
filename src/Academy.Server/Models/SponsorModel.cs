@@ -30,7 +30,7 @@ namespace Academy.Server.Models
     {
         public SponsorValidator(IServiceProvider serviceProvider)
         {
-            var settings = serviceProvider.GetRequiredService<IOptions<Settings>>().Value;
+            var settings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
 
             RuleFor(_ => _.ContactName).NotEmpty();
             RuleFor(_ => _.ContactInfo).PhoneOrEmail();

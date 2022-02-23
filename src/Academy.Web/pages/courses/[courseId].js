@@ -415,7 +415,7 @@ const CoursePage = withRemount(({ remount }) => {
         }
     };
 
-    const preparePage = async () => {
+    const load = async () => {
 
         setLoading({});
 
@@ -432,7 +432,7 @@ const CoursePage = withRemount(({ remount }) => {
     };
 
     useEffect(() => {
-        preparePage();
+        load();
     }, []);
 
     useEffect(() => {
@@ -473,7 +473,7 @@ const CoursePage = withRemount(({ remount }) => {
 
     if (loading) return (<Loader {...loading} />);
 
-    const editable = (client.user && ((client.user.roles.some(role => role == 'teacher') && client.user.id == course.userId) || client.user.roles.some(role => role == 'manager')));
+    const editable = (client.user && ((client.user.roles.some(role => role == 'teacher') && client.user.id == course.user.id) || client.user.roles.some(role => role == 'manager')));
 
     return (
         <>
@@ -522,7 +522,7 @@ const CoursePage = withRemount(({ remount }) => {
                         <SectionList {...{ course, setCourse, toggler, editable }} />
                     </div>
 
-                    {course.certificateTemplateId && (
+                    {course.certificateTemplate && (
                         <div className="col-12 col-md-9 align-self-end">
                             <div className="card">
                                 <div className="card-body">

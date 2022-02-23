@@ -1,4 +1,5 @@
-﻿using Academy.Server.Data.Entities;
+﻿using Academy.Server.Data.Converters;
+using Academy.Server.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,7 +9,7 @@ namespace Academy.Server.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Post> builder)
         {
-            builder.OwnsOne(_ => _.Image);
+            builder.Property(_ => _.Image).HasJsonValueConversion(); ;
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Academy.Server.Controllers
     [ApiController]
     public class IndexController : ControllerBase
     {
-        private readonly Settings settings;
+        private readonly AppSettings appSettings;
         private readonly IEmailSender emailSender;
         private readonly EmailAccounts emailAccounts;
         private readonly IPaymentProcessor paymentProcessor;
@@ -30,7 +30,7 @@ namespace Academy.Server.Controllers
 
         public IndexController(IServiceProvider serviceProvider)
         {
-            settings = serviceProvider.GetRequiredService<IOptions<Settings>>().Value;
+            appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
             emailSender = serviceProvider.GetRequiredService<IEmailSender>();
             emailAccounts = serviceProvider.GetRequiredService<IOptions<EmailAccounts>>().Value;
             paymentProcessor = serviceProvider.GetRequiredService<IPaymentProcessor>();
@@ -66,8 +66,8 @@ namespace Academy.Server.Controllers
                 };
             });
             var CourseSorts = GetEnumerations<CourseSort>();
-            var Company = settings.Company;
-            var Currency = settings.Currency;
+            var Company = appSettings.Company;
+            var Currency = appSettings.Currency;
 
             return Result.Succeed(new
             {

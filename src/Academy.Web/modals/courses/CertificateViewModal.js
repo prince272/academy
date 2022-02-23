@@ -36,8 +36,7 @@ const CertificateViewModal = withRemount((props) => {
     const confetti = useConfetti();
     const client = useClient();
 
-    const prepareModal = async () => {
-
+    const load = async () => {
         setLoading(null);
     };
 
@@ -46,7 +45,6 @@ const CertificateViewModal = withRemount((props) => {
 
             setSubmitting(true);
             let result = await client.post(`/courses/${courseId}/certificate`);
-            setSubmitting(false);
 
             if (result.error) {
                 const error = result.error;
@@ -57,15 +55,17 @@ const CertificateViewModal = withRemount((props) => {
                 return;
             }
 
+            const course = (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data;
+            setSubmitting(false);
+
             confetti.fire();
-            
-            setCourse(result.data);
-            modal.events.emit(`editCourse`, result.data);
+            setCourse(course);
+            modal.events.emit(`editCourse`, course);
         })();
     };
 
     useEffect(() => {
-        prepareModal();
+        load();
     }, []);
 
     return (

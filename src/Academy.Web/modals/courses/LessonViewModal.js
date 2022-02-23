@@ -5,7 +5,7 @@ import { useForm, Controller as FormController } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 
-import { useConfetti, withRemount } from '../../utils/hooks';
+import { useAsyncState, useConfetti, withRemount } from '../../utils/hooks';
 import { arrayMove, preventDefault, stripHtml } from '../../utils/helpers';
 
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
@@ -285,14 +285,14 @@ const LessonViewModal = withRemount((props) => {
     const sectionId = route.query.sectionId;
     const lessonId = route.query.lessonId;
 
-    const [course, setCourse] = useState(null);
+    const [course, setCourse] = useAsyncState(null);
     const [lesson, setLesson] = useState(null);
     const [views, setViews] = useState([]);
     const [currentView, setCurrentView] = useState(null);
 
     const confetti = useConfetti();
 
-    const prepareModal = async () => {
+    const load = async () => {
         setLoading({});
 
         let result = await client.get(`/courses/${courseId}`);
@@ -327,7 +327,7 @@ const LessonViewModal = withRemount((props) => {
     };
 
     useEffect(() => {
-        prepareModal();
+        load();
     }, []);
 
     const moveBackward = () => {
@@ -358,10 +358,10 @@ const LessonViewModal = withRemount((props) => {
                 return;
             }
 
-            progress = result.data;
-            setCourse(progress.course);
-            modal.events.emit(`editCourse`, progress.course);
-            client.updateUser(progress.user);
+            const course = (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data;
+            modal.events.emit(`editCourse`, course); 
+            await setCourse(course);
+            await client.reloadUser();
         }
         else if (currentView._type == 'question' && (!currentView._submitted || (skip && !currentView._correctAnswer))) {
 
@@ -375,12 +375,12 @@ const LessonViewModal = withRemount((props) => {
                 return;
             }
 
-            progress = result.data;
-            setCourse(progress.course);
-            modal.events.emit(`editCourse`, progress.course);
-            client.updateUser(progress.user);
+            const course = (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data;
+            modal.events.emit(`editCourse`, course); 
+            await setCourse(course);
+            await client.reloadUser();
 
-            const question = progress.course.sections
+            const question = course.sections
                 .flatMap(section => section.lessons)
                 .flatMap(lesson => lesson.questions)
                 .find(_question => _question.id == currentView.id);
@@ -427,7 +427,7 @@ const LessonViewModal = withRemount((props) => {
 
             const isLastLesson = course.sections.flatMap(section => section.lessons).slice(-1)[0]?.id == lesson.id;
 
-            if (isLastLesson && course.certificateTemplateId) {
+            if (isLastLesson && course.certificateTemplate) {
                 modal.open(`/courses/${courseId}/certificate`, { course });
             }
             else {

@@ -27,14 +27,14 @@ namespace Academy.Server.Controllers
         private readonly IStorageProvider storageProvider;
         private readonly ICacheManager cacheManager;
         private readonly IUnitOfWork unitOfWork;
-        private readonly Settings settings;
+        private readonly AppSettings appSettings;
 
         public MediasController(IServiceProvider serviceProvider)
         {
             storageProvider = serviceProvider.GetRequiredService<IStorageProvider>();
             cacheManager = serviceProvider.GetRequiredService<ICacheManager>();
             unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
-            settings = serviceProvider.GetRequiredService<IOptions<Settings>>().Value;
+            appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
         }
 
         [Authorize(Roles = RoleNames.Teacher)]
@@ -48,7 +48,7 @@ namespace Academy.Server.Controllers
 
             var acceptExtensions = Request.Headers.GetCommaSeparatedValues("Accept-Extensions");
 
-            var mediaRule = settings.Media.Rules.FirstOrDefault(
+            var mediaRule = appSettings.Media.Rules.FirstOrDefault(
                 _ => _.Extensions.Intersect(acceptExtensions).Contains(Path.GetExtension(mediaName), StringComparer.InvariantCultureIgnoreCase));
 
             if (mediaRule == null)
@@ -58,8 +58,16 @@ namespace Academy.Server.Controllers
                 return Result.Failed(StatusCodes.Status400BadRequest, message: "The file size is too large.");
 
             var mediaType = mediaRule.Type;
-
-            var media = new Media(mediaType, mediaName, mediaSize);
+            var mediaPath = appSettings.Media.GetPath("uploads", mediaType, mediaName);
+        
+            var media = new Media
+            {
+                Name = mediaName,
+                Type = mediaType,
+                Path = mediaPath,
+                ContentType = MimeTypeMap.GetMimeType(mediaName),
+                Size = mediaSize
+            };
             await unitOfWork.CreateAsync(media);
 
             return Result.Succeed(media);

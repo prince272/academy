@@ -121,7 +121,7 @@ namespace Academy.Server.Controllers
             user.FirstName = form.FirstName;
             user.LastName = form.LastName;
             user.Bio = form.Bio;
-            user.Avatar = (await unitOfWork.FindAsync<Media>(form.AvatarId))?.AsOwned();
+            user.Avatar = (await unitOfWork.FindAsync<Media>(form.AvatarId));
 
             await unitOfWork.UpdateAsync(user);
 

@@ -14,7 +14,7 @@ namespace Academy.Server.Data.Entities
 
         public string Description { get; set; }
 
-        public OwnedMedia Image { get; set; }
+        public Media Image { get; set; }
 
         public DateTimeOffset Created { get; set; }
 

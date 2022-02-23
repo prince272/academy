@@ -12,8 +12,8 @@
 
         public int Number { get; set; }
 
-        public OwnedMedia Image { get; set; }
+        public Media Image { get; set; }
 
-        public OwnedMedia Document { get; set; }
+        public Media Document { get; set; }
     }
 }

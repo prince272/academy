@@ -32,6 +32,7 @@ using Newtonsoft.Json.Serialization;
 using Syncfusion.Licensing;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -55,7 +56,7 @@ namespace Academy.Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<Settings>(options =>
+            services.Configure<AppSettings>(options =>
             {
                 options.Media = new MediaSettings
                 {
@@ -66,6 +67,17 @@ namespace Academy.Server
                         new MediaRule(MediaType.Audio, new [] { ".mp3", ".ogg", ".wav" }, 83886080L), // Audio - 80MB
                         new MediaRule(MediaType.Document, new[] { ".doc", ".docx", ".rtf", ".pdf", ".json" }, 83886080L), // Document - 80MB
                     },
+                    GetPath = (string directoryName, MediaType mediaType, string mediaName) =>
+                    {
+                        var currentDateTime = DateTimeOffset.UtcNow;
+                        var mediaTypeShortName = AttributeHelper.GetEnumAttribute<MediaType, DisplayAttribute>(mediaType).ShortName;
+                        string path = $"/user-content" +
+                                      $"/{directoryName}" +
+                                      $"/{currentDateTime.Year}" +
+                                      $"/{mediaType.ToString().Pluralize().ToLowerInvariant()}" +
+                                      $"/{mediaTypeShortName.ToUpperInvariant()}-{currentDateTime:yyyyMMdd}-{Compute.GenerateNumber(8)}{System.IO.Path.GetExtension(mediaName).ToLowerInvariant()}";
+                        return path;
+                    }
                 };
 
                 options.Company = new CompanyInfo
@@ -167,7 +179,8 @@ namespace Academy.Server
                     builder.WithOrigins(Configuration.GetSection("AllowedOrigins").Get<string[]>())
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .AllowCredentials();
+                    .AllowCredentials()
+                    .WithExposedHeaders("Content-Disposition");
                 });
             });
 
@@ -232,7 +245,6 @@ namespace Academy.Server
 
                 // Configure the context to use Microsoft SQL Server.
                 options.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationAssembly));
-                options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
             });
 
             services.AddTransient<IUnitOfWork, UnitOfWork<AppDbContext>>();

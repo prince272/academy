@@ -10,11 +10,11 @@ namespace Academy.Server.Services
 {
     public class SharedService : ISharedService
     {
-        private readonly Settings settings;
+        private readonly AppSettings settings;
 
         public SharedService(IServiceProvider serviceProvider)
         {
-            settings = serviceProvider.GetRequiredService<IOptions<Settings>>().Value;
+            settings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
         }
 
         public ValueTask<long> CalculateDurationAsync(Lesson lesson)

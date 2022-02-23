@@ -19,7 +19,7 @@ const CoursesPage = withRemount((props) => {
     const [page, setPage] = useState(null);
     const client = useClient();
 
-    const preparePage = async () => {
+    const load = async () => {
         setLoading({});
 
         let result = await client.get(`/courses`);
@@ -35,7 +35,7 @@ const CoursesPage = withRemount((props) => {
     };
 
     useEffect(() => {
-        preparePage();
+        load();
     }, []);
 
     useEffect(() => {

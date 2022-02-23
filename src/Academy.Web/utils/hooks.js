@@ -185,4 +185,12 @@ export function useAsyncState(initialState) {
     return [state, setAsyncState];
 }
 
+export function useMounted() {
+    const mounted = React.useMemo(() => ({ current: true }), []);
+    React.useEffect(() => {
+      return () => { mounted.current = false}
+    }, [mounted]);
+    return mounted;
+  }
+
 export { default as useConfetti } from './useConfetti';

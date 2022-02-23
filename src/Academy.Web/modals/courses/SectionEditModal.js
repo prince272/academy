@@ -23,7 +23,7 @@ const SectionEditModal = withRemount((props) => {
 
     const client = useClient();
 
-    const prepareModal = async () => {
+    const load = async () => {
         if (action == 'edit') {
 
             setLoading({});
@@ -56,25 +56,28 @@ const SectionEditModal = withRemount((props) => {
                 'delete': () => client.delete(`/courses/${courseId}/sections/${sectionId}`)
             })[action]();
 
-            setSubmitting(false);
-
             if (result.error) {
+                setSubmitting(false);
+
                 const error = result.error;
-
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-
                 toast.error(error.message);
                 return;
             }
 
-            toast.success(`Section ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
-            modal.events.emit(`editCourse`, { id: courseId, ...result.data });
-            modal.close();
+            try {
+                modal.events.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
+            }
+            finally {
+                setSubmitting(false);
+                toast.success(`Section ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
+                modal.close();
+            }
         })();
     };
 
     useEffect(() => {
-        prepareModal();
+        load();
     }, []);
 
     if (loading) return (<Loader {...loading} />);

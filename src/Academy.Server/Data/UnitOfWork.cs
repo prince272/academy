@@ -23,9 +23,6 @@ namespace Academy.Server.Data
         {
             await context.AddRangeAsync(entities);
             await context.SaveChangesAsync();
-
-            foreach (var entity in entities)
-                context.Entry(entity).State = EntityState.Detached;
         }
 
         public Task CreateAsync<TEntity>(IEnumerable<TEntity> entities)
@@ -37,13 +34,8 @@ namespace Academy.Server.Data
         public async Task UpdateAsync<TEntity>(params TEntity[] entities)
             where TEntity : class, IEntity
         {
-            foreach (var entity in entities)
-                context.Entry(entity).State = EntityState.Modified;
-
+            context.UpdateRange(entities);
             await context.SaveChangesAsync();
-
-            foreach (var entity in entities)
-                context.Entry(entity).State = EntityState.Detached;
         }
 
         public async Task UpdateCollectionAsync<TEntity>(ICollection<TEntity> currentItems, ICollection<TEntity> newItems, Func<TEntity, int> keyFunc)

@@ -30,7 +30,7 @@ const CourseEditModal = withRemount((props) => {
 
     const client = useClient();
 
-    const prepareModal = async () => {
+    const load = async () => {
         if (action == 'edit') {
 
             setLoading({});
@@ -45,9 +45,9 @@ const CourseEditModal = withRemount((props) => {
             }
 
             form.reset({
-                ...result.data, 
+                ...result.data,
                 imageId: result.data.image?.id,
-                documentId:  result.data.document?.id,
+                certificateTemplateId: result.data.certificateTemplate?.id,
                 published: !!result.data.published
             });
             setLoading(null);
@@ -69,20 +69,28 @@ const CourseEditModal = withRemount((props) => {
                 'delete': () => client.delete(`/courses/${courseId}`)
             })[action]();
 
-            setSubmitting(false);
-
             if (result.error) {
+                setSubmitting(false);
+
                 const error = result.error;
-
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-
                 toast.error(error.message);
                 return;
             }
 
-            toast.success(`Course ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
-            modal.events.emit(`${action}Course`, { id: courseId, ...result.data });
-            modal.close();
+            try {
+                if (action == 'add' || action == 'edit') {
+                    modal.events.emit(`${action}Course`, (await client.get(`/courses/${result.data || courseId}`, { throwIfError: true })).data.data);
+                }
+                else if (action == 'delete') {
+                    modal.events.emit(`${action}Course`, { id: courseId });
+                }
+            } 
+            finally {
+                setSubmitting(false);
+                toast.success(`Course ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
+                modal.close();
+            }
         })();
     };
 
@@ -97,7 +105,7 @@ const CourseEditModal = withRemount((props) => {
     }, [action]);
 
     useEffect(() => {
-        prepareModal();
+        load();
     }, []);
 
     if (loading) return (<Loader {...loading} />);
@@ -119,7 +127,7 @@ const CourseEditModal = withRemount((props) => {
                             <label className="form-label">Subject</label>
                             <select {...form.register("subject")} className={`form-select  ${formState.errors.type ? 'is-invalid' : ''}`}>
                                 {settings.courseSubjects.map((subject) => (
-                                    <option value={subject.value}>{subject.name}</option>
+                                    <option key={subject.value} value={subject.value}>{subject.name}</option>
                                 ))}
                             </select>
                             <div className="invalid-feedback">{formState.errors.type?.message}</div>

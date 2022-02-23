@@ -16,6 +16,7 @@ import Loader from '../components/Loader';
 import { SvgAppWordmark, SvgFacebookLogo, SvgInstagramLogo, SvgLinkedinLogo, SvgTwitterLogo, SvgYoutubeLogo, SvgBitCube, SvgBitCubes } from '../resources/images/icons';
 import { BsPerson, BsPersonFill } from 'react-icons/bs';
 import { useSettings } from '../utils/settings';
+import Mounted from '../components/Mounted';
 
 const Header = () => {
     const client = useClient();
@@ -23,107 +24,117 @@ const Header = () => {
     const settings = useSettings();
 
     return (
-        <Navbar id="header" collapseOnSelect bg="white" variant="light" expand="md" className="fixed-top shadow-sm">
-            <div className="container">
-                <Link href="/" passHref>
-                    <Navbar.Brand className="me-auto">
-                        <div className="svg-icon"><SvgAppWordmark style={{ width: "auto", height: "2.5rem" }} /></div>
-                    </Navbar.Brand>
-                </Link>
+        <Mounted>
+            <Navbar id="header" collapseOnSelect bg="white" variant="light" expand="md" className="fixed-top shadow-sm">
+                <div className="container">
+                    <Link href="/" passHref>
+                        <Navbar.Brand className="me-auto">
+                            <div className="svg-icon"><SvgAppWordmark style={{ width: "auto", height: "2.5rem" }} /></div>
+                        </Navbar.Brand>
+                    </Link>
 
-                {client.user && (
-                    <>
-                        <Nav.Item className=" me-2 order-md-3">
-                            <OverlayTrigger trigger="click" rootClose placement="bottom" overlay={(popoverProps) => (
-                                <Popover {...popoverProps} arrowProps={{ style: { display: "none" } }}>
-                                    <Popover.Body>
-                                        <div className="text-center">
-                                            <div className="h5 mb-0">Your bits</div>
-                                            <div className="d-inline-flex align-items-center my-3"><div className="svg-icon-sm"><SvgBitCubes /></div><div className="ms-2 h5 mb-0">{client.user.bits}</div></div>
-                                            <div className="text-center text-muted small">Use them to unlock practice features. Keep learning every day to collect more!</div>
-                                        </div>
-
-                                        <hr />
-                                        <div className="h6 mb-3">How you may earn or lose bits:</div>
-                                        <div className="vstack gap-2 small">
-                                            {settings.currency.bitRules.map((bitRule) => {
-
-                                                return (
-                                                    <div key={bitRule.type} className="hstack gap-3 justify-content-between align-items-center text-nowrap">
-                                                        <div className="text-muted">{bitRule.description}</div>
-                                                        <div className="fw-bold text-nowrap">{(bitRule.value <= 0 ? "" : "+") + bitRule.value} {bitRule.value == 1 ? 'Bit' : 'Bits'}</div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </Popover.Body>
-                                </Popover>
-
-                            )}>
-                                <button className="btn btn-outline-secondary btn-no-focus border-0 p-2">
-                                    <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{client.user.bits}</div></div>
-                                </button>
-                            </OverlayTrigger>
-                        </Nav.Item>
-                    </>
-                )}
-                <Navbar.Toggle className="ms-0" />
-
-                <Navbar.Collapse className="flex-grow-0">
-                    <Nav>
-                        <Nav.Item>
-                            <Dropdown>
-                                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Courses</Dropdown.Toggle>
-
-                                <Dropdown.Menu>
-                                    <Link href={{ pathname: "/courses" }} passHref><Dropdown.Item>All</Dropdown.Item></Link>
-                                    {settings.courseSubjects.map((subject => (
-                                        <Link key={subject.value} href={{ pathname: "/courses", query: { subject: subject.value } }} passHref><Dropdown.Item>{subject.name}</Dropdown.Item></Link>
-                                    )))}
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        </Nav.Item>
-
-                        {client.user ? (
-                            <>
-                                <Nav.Item>
-                                    <Dropdown>
-                                        <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">
-                                            <div className="d-flex align-items-center justify-content-center">
-
-                                                {client.user.avatar ?
-                                                    (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={client.user.avatar.url} width={32} height={32} objectFit="cover" alt={`${client.user.firstName} ${client.user.lastName}`} />) :
-                                                    (
-                                                        <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "32px", height: "32px" }}>
-                                                            <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
-                                                        </div>
-                                                    )}
-                                                <div className="ms-2">{client.user.firstName}</div>
+                    {client.user && (
+                        <>
+                            <Nav.Item className=" me-2 order-md-3">
+                                <OverlayTrigger trigger="click" rootClose placement="bottom" overlay={(popoverProps) => (
+                                    <Popover {...popoverProps} arrowProps={{ style: { display: "none" } }}>
+                                        <Popover.Body>
+                                            <div className="text-center">
+                                                <div className="h5 mb-0">Your bits</div>
+                                                <div className="d-inline-flex align-items-center my-3"><div className="svg-icon-sm"><SvgBitCubes /></div><div className="ms-2 h5 mb-0">{client.user.bits}</div></div>
+                                                <div className="text-center text-muted small">Use them to unlock practice features. Keep learning every day to collect more!</div>
                                             </div>
-                                        </Dropdown.Toggle>
 
-                                        <Dropdown.Menu>
-                                            <Link href={`${ModalPathPrefix}/accounts/settings`} passHref><Dropdown.Item>Settings</Dropdown.Item></Link>
-                                            <Dropdown.Divider />
-                                            <Link href={`${ModalPathPrefix}/accounts/signout`} passHref><Dropdown.Item>Sign out</Dropdown.Item></Link>
-                                        </Dropdown.Menu>
-                                    </Dropdown>
-                                </Nav.Item>
-                            </>
-                        ) : (
-                            <>
-                                <Nav.Item>
-                                    <button type="button" className="btn btn-outline-secondary border-0 p-2 mb-2 mb-lg-0" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign in</button>
-                                </Nav.Item>
-                                <Nav.Item>
-                                    <button type="button" className="btn btn-primary border-0 p-2" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign up</button>
-                                </Nav.Item>
-                            </>
-                        )}
-                    </Nav>
-                </Navbar.Collapse>
-            </div>
-        </Navbar>
+                                            <hr />
+                                            <div className="h6 mb-3">How you may earn or lose bits:</div>
+                                            <div className="vstack gap-2 small">
+                                                {settings.currency.bitRules.map((bitRule) => {
+
+                                                    return (
+                                                        <div key={bitRule.type} className="hstack gap-3 justify-content-between align-items-center text-nowrap">
+                                                            <div className="text-muted">{bitRule.description}</div>
+                                                            <div className="fw-bold text-nowrap">{(bitRule.value <= 0 ? "" : "+") + bitRule.value} {bitRule.value == 1 ? 'Bit' : 'Bits'}</div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </Popover.Body>
+                                    </Popover>
+
+                                )}>
+                                    <button className="btn btn-outline-secondary btn-no-focus border-0 p-2">
+                                        <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{client.user.bits}</div></div>
+                                    </button>
+                                </OverlayTrigger>
+                            </Nav.Item>
+                        </>
+                    )}
+                    <Navbar.Toggle className="ms-0" />
+
+                    <Navbar.Collapse className="flex-grow-0">
+                        <Nav>
+                            <Nav.Item>
+                                <Dropdown>
+                                    <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">How it works</Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        <Link href="/teach" passHref><Dropdown.Item>For teachers</Dropdown.Item></Link>
+                                        <Link href="/" passHref><Dropdown.Item>For students</Dropdown.Item></Link>
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </Nav.Item>
+                            <Nav.Item>
+                                <Dropdown>
+                                    <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Courses</Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        <Link href={{ pathname: "/courses" }} passHref><Dropdown.Item>All</Dropdown.Item></Link>
+                                        {settings.courseSubjects.map((subject => (
+                                            <Link key={subject.value} href={{ pathname: "/courses", query: { subject: subject.value } }} passHref><Dropdown.Item>{subject.name}</Dropdown.Item></Link>
+                                        )))}
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            </Nav.Item>
+
+                            {client.user ? (
+                                <>
+                                    <Nav.Item>
+                                        <Dropdown>
+                                            <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">
+                                                <div className="d-flex align-items-center justify-content-center">
+
+                                                    {client.user.avatar ?
+                                                        (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={client.user.avatar.url} width={32} height={32} objectFit="cover" alt={`${client.user.firstName} ${client.user.lastName}`} />) :
+                                                        (
+                                                            <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "32px", height: "32px" }}>
+                                                                <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
+                                                            </div>
+                                                        )}
+                                                    <div className="ms-2">{client.user.firstName}</div>
+                                                </div>
+                                            </Dropdown.Toggle>
+
+                                            <Dropdown.Menu>
+                                                <Link href={`${ModalPathPrefix}/accounts/settings`} passHref><Dropdown.Item>Settings</Dropdown.Item></Link>
+                                                <Dropdown.Divider />
+                                                <Link href={`${ModalPathPrefix}/accounts/signout`} passHref><Dropdown.Item>Sign out</Dropdown.Item></Link>
+                                            </Dropdown.Menu>
+                                        </Dropdown>
+                                    </Nav.Item>
+                                </>
+                            ) : (
+                                <>
+                                    <Nav.Item>
+                                        <button type="button" className="btn btn-outline-secondary border-0 p-2 mb-2 mb-lg-0" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign in</button>
+                                    </Nav.Item>
+                                    <Nav.Item>
+                                        <button type="button" className="btn btn-primary border-0 p-2" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign up</button>
+                                    </Nav.Item>
+                                </>
+                            )}
+                        </Nav>
+                    </Navbar.Collapse>
+                </div>
+            </Navbar>
+        </Mounted>
     );
 };
 

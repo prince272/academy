@@ -33,7 +33,7 @@ namespace Academy.Server.Controllers
         private readonly IStorageProvider storageProvider;
         private readonly IDocumentProcessor documentProcessor;
         private readonly ISharedService sharedService;
-        private readonly Settings settings;
+        private readonly AppSettings appSettings;
 
         public CoursesController(IServiceProvider serviceProvider)
         {
@@ -42,14 +42,15 @@ namespace Academy.Server.Controllers
             storageProvider = serviceProvider.GetRequiredService<IStorageProvider>();
             documentProcessor = serviceProvider.GetRequiredService<IDocumentProcessor>();
             sharedService = serviceProvider.GetRequiredService<ISharedService>();
-            settings = serviceProvider.GetRequiredService<IOptions<Settings>>().Value;
+            appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpPost("/courses")]
         public async Task<IActionResult> Create([FromBody] CourseEditModel form)
         {
             var user = await HttpContext.GetCurrentUserAsync();
+            if (!user.CanManageCourses()) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var course = new Course();
             course.Title = form.Title;
@@ -58,31 +59,25 @@ namespace Academy.Server.Controllers
             course.Created = DateTimeOffset.UtcNow;
             course.Published = form.Published ? course.Published ?? DateTimeOffset.UtcNow : null;
             course.Cost = Math.Round(form.Cost, 2, MidpointRounding.AwayFromZero);
-
-            course.Image = (await unitOfWork.FindAsync<Media>(form.ImageId))?.AsOwned();
-            course.CertificateTemplate = (await unitOfWork.FindAsync<Media>(form.CertificateTemplateId))?.AsOwned();
-
+            course.Image = (await unitOfWork.FindAsync<Media>(form.ImageId));
+            course.CertificateTemplate = (await unitOfWork.FindAsync<Media>(form.CertificateTemplateId));
             course.UserId = user.Id; // Set the owner of the course.
 
             await unitOfWork.CreateAsync(course);
 
-            return Result.Succeed(data: await GetModel(course.Id));
+            return Result.Succeed(data: course.Id);
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpPut("/courses/{courseId}")]
         public async Task<IActionResult> Edit(int courseId, [FromBody] CourseEditModel form)
         {
-            var courseModel = (await GetModel(courseId));
-            var course = courseModel?.Entity;
-
-            if (course == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            var course = await unitOfWork.Query<Course>()
+                .FirstOrDefaultAsync(_ => _.Id == courseId);
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-
-            if (!user.CanManageCourse(course))
-                return Result.Failed(StatusCodes.Status400BadRequest);
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
 
             course.Title = form.Title;
             course.Subject = form.Subject;
@@ -90,63 +85,74 @@ namespace Academy.Server.Controllers
             course.Updated = DateTimeOffset.UtcNow;
             course.Published = form.Published ? course.Published ?? DateTimeOffset.UtcNow : null;
             course.Cost = Math.Round(form.Cost, 2, MidpointRounding.AwayFromZero);
-
-            course.Image = (await unitOfWork.FindAsync<Media>(form.ImageId))?.AsOwned();
-            course.CertificateTemplate = (await unitOfWork.FindAsync<Media>(form.CertificateTemplateId))?.AsOwned();
+            course.Image = (await unitOfWork.FindAsync<Media>(form.ImageId));
+            course.CertificateTemplate = (await unitOfWork.FindAsync<Media>(form.CertificateTemplateId));
 
             await unitOfWork.UpdateAsync(course);
 
-            return Result.Succeed(data: await GetModel(courseId));
+            return Result.Succeed();
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpDelete("/courses/{courseId}")]
         public async Task<IActionResult> Delete(int courseId)
         {
-            var courseModel = (await GetModel(courseId));
-            var course = courseModel?.Entity;
-
-            if (course == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            var course = await unitOfWork.Query<Course>()
+                .FirstOrDefaultAsync(_ => _.Id == courseId);
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-
-            if (!user.CanManageCourse(course))
-                return Result.Failed(StatusCodes.Status400BadRequest);
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
 
             await unitOfWork.DeleteAsync(course);
 
             return Result.Succeed();
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
-        [HttpDelete("/courses/{courseId}/export")]
-        public async Task<IActionResult> Export(int courseId)
-        {
-            var course = await unitOfWork.Query<Course>()
-                .Include(_ => _.Sections)
-                .FirstOrDefaultAsync(_ => _.Id == courseId);
-
-            if (course == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
-
-            var user = await HttpContext.GetCurrentUserAsync();
-
-            if (!user.CanManageCourse(course))
-                return Result.Failed(StatusCodes.Status400BadRequest);
-
-            return Result.Succeed();
-
-        }
-
         [HttpGet("/courses/{courseId}")]
         public async Task<IActionResult> Read(int courseId)
         {
-            var courseModel = await GetModel(courseId);
+            var courseModel = await GetCourseModel(courseId);
             if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             return Result.Succeed(data: courseModel);
         }
+
+        [HttpGet("/courses")]
+        public async Task<IActionResult> List(int pageNumber, int pageSize, [FromQuery] CourseSearchModel search)
+        {
+            var query = unitOfWork.Query<Course>();
+
+            var user = await HttpContext.GetCurrentUserAsync();
+
+            if (user != null && user.CanManageCourses())
+            {
+
+            }
+            else
+            {
+                query = query.Where(course => course.Published != null);
+            }
+
+
+            if (search?.UserId != null) query = query.Where(_ => _.Id == search.UserId);
+
+            if (search?.Subject != null) query = query.Where(_ => _.Subject == search.Subject);
+
+
+            var pageInfo = new PageInfo(await query.CountAsync(), pageNumber, pageSize);
+
+            query = (pageInfo.SkipItems > 0 ? query.Skip(pageInfo.SkipItems) : query).Take(pageInfo.PageSize);
+
+            var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async courseId => {
+                var course = await GetCourseModel(courseId);
+                if (course == null) throw new ArgumentException();
+                return course;
+            });
+
+            return Result.Succeed(data: TypeMerger.Merge(new { Items = pageItems }, pageInfo));
+        }
+
 
         [Authorize]
         [HttpPost("/courses/{courseId}/progress")]
@@ -167,7 +173,7 @@ namespace Academy.Server.Controllers
                 user.Progresses.Move(user.Progresses.IndexOf(questionProgress), 0);
             }
 
-            var courseModel = await GetModel(courseId);
+            var courseModel = await GetCourseModel(courseId);
             var lessonModel = courseModel.Sections.SelectMany(_ => _.Lessons).FirstOrDefault(_ => _.Id == form.LessonId);
             var questionModel = courseModel.Sections.SelectMany(_ => _.Lessons).SelectMany(_ => _.Questions).FirstOrDefault(_ => _.Id == form.QuestionId);
 
@@ -175,7 +181,7 @@ namespace Academy.Server.Controllers
             {
                 if (lessonProgress.Completed == null)
                 {
-                    user.Bits += settings.Currency.BitRules.First(_ => _.Type == BitRuleType.CompleteLesson).Value;
+                    user.Bits += appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.CompleteLesson).Value;
                     lessonProgress.Completed = DateTimeOffset.UtcNow;
                 }
             }
@@ -185,15 +191,15 @@ namespace Academy.Server.Controllers
                 if (questionProgress.Completed == null)
                 {
                     user.Bits += (questionModel.Choices.FirstOrDefault() ?
-                        settings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionCorrectly).Value :
-                        settings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionWrongly).Value);
+                        appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionCorrectly).Value :
+                        appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionWrongly).Value);
 
                     questionProgress.Completed = DateTimeOffset.UtcNow;
                 }
             }
 
             await unitOfWork.UpdateAsync(user);
-            return Result.Succeed(data: new { course = courseModel, user = mapper.Map<CurrentUserModel>(user) });
+            return Result.Succeed();
         }
 
 
@@ -203,12 +209,15 @@ namespace Academy.Server.Controllers
         {
             var user = await HttpContext.GetCurrentUserAsync();
 
-            var courseModel = await GetModel(courseId);
+            var courseModel = await GetCourseModel(courseId);
 
             if (courseModel == null)
                 return Result.Failed(StatusCodes.Status404NotFound);
 
             if (courseModel.Status != CourseStatus.Completed)
+                return Result.Failed(StatusCodes.Status400BadRequest);
+
+            if (courseModel.Course.CertificateTemplate == null)
                 return Result.Failed(StatusCodes.Status400BadRequest);
 
             var certificate = user.Certificates.FirstOrDefault(_ => _.CourseId == courseModel.Id);
@@ -230,65 +239,42 @@ namespace Academy.Server.Controllers
             certificateFields.Add("CourseCompleted", courseModel.Completed);
             certificateFields.Add("CertificateNumber", certificate.Number);
 
-            using var certificateTemplateStream = await storageProvider.GetStreamAsync(courseModel.Entity.CertificateTemplate.Path);
+            using var certificateTemplateStream = await storageProvider.GetStreamAsync(courseModel.Course.CertificateTemplate.Path);
             using var certificateMergedStream = new MemoryStream();
             await documentProcessor.MergeAsync(certificateTemplateStream, certificateMergedStream, certificateFields);
 
-            async Task<Media> CreateMedia(MediaType type, DocumentFormat format)
+            async Task<Media> CreateMedia(MediaType mediaType, DocumentFormat format)
             {
                 using var certificateStream = new MemoryStream();
                 await documentProcessor.ConvertAsync(certificateMergedStream, certificateStream, format);
-                var media = new Media(type, $"{courseModel.Title} Certificate.{format.ToString().ToLowerInvariant()}", certificateStream.Length);
-                await storageProvider.WriteAsync(media.Path, certificateStream);
+
+                var mediaName = $"{courseModel.Title} Certificate.{format.ToString().ToLowerInvariant()}";
+                var mediaPath = appSettings.Media.GetPath("certificates", mediaType, mediaName);
+
+                var media = new Media
+                {
+                    Name = mediaName,
+                    Type = mediaType,
+                    Path = mediaPath,
+                    ContentType = MimeTypeMap.GetMimeType(mediaName),
+                    Size = certificateStream.Length
+                };
+                await storageProvider.WriteAsync(mediaPath, certificateStream);
                 return media;
             }
 
-            certificate.Document = (await CreateMedia(MediaType.Document, DocumentFormat.Pdf)).AsOwned();
-            certificate.Image = (await CreateMedia(MediaType.Image, DocumentFormat.Jpg)).AsOwned();
+            certificate.Document = (await CreateMedia(MediaType.Document, DocumentFormat.Pdf));
+            certificate.Image = (await CreateMedia(MediaType.Image, DocumentFormat.Jpg));
             await unitOfWork.UpdateAsync(certificate);
 
-            return Result.Succeed(data: await GetModel(courseId));
+            return Result.Succeed();
         }
 
-        [HttpGet("/courses")]
-        public async Task<IActionResult> List(int pageNumber, int pageSize, [FromQuery] CourseSearchModel search)
-        {
-            var user = await HttpContext.GetCurrentUserAsync();
-
-            var query = unitOfWork.Query<Course>();
-
-            // If the user is has a manager role, Allow filtering by submission.
-
-            if ((user?.UserRoles.Any(_ => _.Role.Name == RoleNames.Teacher) ?? false))
-            {
-
-            }
-            else
-            {
-                query = query.Where(course => course.Published != null);
-            }
-
-
-            if (search?.UserId != null) query = query.Where(_ => _.Id == search.UserId);
-
-            if (search?.Subject != null) query = query.Where(_ => _.Subject == search.Subject);
-
-
-            var pageInfo = new PageInfo(await query.CountAsync(), pageNumber, pageSize);
-
-            query = (pageInfo.SkipItems > 0 ? query.Skip(pageInfo.SkipItems) : query).Take(pageInfo.PageSize);
-
-            var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async courseId => await GetModel(courseId));
-
-            return Result.Succeed(data: TypeMerger.Merge(new { Items = pageItems }, pageInfo));
-        }
-
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpPost("/courses/{courseId}/reorder")]
         public async Task<IActionResult> Reorder(int courseId, [FromBody] ReorderModel form)
         {
-            var courseModel = (await GetModel(courseId));
-            var course = courseModel?.Entity;
+            var course = (await GetCourseModel(courseId))?.Course;
 
             if (course == null)
                 return Result.Failed(StatusCodes.Status404NotFound);
@@ -405,20 +391,16 @@ namespace Academy.Server.Controllers
             return Result.Succeed();
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpPost("/courses/{courseId}/sections")]
         public async Task<IActionResult> Create(int courseId, [FromBody] SectionEditModel form)
         {
-            var courseModel = (await GetModel(courseId));
-            var course = courseModel?.Entity;
-
-            if (course == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            var course = await unitOfWork.Query<Course>()
+                .FirstOrDefaultAsync(_ => _.Id == courseId);
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-
-            if (!user.CanManageCourse(course))
-                return Result.Failed(StatusCodes.Status400BadRequest);
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var section = new Section();
             section.Title = form.Title;
@@ -426,212 +408,198 @@ namespace Academy.Server.Controllers
 
             await unitOfWork.CreateAsync(section);
 
-            return Result.Succeed(data: await GetModel(courseId));
+            return Result.Succeed(data: section.Id);
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpPut("/courses/{courseId}/sections/{sectionId}")]
         public async Task<IActionResult> Edit(int courseId, int sectionId, [FromBody] SectionEditModel form)
         {
-            var courseModel = (await GetModel(courseId, sectionId));
-            var course = courseModel?.Entity;
+            var section = await unitOfWork.Query<Section>().AsSingleQuery()
+                .Include(_ => _.Course)
+                .FirstOrDefaultAsync(_ => _.Id == sectionId);
+            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            if (course == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            var course = section.CourseId == courseId ? section.Course : null;
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-
-            if (!user.CanManageCourse(course))
-                return Result.Failed(StatusCodes.Status400BadRequest);
-
-            var section = course.Sections.FirstOrDefault(_ => _.Id == sectionId);
-
-            if (section == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
 
             section.Title = form.Title;
 
             await unitOfWork.UpdateAsync(section);
 
-            return Result.Succeed(data: await GetModel(courseId));
+            return Result.Succeed();
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpDelete("/courses/{courseId}/sections/{sectionId}")]
         public async Task<IActionResult> Delete(int courseId, int sectionId)
         {
-            var courseModel = (await GetModel(courseId, sectionId));
-            var course = courseModel?.Entity;
+            var section = await unitOfWork.Query<Section>().AsSingleQuery()
+                .Include(_ => _.Course)
+                .FirstOrDefaultAsync(_ => _.Id == sectionId);
+            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            if (course == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            var course = section.CourseId == courseId ? section.Course : null;
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-
-            if (!user.CanManageCourse(course))
-                return Result.Failed(StatusCodes.Status400BadRequest);
-
-            var section = course.Sections.FirstOrDefault(_ => _.Id == sectionId);
-
-            if (section == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
 
             await unitOfWork.DeleteAsync(section);
 
-            return Result.Succeed(data: await GetModel(courseId));
+            return Result.Succeed();
         }
 
+        [Authorize]
         [HttpGet("/courses/{courseId}/sections/{sectionId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId)
         {
-            var courseModel = await GetModel(courseId, sectionId);
-            var sectionModel = courseModel?.Sections.FirstOrDefault(_ => _.Id == sectionId);
-            if (sectionModel == null) return Result.Failed(StatusCodes.Status404NotFound);
-            return Result.Succeed(data: sectionModel);
+            var section = await unitOfWork.Query<Section>().AsSingleQuery()
+                .Include(_ => _.Course)
+                .FirstOrDefaultAsync(_ => _.Id == sectionId);
+            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var course = section.CourseId == courseId ? section.Course : null;
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var user = await HttpContext.GetCurrentUserAsync();
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
+
+            return Result.Succeed(data: mapper.Map<SectionModel>(section));
         }
 
-        [HttpGet("/courses/{courseId}/sections")]
-        public async Task<IActionResult> List(int courseId)
-        {
-            var courseModel = await GetModel(courseId);
-            if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
-            return Result.Succeed(data: courseModel.Sections);
-        }
 
-
-
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpPost("/courses/{courseId}/sections/{sectionId}/lessons")]
         public async Task<IActionResult> Create(int courseId, int sectionId, [FromBody] LessonEditModel form)
         {
-            var courseModel = (await GetModel(courseId, sectionId));
-            var course = courseModel?.Entity;
+            var section = await unitOfWork.Query<Section>().AsSingleQuery()
+                .Include(_ => _.Course)
+                .FirstOrDefaultAsync(_ => _.Id == sectionId);
+            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            if (course == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            var course = section.CourseId == courseId ? section.Course : null;
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-
-            if (!user.CanManageCourse(course))
-                return Result.Failed(StatusCodes.Status400BadRequest);
-
-
-            var section = course.Sections.FirstOrDefault(_ => _.Id == sectionId);
-
-            if (section == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var lesson = new Lesson();
             lesson.Title = form.Title;
             lesson.Document = Sanitizer.SanitizeHtml(form.Document);
-            lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId))?.AsOwned();
+            lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
             lesson.SectionId = section.Id;  // Set the owner of the lesson.
 
             lesson.Duration = await sharedService.CalculateDurationAsync(lesson);
 
             await unitOfWork.CreateAsync(lesson);
 
-            return Result.Succeed(data: await GetModel(courseId));
+            return Result.Succeed(data: lesson.Id);
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpPut("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}")]
         public async Task<IActionResult> Edit(int courseId, int sectionId, int lessonId, [FromBody] LessonEditModel form)
         {
-            var courseModel = (await GetModel(courseId, sectionId, lessonId));
-            var course = courseModel?.Entity;
+            var lesson = await unitOfWork.Query<Lesson>().AsSingleQuery()
+                .Include(_ => _.Questions.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .ThenInclude(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .Include(_ => _.Section).ThenInclude(_ => _.Course)
+                .FirstOrDefaultAsync(_ => _.Id == lessonId);
 
-            if (course == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var section = lesson.SectionId == sectionId ? lesson.Section : null;
+            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var course = lesson.Section.CourseId == courseId ? lesson.Section.Course : null;
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-
-            if (!user.CanManageCourse(course))
-                return Result.Failed(StatusCodes.Status400BadRequest);
-
-
-            var lesson = course.Sections.SelectMany(_ => _.Lessons).FirstOrDefault(_ => _.Id == lessonId);
-
-            if (lesson == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
 
             lesson.Title = form.Title;
             lesson.Document = Sanitizer.SanitizeHtml(form.Document);
-            lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId))?.AsOwned();
+            lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
 
             // Calculate lesson duration.
             lesson.Duration = await sharedService.CalculateDurationAsync(lesson);
 
             await unitOfWork.UpdateAsync(lesson);
 
-            return Result.Succeed(data: await GetModel(courseId));
+            return Result.Succeed();
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpDelete("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}")]
         public async Task<IActionResult> Delete(int courseId, int sectionId, int lessonId)
         {
-            var courseModel = (await GetModel(courseId, sectionId, lessonId));
-            var course = courseModel?.Entity;
+            var lesson = await unitOfWork.Query<Lesson>().AsSingleQuery()
+                .Include(_ => _.Questions.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .ThenInclude(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .Include(_ => _.Section).ThenInclude(_ => _.Course)
+                .FirstOrDefaultAsync(_ => _.Id == lessonId);
 
-            if (course == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var section = lesson.SectionId == sectionId ? lesson.Section : null;
+            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var course = lesson.Section.CourseId == courseId ? lesson.Section.Course : null;
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-
-            if (!user.CanManageCourse(course))
-                return Result.Failed(StatusCodes.Status400BadRequest);
-
-
-            var lesson = course.Sections.SelectMany(_ => _.Lessons).FirstOrDefault(_ => _.Id == lessonId);
-
-            if (lesson == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
 
             await unitOfWork.DeleteAsync(lesson);
 
-            return Result.Succeed(data: await GetModel(courseId));
+            return Result.Succeed();
         }
 
+        [Authorize]
         [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId)
         {
-            var courseModel = await GetModel(courseId, sectionId, lessonId);
-            var lessonModel = courseModel?.Sections.SelectMany(_ => _.Lessons).FirstOrDefault(_ => _.Id == lessonId);
-            if (lessonModel == null) return Result.Failed(StatusCodes.Status404NotFound);
-            return Result.Succeed(data: lessonModel);
+            var lesson = await unitOfWork.Query<Lesson>().AsSingleQuery()
+                .Include(_ => _.Questions.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .ThenInclude(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .Include(_ => _.Section).ThenInclude(_ => _.Course)
+                .FirstOrDefaultAsync(_ => _.Id == lessonId);
+
+            if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var section = lesson.SectionId == sectionId ? lesson.Section : null;
+            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var course = lesson.Section.CourseId == courseId ? lesson.Section.Course : null;
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            return Result.Succeed(data: mapper.Map<LessonModel>(lesson));
         }
 
-        [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons")]
-        public async Task<IActionResult> List(int courseId, int sectionId)
-        {
-            var courseModel = await GetModel(courseId, sectionId);
-            var sectionModel = courseModel?.Sections.FirstOrDefault(_ => _.Id == sectionId);
-            if (sectionModel == null) return Result.Failed(StatusCodes.Status404NotFound);
-            return Result.Succeed(data: sectionModel.Lessons);
-        }
-
-
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpPost("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions")]
         public async Task<IActionResult> Create(int courseId, int sectionId, int lessonId, [FromBody] QuestionEditModel form)
         {
-            var courseModel = (await GetModel(courseId, sectionId, lessonId));
-            var course = courseModel?.Entity;
+            var lesson = await unitOfWork.Query<Lesson>().AsSingleQuery()
+                .Include(_ => _.Questions.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .ThenInclude(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .Include(_ => _.Section).ThenInclude(_ => _.Course)
+                .FirstOrDefaultAsync(_ => _.Id == lessonId);
 
-            if (course == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var section = lesson.SectionId == sectionId ? lesson.Section : null;
+            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var course = lesson.Section.CourseId == courseId ? lesson.Section.Course : null;
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-
-            if (!user.CanManageCourse(course))
-                return Result.Failed(StatusCodes.Status400BadRequest);
-
-
-            var lesson = course.Sections.SelectMany(_ => _.Lessons).FirstOrDefault(_ => _.Id == lessonId);
-
-            if (lesson == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var question = new Question();
             question.Text = Sanitizer.SanitizeHtml(form.Text);
@@ -652,29 +620,30 @@ namespace Academy.Server.Controllers
             question.Duration = await sharedService.CalculateDurationAsync(question);
             await unitOfWork.UpdateAsync(question);
 
-            return Result.Succeed(data: await GetModel(courseId));
+            return Result.Succeed(data: question.Id);
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpPut("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions/{questionId}")]
         public async Task<IActionResult> Edit(int courseId, int sectionId, int lessonId, int questionId, [FromBody] QuestionEditModel form)
         {
-            var courseModel = (await GetModel(courseId, sectionId, lessonId, questionId));
-            var course = courseModel?.Entity;
+            var question = await unitOfWork.Query<Question>().AsSingleQuery()
+                .Include(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .Include(_ => _.Lesson).ThenInclude(_ => _.Section).ThenInclude(_ => _.Course)
+                .FirstOrDefaultAsync(_ => _.Id == questionId);
+            if (question == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            if (course == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            var lesson = question.LessonId == lessonId ? question.Lesson : null;
+            if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var section = question.Lesson.SectionId == sectionId ? question.Lesson.Section : null;
+            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var course = question.Lesson.Section.CourseId == courseId ? question.Lesson.Section.Course : null;
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-
-            if (!user.CanManageCourse(course))
-                return Result.Failed(StatusCodes.Status400BadRequest);
-
-
-            var question = course.Sections.SelectMany(_ => _.Lessons).SelectMany(_ => _.Questions).FirstOrDefault(_ => _.Id == questionId);
-
-            if (question == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
 
             question.Text = Sanitizer.SanitizeHtml(form.Text);
             question.Type = form.Type;
@@ -693,116 +662,113 @@ namespace Academy.Server.Controllers
             question.Duration = await sharedService.CalculateDurationAsync(question);
             await unitOfWork.UpdateAsync(question);
 
-            return Result.Succeed(data: await GetModel(courseId));
+            return Result.Succeed();
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize]
         [HttpDelete("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions/{questionId}")]
         public async Task<IActionResult> Delete(int courseId, int sectionId, int lessonId, int questionId)
         {
-            var courseModel = (await GetModel(courseId, sectionId, lessonId, questionId));
-            var course = courseModel?.Entity;
+            var question = await unitOfWork.Query<Question>().AsSingleQuery()
+                .Include(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .Include(_ => _.Lesson).ThenInclude(_ => _.Section).ThenInclude(_ => _.Course)
+                .FirstOrDefaultAsync(_ => _.Id == questionId);
+            if (question == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            if (course == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            var lesson = question.LessonId == lessonId ? question.Lesson : null;
+            if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var section = question.Lesson.SectionId == sectionId ? question.Lesson.Section : null;
+            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var course = question.Lesson.Section.CourseId == courseId ? question.Lesson.Section.Course : null;
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-
-            if (!user.CanManageCourse(course))
-                return Result.Failed(StatusCodes.Status400BadRequest);
-
-
-            var question = course.Sections.SelectMany(_ => _.Lessons).SelectMany(_ => _.Questions).FirstOrDefault(_ => _.Id == questionId);
-
-            if (question == null)
-                return Result.Failed(StatusCodes.Status404NotFound);
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
 
             await unitOfWork.DeleteAsync(question);
 
-            return Result.Succeed(data: await GetModel(courseId));
+            return Result.Succeed();
         }
 
+        [Authorize]
         [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions/{questionId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId, int questionId)
         {
-            var courseModel = await GetModel(courseId, sectionId, lessonId, questionId);
-            var questionModel = courseModel?.Sections.SelectMany(_ => _.Lessons).SelectMany(_ => _.Questions).FirstOrDefault(_ => _.Id == questionId);
-            if (questionModel == null) return Result.Failed(StatusCodes.Status404NotFound);
-            return Result.Succeed(data: questionModel);
-        }
+            var question = await unitOfWork.Query<Question>().AsSingleQuery()
+                .Include(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .Include(_ => _.Lesson).ThenInclude(_ => _.Section).ThenInclude(_ => _.Course)
+                .FirstOrDefaultAsync(_ => _.Id == questionId);
+            if (question == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-        [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions")]
-        public async Task<IActionResult> List(int courseId, int sectionId, int lessonId)
-        {
-            var courseModel = await GetModel(courseId, sectionId, lessonId);
-            var lessonModel = courseModel?.Sections.SelectMany(_ => _.Lessons).FirstOrDefault(_ => _.Id == lessonId);
-            if (lessonModel == null) return Result.Failed(StatusCodes.Status404NotFound);
-            return Result.Succeed(data: lessonModel.Questions);
+            var lesson = question.LessonId == lessonId ? question.Lesson : null;
+            if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var section = question.Lesson.SectionId == sectionId ? question.Lesson.Section : null;
+            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var course = question.Lesson.Section.CourseId == courseId ? question.Lesson.Section.Course : null;
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var user = await HttpContext.GetCurrentUserAsync();
+            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
+
+            return Result.Succeed(data: mapper.Map<QuestionModel>(question));
         }
 
 
         [NonAction]
-        private async Task<CourseModel> GetModel(int? courseId, int? sectionId = null, int? lessonId = null, int? questionId = null)
+        private async Task<CourseModel> GetCourseModel(int courseId)
         {
-            async Task<Course> GetCourse()
+            var course = await unitOfWork.Query<Course>().AsNoTrackingWithIdentityResolution()
+                                .Include(_ => _.User)
+                                .FirstOrDefaultAsync(_ => _.Id == courseId);
+
+            if (course == null) return null;
+
+            course.Sections = await unitOfWork.Query<Section>().AsNoTrackingWithIdentityResolution()
+                             .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
+                             .Where(_ => _.CourseId == course.Id)
+                             .ToListAsync();
+
+            foreach (var section in course.Sections)
             {
-                var course = await unitOfWork.Query<Course>()
-                    .Include(_ => _.User)
-                    .FirstOrDefaultAsync(_ => _.Id == courseId);
-
-                if (course != null)
-                {
-                    course.Sections = await unitOfWork.Query<Section>()
-                        .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
-                        .Where(_ => _.CourseId == course.Id)
-                        .ToListAsync();
-
-                    foreach (var section in course.Sections)
+                section.Lessons = await unitOfWork.Query<Lesson>().AsNoTrackingWithIdentityResolution()
+                    .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
+                    .Where(_ => _.SectionId == section.Id)
+                    .ProjectTo<Lesson>(new MapperConfiguration(config =>
                     {
-                        section.Lessons = await unitOfWork.Query<Lesson>()
-                            .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
-                            .Where(_ => _.SectionId == section.Id)
-                            .ProjectTo<Lesson>(new MapperConfiguration(config =>
-                            {
-                                var map = config.CreateMap<Lesson, Lesson>();
-                                map.ForMember(_ => _.Document, config => config.MapFrom(_ => _.Id == lessonId ? _.Document : null));
-                            })).ToListAsync();
+                        var map = config.CreateMap<Lesson, Lesson>();
+                        map.ForMember(_ => _.Document, config => config.Ignore());
+                    })).ToListAsync();
 
-                        foreach (var lesson in section.Lessons)
+                foreach (var lesson in section.Lessons)
+                {
+                    lesson.Questions = await unitOfWork.Query<Question>().AsNoTrackingWithIdentityResolution()
+                        .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
+                        .Where(_ => _.LessonId == lesson.Id)
+                        .ProjectTo<Question>(new MapperConfiguration(config =>
                         {
-                            lesson.Questions = await unitOfWork.Query<Question>()
-                                .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
-                                .Where(_ => _.LessonId == lesson.Id)
-                                .ProjectTo<Question>(new MapperConfiguration(config =>
-                                {
-                                    var map = config.CreateMap<Question, Question>();
-                                    map.ForMember(_ => _.Text, config => config.MapFrom(_ => _.LessonId == lessonId ? _.Text : null));
-                                })).ToListAsync();
+                            var map = config.CreateMap<Question, Question>();
+                        })).ToListAsync();
 
-                            foreach (var question in lesson.Questions)
+                    foreach (var question in lesson.Questions)
+                    {
+                        question.Answers = await unitOfWork.Query<QuestionAnswer>().AsNoTrackingWithIdentityResolution()
+                            .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
+                            .Where(_ => _.QuestionId == question.Id)
+                            .ProjectTo<QuestionAnswer>(new MapperConfiguration(config =>
                             {
-                                question.Answers = await unitOfWork.Query<QuestionAnswer>()
-                                    .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
-                                    .Where(_ => _.QuestionId == question.Id)
-                                    .ProjectTo<QuestionAnswer>(new MapperConfiguration(config =>
-                                    {
-                                        var map = config.CreateMap<QuestionAnswer, QuestionAnswer>();
-                                        map.ForMember(_ => _.Text, config => config.MapFrom(_ => _.Question.LessonId == lessonId ? _.Text : null));
-                                    })).ToListAsync();
-                            }
-                        }
+                                var map = config.CreateMap<QuestionAnswer, QuestionAnswer>();
+                                map.ForMember(_ => _.Text, config => config.Ignore());
+                            })).ToListAsync();
                     }
                 }
-
-                return course;
             }
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var course = await GetCourse();
             var userCanManageCourse = user?.CanManageCourse(course) ?? false;
-
-            if (course == null)
-                return null;
 
             CourseStatus GetStatus(CourseStatus[] statuses)
             {
@@ -820,32 +786,28 @@ namespace Academy.Server.Controllers
             var started = true;
 
             var courseModel = mapper.Map<CourseModel>(course);
-            courseModel.Entity = course;
+            courseModel.Course = course;
             courseModel.Certificate = mapper.Map<CertificateModel>(user?.Certificates.FirstOrDefault(_ => _.CourseId == course.Id));
-            courseModel.Cost = userCanManageCourse ? course.Cost : null;
             courseModel.Price = await sharedService.CalculatePriceAsync(course);
             courseModel.Duration = course.Sections.SelectMany(_ => _.Lessons).Select(_ => _.Duration).Sum();
             courseModel.Sections = course.Sections.Select(section =>
             {
                 var sectionModel = mapper.Map<SectionModel>(section);
-                sectionModel.Entity = section;
                 sectionModel.Duration = section.Lessons.Select(_ => _.Duration).Sum();
                 sectionModel.Lessons = section.Lessons.Select(lesson =>
                 {
                     var progress = user?.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Lesson && _.Id == lesson.Id);
 
                     var lessonModel = mapper.Map<LessonModel>(lesson);
-                    lessonModel.Entity = lesson;
                     lessonModel.Questions = lesson.Questions.Select(question =>
                     {
                         var progress = user?.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Question && _.Id == question.Id);
 
                         var questionModel = mapper.Map<QuestionModel>(question);
-                        questionModel.Entity = question;
+                        questionModel.Text = (userCanManageCourse || progress != null) ? question.Text : null;
                         questionModel.Answers = question.Answers.Select((answer, answerIndex) =>
                         {
                             var answerModel = mapper.Map<QuestionAnswerModel>(answer);
-                            answerModel.Entity = answer;
                             answerModel.Checked = (userCanManageCourse || progress != null) ? answer.Checked : null;
                             return answerModel;
                         }).ToArray();
@@ -864,7 +826,7 @@ namespace Academy.Server.Controllers
                         return questionModel;
                     }).ToArray();
                     lessonModel.Status = GetStatus(lessonModel.Questions.Select(question => question.Status)
-                        .Prepend(progress != null ? CourseStatus.Completed : CourseStatus.Locked).ToArray());
+                        .Prepend(progress != null ? CourseStatus.Completed : CourseStatus.Locked).Select(_ => _.Value).ToArray());
 
                     if (lessonModel.Status == CourseStatus.Locked && started)
                     {
@@ -886,7 +848,7 @@ namespace Academy.Server.Controllers
 
                 var statuses = sectionModel.Lessons
                 .SelectMany(lessonModel => lessonModel.Questions.Select(questionModel => questionModel.Status).Prepend(lessonModel.Status))
-                .ToArray();
+                .Select(_ => _.Value).ToArray();
 
                 sectionModel.Status = GetStatus(statuses);
                 sectionModel.Progress = GetProgress(statuses);
@@ -900,7 +862,7 @@ namespace Academy.Server.Controllers
 
             var statuses = courseModel.Sections.SelectMany(_ => _.Lessons)
                 .SelectMany(lessonModel => lessonModel.Questions.Select(questionModel => questionModel.Status).Prepend(lessonModel.Status))
-                .ToArray();
+                .Select(_ => _.Value).ToArray();
 
             courseModel.Status = GetStatus(statuses);
             courseModel.Progress = GetProgress(statuses);

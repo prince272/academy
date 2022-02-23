@@ -20,7 +20,7 @@ const EditProfileTab = ({ }) => {
     const [submitting, setSubmitting] = useState(false);
     const [loading, setLoading] = useState({});
 
-    const prepareModal = () => {
+    const load = () => {
         form.reset({
             ...client.user,
             avatarId: client.user.avatar?.id
@@ -47,12 +47,12 @@ const EditProfileTab = ({ }) => {
             }
 
             toast.success(`Profile saved.`);
-            client.updateUser(result.data);
+            await client.reloadUser();
         })();
     };
 
     useEffect(() => {
-        prepareModal();
+        load();
     }, []);
 
     return (
@@ -239,7 +239,7 @@ const ChangePasswordTab = ({ }) => {
     const [submitting, setSubmitting] = useState(false);
     const [loading, setLoading] = useState({});
 
-    const prepareModal = () => {
+    const load = () => {
         form.reset(client.user);
         setLoading(null);
     };
@@ -269,7 +269,7 @@ const ChangePasswordTab = ({ }) => {
     };
 
     useEffect(() => {
-        prepareModal();
+        load();
     }, []);
 
     return (

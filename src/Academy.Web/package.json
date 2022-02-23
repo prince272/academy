@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@stefanprobst/next-error-boundary": "^3.0.2",
     "@svgr/webpack": "^5.5.0",
     "axios": "^0.25.0",
     "axios-cache-interceptor": "^0.8.4",
@@ -17,6 +18,7 @@
     "cleave.js": "^1.6.0",
     "dompurify": "^2.3.4",
     "events": "^3.3.0",
+    "filepond": "^4.30.3",
     "filepond-plugin-image-exif-orientation": "^1.0.11",
     "filepond-plugin-image-preview": "^4.6.10",
     "filepond-plugin-media-preview": "^1.0.9",
@@ -41,7 +43,6 @@
     "react-countdown": "^2.3.2",
     "react-dialog-hook": "^0.0.7",
     "react-dom": "^17.0.2",
-    "react-filepond": "^7.1.1",
     "react-hook-form": "^7.24.0",
     "react-horizontal-scrolling-menu": "^2.7.0",
     "react-hot-toast": "^2.1.1",
