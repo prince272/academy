@@ -13,7 +13,7 @@ const serverOptions = {
 };
 
 app.prepare().then(() => {
-  createServer(serverOptions, (req, res) => {
+  createServer((req, res) => {
     const parsedUrl = parse(req.url, true);
     handle(req, res, parsedUrl);
   }).listen(port, (err) => {
