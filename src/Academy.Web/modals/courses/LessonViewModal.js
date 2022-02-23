@@ -344,8 +344,6 @@ const LessonViewModal = withRemount((props) => {
 
     const moveForward = async (skip) => {
 
-        let progress = null;
-
         if (currentView._type != 'question') {
 
             setSubmitting(true);

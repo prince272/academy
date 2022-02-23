@@ -8,6 +8,15 @@ import { withRemount } from '../utils/hooks';
 import { createEventDispatcher } from '../utils/helpers';
 import { useClient } from '../utils/client';
 
+const DefaultModalProps = {
+    centered: true,
+    scrollable: true,
+    size: 'md',
+    fullscreen: 'sm-down',
+    contentClassName: '',
+    backdrop: 'static'
+};
+
 const ModalPathPrefix = "/modal";
 
 const ModalContext = createContext({});
@@ -21,12 +30,7 @@ const useModalProvider = () => {
     const [loading, setLoading] = useState(true);
 
     const defaultModalProps = {
-        centered: true,
-        scrollable: true,
-        size: 'md',
-        fullscreen: 'sm-down',
-        contentClassName: '',
-        backdrop: 'static',
+        ...DefaultModalProps,
         onHide: () => modal.close(),
     };
     const [modalProps, setModalProps] = useState(defaultModalProps);
@@ -115,11 +119,6 @@ const useModalProvider = () => {
                     authenticate: true,
                 },
                 {
-                    pattern: `${ModalPathPrefix}/courses/:courseId/certificate`,
-                    promise: import('./courses/CertificateViewModal'),
-                    authenticate: true,
-                },
-                {
                     pattern: [`${ModalPathPrefix}/courses/:courseId/sections/:action(add)`, `${ModalPathPrefix}/courses/:courseId/sections/:sectionId/:action(edit|delete)`],
                     promise: import('./courses/SectionEditModal'),
                     authenticate: true,
@@ -193,6 +192,4 @@ const useModal = () => {
     return useContext(ModalContext);
 };
 
-
-
-export { ModalProvider, ModalConsumer, useModal, ModalPathPrefix };
+export { ModalProvider, ModalConsumer, useModal, ModalPathPrefix, DefaultModalProps };

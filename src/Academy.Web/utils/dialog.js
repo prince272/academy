@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useRef, useState } from "react";
 import { Modal } from "react-bootstrap";
 
-const ConfirmationViewComponent = ({ params, opended, close, dispose }) => {
+const ConfirmationDialog = ({ params, opended, close, dispose }) => {
 
     return (
         <Modal show={opended} onHide={() => close()} onExited={() => dispose()}>
@@ -57,7 +57,7 @@ const useDialogProvider = () => {
         params,
         result,
         open: (params, Component) => prepare(params, Component),
-        confirm: (params) => prepare(params, ConfirmationViewComponent),
+        confirm: (params) => prepare(params, ConfirmationDialog),
         close: close.current,
     };
 };
@@ -93,4 +93,4 @@ const useDialog = () => {
     return useContext(DialogContext);
 };
 
-export { DialogProvider, DialogConsumer, useDialog, ConfirmationViewComponent };
+export { DialogProvider, DialogConsumer, useDialog };

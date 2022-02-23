@@ -7,20 +7,17 @@ import Head from 'next/head';
 
 import _ from 'lodash';
 import { Toaster } from 'react-hot-toast';
-import { ClientProvider } from '../utils/client';
+import { ClientProvider, httpClient } from '../utils/client';
 import { ModalProvider } from '../modals';
 import { DialogProvider } from '../utils/dialog';
 import { Header, Body, Footer } from '../components';
 import { SettingsProvider } from '../utils/settings';
 
-import queryString from 'qs';
-import * as https from 'https';
-import * as fs from 'fs';
 
-import axios from 'axios';
+
 import { SSRProvider } from 'react-bootstrap';
 
-export default function MyApp({ Component, pageProps, settings }) {
+export default function MyApp({ Component, pageProps, appSettings }) {
 
   const pageSettings = Object.assign({}, {
     showHeader: true,
@@ -34,7 +31,7 @@ export default function MyApp({ Component, pageProps, settings }) {
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
       </Head>
       <SSRProvider>
-        <SettingsProvider {...{ settings }}>
+        <SettingsProvider {...{ settings: appSettings }}>
           <ClientProvider>
             <DialogProvider>
               <ModalProvider>
@@ -60,9 +57,13 @@ export default function MyApp({ Component, pageProps, settings }) {
 MyApp.getInitialProps = async (appContext) => {
   // calls page's `getInitialProps` and fills `appProps.pageProps`
   const appProps = await App.getInitialProps(appContext);
+  const httpResult = (await httpClient.get('/'));
 
-  const httpsAgent = new https.Agent({ rejectUnauthorized: false });
+  if (httpResult.error) {
+    const error = httpResult.error;
+    return { ...appProps, error };
+  }
 
-  appProps.settings = (await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}`, { httpsAgent })).data.data
-  return { ...appProps };
+  const appSettings = httpResult.data;
+  return { ...appProps, appSettings };
 };

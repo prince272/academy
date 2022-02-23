@@ -12,7 +12,7 @@ import { withRemount, useConfetti } from '../../utils/hooks';
 import Loader from '../../components/Loader';
 import { useClient } from '../../utils/client';
 import { BsAward, BsAwardFill, BsDownload, BsPatchCheckFill, BsShare } from 'react-icons/bs';
-
+import { DefaultModalProps, useModal } from '../';
 import {
     EmailShareButton, EmailIcon,
     FacebookShareButton, FacebookIcon,
@@ -22,54 +22,43 @@ import {
 
 } from "react-share";
 
-const CertificateViewModal = withRemount((props) => {
-    const { route, modal, remount } = props;
-    const [course, setCourse] = useState(props.course);
+
+const CertificateViewDialog = ({ params, opended, close, dispose }) => {
+    const [course, setCourse] = useState(params.course);
     const router = useRouter();
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
-    const [loading, setLoading] = useState({});
     const [submitting, setSubmitting] = useState(false);
-    const [action, setAction] = useState(route.query.action);
-    const courseId = route.query.courseId;
 
+    const modal = useModal();
     const confetti = useConfetti();
     const client = useClient();
-
-    const load = async () => {
-        setLoading(null);
-    };
 
     const submit = () => {
         form.handleSubmit(async (inputs) => {
 
             setSubmitting(true);
-            let result = await client.post(`/courses/${courseId}/certificate`);
+            let result = await client.post(`/courses/${course.id}/certificate`);
 
             if (result.error) {
+                setSubmitting(false);
+                
                 const error = result.error;
-
-
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
                 toast.error(error.message);
                 return;
             }
 
-            const course = (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data;
-            setSubmitting(false);
-
+            let _course = (await client.get(`/courses/${course.id}`, { throwIfError: true })).data.data;
+            setCourse(_course);
+            modal.events.emit(`editCourse`, _course);
             confetti.fire();
-            setCourse(course);
-            modal.events.emit(`editCourse`, course);
+            setSubmitting(false);
         })();
     };
 
-    useEffect(() => {
-        load();
-    }, []);
-
     return (
-        <>
+        <Modal {...DefaultModalProps} show={opended} onHide={() => close()} onExited={() => dispose()}>
             <Modal.Header closeButton>
                 <Modal.Title>{course.title} Certificate</Modal.Title>
             </Modal.Header>
@@ -133,8 +122,8 @@ const CertificateViewModal = withRemount((props) => {
                     </div>
                 </>
             </Modal.Body>
-        </>
+        </Modal>
     );
-});
+};
 
-export default CertificateViewModal;
+export default CertificateViewDialog;

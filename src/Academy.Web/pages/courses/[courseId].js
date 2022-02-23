@@ -19,6 +19,8 @@ import { withRemount } from '../../utils/hooks';
 import * as moment from 'moment';
 import * as Scroll from 'react-scroll';
 import { useSettings } from '../../utils/settings';
+import { useDialog } from '../../utils/dialog';
+import CertificateViewDialog from '../../modals/courses/CertificateViewDialog';
 
 const QuestionItem = ({ course, section, lesson, question, editable }) => {
     const client = useClient();
@@ -404,6 +406,8 @@ const CoursePage = withRemount(({ remount }) => {
     const settings = useSettings();
     const client = useClient();
 
+    const dialog = useDialog();
+
     const [toggles, SetToggles] = useState([]);
     const toggler = {
         in: (toggleId) => {
@@ -437,7 +441,7 @@ const CoursePage = withRemount(({ remount }) => {
 
     useEffect(() => {
         const handleEditCourse = (course) => {
-             setCourse(course);
+            setCourse(course);
         };
         const handleDeleteCourse = () => {
             router.replace('/courses');
@@ -535,7 +539,7 @@ const CoursePage = withRemount(({ remount }) => {
                                         </div>
                                     </div>
                                     <div className="d-flex gap-3 justify-content-end w-100">
-                                        <button className={`btn btn-${(course.status == 'completed') ? 'primary' : 'secondary'} px-5 w-100 w-sm-auto`} disabled={!(course.status == 'completed')} type="button" onClick={() => { modal.open(`${ModalPathPrefix}/courses/${courseId}/certificate`, { course }) }}>Get certificate</button>
+                                        <button className={`btn btn-${(course.status == 'completed') ? 'primary' : 'secondary'} px-5 w-100 w-sm-auto`} disabled={!(course.status == 'completed')} type="button" onClick={() => { dialog.open({ course }, CertificateViewDialog); }}>Get certificate</button>
                                     </div>
                                 </div>
                             </div>

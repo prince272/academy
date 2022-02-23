@@ -13,6 +13,7 @@
     "@svgr/webpack": "^5.5.0",
     "axios": "^0.25.0",
     "axios-cache-interceptor": "^0.8.4",
+    "axios-retry": "^3.2.4",
     "canvas-confetti": "^1.4.0",
     "change-case": "^4.1.2",
     "cleave.js": "^1.6.0",

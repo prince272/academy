@@ -5,6 +5,66 @@ import { AsyncLocker, createEventDispatcher } from './helpers';
 import queryString from 'qs';
 import { useAsyncState, useSessionState } from './hooks';
 import axios from 'axios';
+import * as https from 'https';
+
+const createHttpClient = (defaultConfig) => {
+    const httpsAgent = new https.Agent({ rejectUnauthorized: false });
+
+    defaultConfig = Object.assign({}, {
+        baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+        paramsSerializer: params => {
+            return queryString.stringify(params)
+        },
+        withCredentials: true,
+        httpsAgent,
+    }, defaultConfig);
+
+    const request = async ({ throwIfError, ...config }) => {
+        const http = axios.create(defaultConfig);
+        if (throwIfError) {
+            return (await http.request(config));
+        }
+        else {
+            try {
+                return (await http.request(config)).data;
+            }
+            catch (ex) {
+                console.warn(ex);
+
+                if (ex.response) {
+                    // client received an error response (5xx, 4xx)
+                    return ex.response.data;
+                }
+                else {
+                    // client never received a response, or request never left.
+
+                    const result = {
+                        error: {
+                            message: 'Oops! Something went wrong!',
+                            status: 503,
+                            details: {},
+                            reason: ex.request ? 'Client-side error' : 'Unknown error'
+                        }
+                    };
+
+                    return result;
+
+                }
+            }
+        }
+    };
+
+    return {
+        get: async (url, config) => await request({ ...config, method: 'get', url }),
+        delete: async (url, config) => await request({ ...config, method: 'delete', url }),
+        post: async (url, data, config) => await request({ ...config, method: 'post', url, data }),
+        put: async (url, data, config) => await request({ ...config, method: 'put', url, data }),
+        patch: async (url, data, config) => await request({ ...config, method: 'patch', url, data })
+    };
+};
+
+export const httpClient = createHttpClient();
+
 
 const useClientProvider = () => {
     const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;

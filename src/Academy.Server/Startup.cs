@@ -176,11 +176,11 @@ namespace Academy.Server
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    builder.WithOrigins(Configuration.GetSection("AllowedOrigins").Get<string[]>())
+                    builder
+                    .WithOrigins(Configuration.GetSection("AllowedOrigins").Get<string[]>())
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .AllowCredentials()
-                    .WithExposedHeaders("Content-Disposition");
+                    .AllowCredentials();
                 });
             });
 
