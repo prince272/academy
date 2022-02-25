@@ -113,9 +113,9 @@ namespace Academy.Server
                     BitRules = new List<BitRule>
                     {
                         new BitRule(BitRuleType.CompleteLesson, 10, "Complete a lesson"),
-                        new BitRule(BitRuleType.AnswerQuestionCorrectly, 5, "Answer question correctly"),
-                        new BitRule(BitRuleType.AnswerQuestionWrongly, -15, "Answer question wrongly"),
-                        new BitRule(BitRuleType.FindQuestionAnswer, -5, "Find question answer")
+                        new BitRule(BitRuleType.AnswerCorrectly, 5, "Answer question correctly"),
+                        new BitRule(BitRuleType.AnswerWrongly, -15, "Answer question wrongly"),
+                        new BitRule(BitRuleType.SkipQuestion, -5, "Skip question")
                     }
                 };
             });
@@ -309,10 +309,21 @@ namespace Academy.Server
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SameSite = SameSiteMode.None;
                 options.ExpireTimeSpan = TimeSpan.FromDays(360);
-
-                options.LoginPath = "/Identity/Account/Login";
-                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
                 options.SlidingExpiration = true;
+
+                // Not creating a new object since ASP.NET Identity has created
+                // one already and hooked to the OnValidatePrincipal event.
+                // See https://github.com/aspnet/AspNetCore/blob/5a64688d8e192cacffda9440e8725c1ed41a30cf/src/Identity/src/Identity/IdentityServiceCollectionExtensions.cs#L56
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    return Task.CompletedTask;
+                };
+                options.Events.OnRedirectToAccessDenied = context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    return Task.CompletedTask;
+                };
             });
 
             services.AddHostedService<StartupWorker>();

@@ -38,18 +38,6 @@ namespace Academy.Server.Data
             await context.SaveChangesAsync();
         }
 
-        public async Task UpdateCollectionAsync<TEntity>(ICollection<TEntity> currentItems, ICollection<TEntity> newItems, Func<TEntity, int> keyFunc)
-                    where TEntity : class, IEntity
-        {
-            var itemToDelete = currentItems.Where(currentItem => !newItems.Any(newItem => keyFunc(currentItem) == keyFunc(newItem))).ToList();
-            var itemsToUpdate = newItems.Where(newItem => currentItems.Any(currentItem => keyFunc(newItem) == keyFunc(currentItem))).ToList();
-            var itemsToCreate = newItems.Where(newItem => !currentItems.Any(currentItem => keyFunc(newItem) == keyFunc(currentItem))).ToList();
-
-            await DeleteAsync(itemToDelete);
-            await UpdateAsync(itemsToUpdate);
-            await CreateAsync(itemsToCreate);
-        }
-
         public Task UpdateAsync<TEntity>(IEnumerable<TEntity> entities)
             where TEntity : class, IEntity
         {
@@ -120,9 +108,6 @@ namespace Academy.Server.Data
             where TEntity : class, IEntity;
 
         Task UpdateAsync<TEntity>(params TEntity[] entities)
-            where TEntity : class, IEntity;
-
-        Task UpdateCollectionAsync<TEntity>(ICollection<TEntity> currentItems, ICollection<TEntity> newItems, Func<TEntity, int> keyFunc)
             where TEntity : class, IEntity;
 
         Task UpdateAsync<TEntity>(IEnumerable<TEntity> entities)

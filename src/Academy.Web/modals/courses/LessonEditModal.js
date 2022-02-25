@@ -9,9 +9,9 @@ import { preventDefault } from '../../utils/helpers';
 import { withRemount } from '../../utils/hooks';
 import MediaUploader, { MediaExtensions } from '../../components/MediaUploader';
 
-import DocumentEditor from '../../components/document-editor/DocumentEditor';
+import DocumentEditor from '../../components/DocumentEditor';
 import Loader from '../../components/Loader';
-
+import { useEventDispatcher } from '../../utils/eventDispatcher';
 import { useClient } from '../../utils/client';
 
 const LessonEditModal = withRemount((props) => {
@@ -26,6 +26,8 @@ const LessonEditModal = withRemount((props) => {
     const sectionId = route.query.sectionId;
     const lessonId = route.query.lessonId;
 
+    const eventDispatcher = useEventDispatcher();
+    
     const client = useClient();
 
     const load = async () => {
@@ -74,7 +76,7 @@ const LessonEditModal = withRemount((props) => {
             }
             
             try {
-                modal.events.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data); 
+                eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data); 
             }
             finally {
                 setSubmitting(false);

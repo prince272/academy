@@ -10,12 +10,12 @@ import { BsCardImage, BsThreeDots, BsPlus, BsBookHalf, BsClockFill } from 'react
 import TruncateMarkup from 'react-truncate-markup';
 import { Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import { ModalPathPrefix, useModal } from '../modals';
-import { useSettings } from '../utils/settings';
+import { useAppSettings } from '../utils/appSettings';
 
 import * as moment from 'moment';
 
 const CourseItem = ({ course }) => {
-    const settings = useSettings();
+    const appSettings = useAppSettings();
     const client = useClient();
     const editable = (client.user && ((client.user.roles.some(role => role == 'teacher') && client.user.id == course.user.id) || client.user.roles.some(role => role == 'manager')));
 
@@ -29,7 +29,7 @@ const CourseItem = ({ course }) => {
                 </AspectRatio>
             </div>
             <div className="card-body p-2 position-relative">
-                <div className="d-inline-block badge text-dark bg-soft-primary mb-2">{settings.courseSubjects.find(subject => course.subject == subject.value)?.name}</div>
+                <div className="d-inline-block badge text-dark bg-soft-primary mb-2">{appSettings.courseSubjects.find(subject => course.subject == subject.value)?.name}</div>
                 <div className="fs-6 mb-2" style={{ height: "48px" }}>
                     <TruncateMarkup lines={2}><div>{course.title}</div></TruncateMarkup>
                 </div>

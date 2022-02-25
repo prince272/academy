@@ -14,7 +14,8 @@ import { useClient } from '../../utils/client';
 import { withRemount } from '../../utils/hooks';
 import MediaUploader, { MediaExtensions } from '../../components/MediaUploader';
 import { BsInfoCircle } from 'react-icons/bs';
-import { useSettings } from '../../utils/settings';
+import { useAppSettings } from '../../utils/appSettings';
+import { useEventDispatcher } from '../../utils/eventDispatcher';
 
 const CourseEditModal = withRemount((props) => {
     const { route, modal, remount, updateModalProps } = props;
@@ -25,8 +26,8 @@ const CourseEditModal = withRemount((props) => {
     const [submitting, setSubmitting] = useState(false);
     const [action, setAction] = useState(route.query.action);
     const courseId = route.query.courseId;
-
-    const settings = useSettings();
+    const eventDispatcher = useEventDispatcher();
+    const appSettings = useAppSettings();
 
     const client = useClient();
 
@@ -80,10 +81,10 @@ const CourseEditModal = withRemount((props) => {
 
             try {
                 if (action == 'add' || action == 'edit') {
-                    modal.events.emit(`${action}Course`, (await client.get(`/courses/${result.data || courseId}`, { throwIfError: true })).data.data);
+                    eventDispatcher.emit(`${action}Course`, (await client.get(`/courses/${result.data || courseId}`, { throwIfError: true })).data.data);
                 }
                 else if (action == 'delete') {
-                    modal.events.emit(`${action}Course`, { id: courseId });
+                    eventDispatcher.emit(`${action}Course`, { id: courseId });
                 }
             } 
             finally {
@@ -126,7 +127,7 @@ const CourseEditModal = withRemount((props) => {
                         <div className="col-12 col-sm-6">
                             <label className="form-label">Subject</label>
                             <select {...form.register("subject")} className={`form-select  ${formState.errors.type ? 'is-invalid' : ''}`}>
-                                {settings.courseSubjects.map((subject) => (
+                                {appSettings.courseSubjects.map((subject) => (
                                     <option key={subject.value} value={subject.value}>{subject.name}</option>
                                 ))}
                             </select>
@@ -165,7 +166,7 @@ const CourseEditModal = withRemount((props) => {
                                 (<span>{form.watch('cost') != 0 ? 'paid' : 'free'}</span> course)
                             </label>
                             <div className="input-group input-group-merge">
-                                <div className="input-group-prepend input-group-text">{settings.currency.symbol}</div>
+                                <div className="input-group-prepend input-group-text">{appSettings.currency.symbol}</div>
                                 <FormController name="cost" control={form.control}
                                     render={({ field }) => {
                                         return (

@@ -4,14 +4,14 @@ import { Modal } from "react-bootstrap";
 const ConfirmationDialog = ({ params, opended, close, dispose }) => {
 
     return (
-        <Modal show={opended} onHide={() => close()} onExited={() => dispose()}>
+        <Modal show={opended} onHide={() => close.current()} onExited={() => dispose.current()}>
             <Modal.Header closeButton>
                 <Modal.Title>{params.title}</Modal.Title>
             </Modal.Header>
             <Modal.Body>{params.body}</Modal.Body>
             <Modal.Footer>
-                <button className="btn btn-secondary" onClick={() => close()} {...params.cancelButtonProps}>Cancel</button>
-                <button className="btn btn-primary" style={{ minWidth: "88px" }} onClick={() => close(true)} {...params.proceedButtonProps}>Proceed</button>
+                <button className="btn btn-secondary" onClick={() => close.current()} {...params.cancelButtonProps}>Cancel</button>
+                <button className="btn btn-primary" style={{ minWidth: "88px" }} onClick={() => close.current(true)} {...params.proceedButtonProps}>Proceed</button>
             </Modal.Footer>
         </Modal>
     );
@@ -49,7 +49,7 @@ const useDialogProvider = () => {
         });
     }, []);
 
-    const Component = ((view.Component && <view.Component {...{ opended, params, close: close.current, dispose: dispose.current }} />) || (<></>));
+    const Component = ((view.Component && <view.Component {...{ opended, params, close, dispose }} />) || (<></>));
 
     return {
         Component,

@@ -48,7 +48,7 @@ namespace Academy.Server.Services
                 * settings.Currency.BitRules.First(_ => _.Type == BitRuleType.CompleteLesson).Value;
 
             totalBits += course.Sections.SelectMany(_ => _.Lessons).SelectMany(_ => _.Questions).Count()
-                * settings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionCorrectly).Value;
+                * settings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerCorrectly).Value;
 
             var price = (course.Cost + settings.Currency.ConvertBitsToCurrencyValue(totalBits));
             return new ValueTask<decimal>(price);

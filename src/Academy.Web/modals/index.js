@@ -1,11 +1,10 @@
 import _ from 'lodash';
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import matchPath from '../utils/matchPath';
 import { Modal as BsModal } from 'react-bootstrap';
 import { withRemount } from '../utils/hooks';
-import { createEventDispatcher } from '../utils/helpers';
 import { useClient } from '../utils/client';
 
 const DefaultModalProps = {
@@ -37,7 +36,6 @@ const useModalProvider = () => {
 
     const modal = {
         loading,
-        events: useMemo(() => createEventDispatcher(), []),
         close: () => {
             setModalProps((modalProps) => ({ ...modalProps, onExited: () => setRoute(null), show: false }));
         },

@@ -1,5 +1,4 @@
 import DOMPurify from 'dompurify';
-import EventEmitter from 'events';
 import htmlToText from 'html-to-text';
 
 // What is the JavaScript version of sleep()?
@@ -31,13 +30,6 @@ export function cleanObject(obj) {
             .map(([k, v]) => [k, v === Object(v) ? removeEmpty(v) : v])
     );
 }
-
-
-// Write a custom event dispatcher in JavaScript?
-// source: https://stackoverflow.com/questions/31110706/write-a-custom-event-dispatcher-in-javascript/42751577
-export const createEventDispatcher = () => {
-    return new EventEmitter();
-};
 
 // Move an item from one position to another position.
 // source: https://stackoverflow.com/questions/5306680/move-an-array-element-from-one-array-position-to-another?rq=1

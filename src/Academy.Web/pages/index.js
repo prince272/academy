@@ -8,7 +8,7 @@ import { SvgBookLoverIllus, SvgOptionsIllus, SvgTeachingIllus, SvgCertificateIll
 import { AspectRatio } from 'react-aspect-ratio';
 import { Accordion } from 'react-bootstrap';
 import { ModalPathPrefix } from '../modals';
-import { useSettings } from '../utils/settings';
+import { useAppSettings } from '../utils/appSettings';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
 import Mounted from '../components/Mounted';
 
@@ -56,7 +56,7 @@ const ScrollRightArrow = () => {
 };
 
 const HomePage = () => {
-  const settings = useSettings();
+  const appSettings = useAppSettings();
 
   return (
     <>
@@ -86,7 +86,7 @@ const HomePage = () => {
 
               wrapperClassName=""
               scrollContainerClassName="">
-              {settings.courseSubjects.map((subject, index) => {
+              {appSettings.courseSubjects.map((subject, index) => {
                 const colors = ["#d1102b", "#101620", "#135ec3", "#653c20", "#009843", "#056647", "#071f5d", "#783dbe"];
 
                 return (

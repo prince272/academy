@@ -8,10 +8,13 @@ import { useRouter } from 'next/router';
 import { cleanObject, preventDefault } from '../../utils/helpers';
 import Countdown from 'react-countdown';
 import { useClient } from '../../utils/client';
+import { useAppSettings } from '../../utils/appSettings';
 
 const ChangeAccountModal = (props) => {
     const { route } = props;
     const router = useRouter();
+
+    const appSettings = useAppSettings();
 
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
@@ -85,7 +88,7 @@ const ChangeAccountModal = (props) => {
                     <div className="col-12">
                         <label className="form-label">Email or phone number</label>
                         <FormController name="username" control={form.control} render={({ field }) => {
-                            return (<PhoneInput disabled={codeSent} value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.username ? 'is-invalid' : ''}`} defaultCountry={settings.company.countryCode} />);
+                            return (<PhoneInput disabled={codeSent} value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.username ? 'is-invalid' : ''}`} defaultCountry={appSettings.company.countryCode} />);
                         }} />
                         <div className="invalid-feedback">{formState.errors.username?.message}</div>
 

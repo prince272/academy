@@ -23,6 +23,8 @@ import 'plyr-react/dist/plyr.css';
 import _ from 'lodash';
 import { useClient } from '../../utils/client';
 import { useDialog } from '../../utils/dialog';
+import CertificateViewDialog from './CertificateViewDialog';
+import { useEventDispatcher } from '../../utils/eventDispatcher';
 
 const LessonView = (props) => {
     const { lesson, setLesson } = props;
@@ -290,6 +292,8 @@ const LessonViewModal = withRemount((props) => {
     const [views, setViews] = useState([]);
     const [currentView, setCurrentView] = useState(null);
 
+    const eventDispatcher = useEventDispatcher();
+
     const confetti = useConfetti();
 
     const load = async () => {
@@ -357,7 +361,7 @@ const LessonViewModal = withRemount((props) => {
             }
 
             const course = (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data;
-            modal.events.emit(`editCourse`, course); 
+            eventDispatcher.emit(`editCourse`, course);
             await setCourse(course);
             await client.reloadUser();
         }
@@ -374,7 +378,7 @@ const LessonViewModal = withRemount((props) => {
             }
 
             const course = (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data;
-            modal.events.emit(`editCourse`, course); 
+            eventDispatcher.emit(`editCourse`, course);
             await setCourse(course);
             await client.reloadUser();
 
@@ -424,12 +428,10 @@ const LessonViewModal = withRemount((props) => {
         else {
 
             const isLastLesson = course.sections.flatMap(section => section.lessons).slice(-1)[0]?.id == lesson.id;
+            modal.close();
 
             if (isLastLesson && course.certificateTemplate) {
-                modal.open(`/courses/${courseId}/certificate`, { course });
-            }
-            else {
-                modal.close();
+                dialog.open({ course }, CertificateViewDialog);
             }
         }
     };

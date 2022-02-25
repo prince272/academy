@@ -15,126 +15,126 @@ import toast from 'react-hot-toast';
 import Loader from '../components/Loader';
 import { SvgAppWordmark, SvgFacebookLogo, SvgInstagramLogo, SvgLinkedinLogo, SvgTwitterLogo, SvgYoutubeLogo, SvgBitCube, SvgBitCubes } from '../resources/images/icons';
 import { BsPerson, BsPersonFill } from 'react-icons/bs';
-import { useSettings } from '../utils/settings';
+import { useAppSettings } from '../utils/appSettings';
 import Mounted from '../components/Mounted';
+import { useEventDispatcher } from '../utils/eventDispatcher';
 
 const Header = () => {
     const client = useClient();
     const router = useRouter();
-    const settings = useSettings();
+    const appSettings = useAppSettings();
 
     return (
-        <Mounted>
-            <Navbar id="header" collapseOnSelect bg="white" variant="light" expand="md" className="fixed-top shadow-sm">
-                <div className="container">
-                    <Link href="/" passHref>
-                        <Navbar.Brand className="me-auto">
-                            <div className="svg-icon"><SvgAppWordmark style={{ width: "auto", height: "2.5rem" }} /></div>
-                        </Navbar.Brand>
-                    </Link>
 
-                    {client.user && (
-                        <>
-                            <Nav.Item className=" me-2 order-md-3">
-                                <OverlayTrigger trigger="click" rootClose placement="bottom" overlay={(popoverProps) => (
-                                    <Popover {...popoverProps} arrowProps={{ style: { display: "none" } }}>
-                                        <Popover.Body>
-                                            <div className="text-center">
-                                                <div className="h5 mb-0">Your bits</div>
-                                                <div className="d-inline-flex align-items-center my-3"><div className="svg-icon-sm"><SvgBitCubes /></div><div className="ms-2 h5 mb-0">{client.user.bits}</div></div>
-                                                <div className="text-center text-muted small">Use them to unlock practice features. Keep learning every day to collect more!</div>
-                                            </div>
+        <Navbar id="header" collapseOnSelect bg="white" variant="light" expand="md" className="fixed-top shadow-sm">
+            <div className="container">
+                <Link href="/" passHref>
+                    <Navbar.Brand className="me-auto">
+                        <div className="svg-icon"><SvgAppWordmark style={{ width: "auto", height: "2.5rem" }} /></div>
+                    </Navbar.Brand>
+                </Link>
 
-                                            <hr />
-                                            <div className="h6 mb-3">How you may earn or lose bits:</div>
-                                            <div className="vstack gap-2 small">
-                                                {settings.currency.bitRules.map((bitRule) => {
+                {client.user && (
+                    <>
+                        <Nav.Item className=" me-2 order-md-3">
+                            <OverlayTrigger trigger="click" rootClose placement="bottom" overlay={(popoverProps) => (
+                                <Popover {...popoverProps} arrowProps={{ style: { display: "none" } }}>
+                                    <Popover.Body>
+                                        <div className="text-center">
+                                            <div className="h5 mb-0">Your bits</div>
+                                            <div className="d-inline-flex align-items-center my-3"><div className="svg-icon-sm"><SvgBitCubes /></div><div className="ms-2 h5 mb-0">{client.user.bits}</div></div>
+                                            <div className="text-center text-muted small">Use them to unlock practice features. Keep learning every day to collect more!</div>
+                                        </div>
 
-                                                    return (
-                                                        <div key={bitRule.type} className="hstack gap-3 justify-content-between align-items-center text-nowrap">
-                                                            <div className="text-muted">{bitRule.description}</div>
-                                                            <div className="fw-bold text-nowrap">{(bitRule.value <= 0 ? "" : "+") + bitRule.value} {bitRule.value == 1 ? 'Bit' : 'Bits'}</div>
+                                        <hr />
+                                        <div className="h6 mb-3">How you may earn or lose bits:</div>
+                                        <div className="vstack gap-2 small">
+                                            {appSettings.currency.bitRules.map((bitRule) => {
+
+                                                return (
+                                                    <div key={bitRule.type} className="hstack gap-3 justify-content-between align-items-center text-nowrap">
+                                                        <div className="text-muted">{bitRule.description}</div>
+                                                        <div className="fw-bold text-nowrap">{(bitRule.value <= 0 ? "" : "+") + bitRule.value} {bitRule.value == 1 ? 'Bit' : 'Bits'}</div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </Popover.Body>
+                                </Popover>
+
+                            )}>
+                                <button className="btn btn-outline-secondary btn-no-focus border-0 p-2">
+                                    <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{client.user.bits}</div></div>
+                                </button>
+                            </OverlayTrigger>
+                        </Nav.Item>
+                    </>
+                )}
+                <Navbar.Toggle className="ms-0" />
+
+                <Navbar.Collapse className="flex-grow-0">
+                    <Nav>
+                        <Nav.Item>
+                            <Dropdown>
+                                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">How it works</Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Link href="/teach" passHref><Dropdown.Item>For teachers</Dropdown.Item></Link>
+                                    <Link href="/" passHref><Dropdown.Item>For students</Dropdown.Item></Link>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </Nav.Item>
+                        <Nav.Item>
+                            <Dropdown>
+                                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Courses</Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Link href={{ pathname: "/courses" }} passHref><Dropdown.Item>All</Dropdown.Item></Link>
+                                    {appSettings.courseSubjects.map((subject => (
+                                        <Link key={subject.value} href={{ pathname: "/courses", query: { subject: subject.value } }} passHref><Dropdown.Item>{subject.name}</Dropdown.Item></Link>
+                                    )))}
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </Nav.Item>
+
+                        {client.user ? (
+                            <>
+                                <Nav.Item>
+                                    <Dropdown>
+                                        <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">
+                                            <div className="d-flex align-items-center justify-content-center">
+
+                                                {client.user.avatar ?
+                                                    (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={client.user.avatar.url} width={32} height={32} objectFit="cover" alt={`${client.user.firstName} ${client.user.lastName}`} />) :
+                                                    (
+                                                        <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "32px", height: "32px" }}>
+                                                            <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
                                                         </div>
-                                                    );
-                                                })}
+                                                    )}
+                                                <div className="ms-2">{client.user.firstName}</div>
                                             </div>
-                                        </Popover.Body>
-                                    </Popover>
+                                        </Dropdown.Toggle>
 
-                                )}>
-                                    <button className="btn btn-outline-secondary btn-no-focus border-0 p-2">
-                                        <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{client.user.bits}</div></div>
-                                    </button>
-                                </OverlayTrigger>
-                            </Nav.Item>
-                        </>
-                    )}
-                    <Navbar.Toggle className="ms-0" />
-
-                    <Navbar.Collapse className="flex-grow-0">
-                        <Nav>
-                            <Nav.Item>
-                                <Dropdown>
-                                    <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">How it works</Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                        <Link href="/teach" passHref><Dropdown.Item>For teachers</Dropdown.Item></Link>
-                                        <Link href="/" passHref><Dropdown.Item>For students</Dropdown.Item></Link>
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            </Nav.Item>
-                            <Nav.Item>
-                                <Dropdown>
-                                    <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Courses</Dropdown.Toggle>
-                                    <Dropdown.Menu>
-                                        <Link href={{ pathname: "/courses" }} passHref><Dropdown.Item>All</Dropdown.Item></Link>
-                                        {settings.courseSubjects.map((subject => (
-                                            <Link key={subject.value} href={{ pathname: "/courses", query: { subject: subject.value } }} passHref><Dropdown.Item>{subject.name}</Dropdown.Item></Link>
-                                        )))}
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            </Nav.Item>
-
-                            {client.user ? (
-                                <>
-                                    <Nav.Item>
-                                        <Dropdown>
-                                            <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">
-                                                <div className="d-flex align-items-center justify-content-center">
-
-                                                    {client.user.avatar ?
-                                                        (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={client.user.avatar.url} width={32} height={32} objectFit="cover" alt={`${client.user.firstName} ${client.user.lastName}`} />) :
-                                                        (
-                                                            <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "32px", height: "32px" }}>
-                                                                <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
-                                                            </div>
-                                                        )}
-                                                    <div className="ms-2">{client.user.firstName}</div>
-                                                </div>
-                                            </Dropdown.Toggle>
-
-                                            <Dropdown.Menu>
-                                                <Link href={`${ModalPathPrefix}/accounts/settings`} passHref><Dropdown.Item>Settings</Dropdown.Item></Link>
-                                                <Dropdown.Divider />
-                                                <Link href={`${ModalPathPrefix}/accounts/signout`} passHref><Dropdown.Item>Sign out</Dropdown.Item></Link>
-                                            </Dropdown.Menu>
-                                        </Dropdown>
-                                    </Nav.Item>
-                                </>
-                            ) : (
-                                <>
-                                    <Nav.Item>
-                                        <button type="button" className="btn btn-outline-secondary border-0 p-2 mb-2 mb-lg-0" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign in</button>
-                                    </Nav.Item>
-                                    <Nav.Item>
-                                        <button type="button" className="btn btn-primary border-0 p-2" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign up</button>
-                                    </Nav.Item>
-                                </>
-                            )}
-                        </Nav>
-                    </Navbar.Collapse>
-                </div>
-            </Navbar>
-        </Mounted>
+                                        <Dropdown.Menu>
+                                            <Link href={`${ModalPathPrefix}/accounts/settings`} passHref><Dropdown.Item>Settings</Dropdown.Item></Link>
+                                            <Dropdown.Divider />
+                                            <Link href={`${ModalPathPrefix}/accounts/signout`} passHref><Dropdown.Item>Sign out</Dropdown.Item></Link>
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+                                </Nav.Item>
+                            </>
+                        ) : (
+                            <>
+                                <Nav.Item>
+                                    <button type="button" className="btn btn-outline-secondary border-0 p-2 mb-2 mb-lg-0" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign in</button>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <button type="button" className="btn btn-primary border-0 p-2" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign up</button>
+                                </Nav.Item>
+                            </>
+                        )}
+                    </Nav>
+                </Navbar.Collapse>
+            </div>
+        </Navbar>
     );
 };
 
@@ -145,6 +145,7 @@ const Body = ({ children }) => {
     const client = useClient();
     const [pageLoading, setPageLoading] = useState(true);
     const modalUrlRef = useRef(null);
+    const eventDispatcher = useEventDispatcher();
 
     useEffect(() => {
 
@@ -169,18 +170,18 @@ const Body = ({ children }) => {
             toast.error('Unable to sign out from account.');
         };
 
-        client.events.on('signinComplete', handleSigninComplete);
-        client.events.on('signinError', handleSigninError);
+        eventDispatcher.on('signinComplete', handleSigninComplete);
+        eventDispatcher.on('signinError', handleSigninError);
 
-        client.events.on('signoutComplete', handleSignoutComplete);
-        client.events.on('signoutError', handleSignoutError);
+        eventDispatcher.on('signoutComplete', handleSignoutComplete);
+        eventDispatcher.on('signoutError', handleSignoutError);
 
         return () => {
-            client.events.off('signinComplete', handleSigninComplete);
-            client.events.off('signinError', handleSigninError);
+            eventDispatcher.off('signinComplete', handleSigninComplete);
+            eventDispatcher.off('signinError', handleSigninError);
 
-            client.events.off('signoutComplete', handleSignoutComplete);
-            client.events.off('signoutError', handleSignoutError);
+            eventDispatcher.off('signoutComplete', handleSignoutComplete);
+            eventDispatcher.off('signoutError', handleSignoutError);
         };
     }, [client, router]);
 
@@ -231,7 +232,7 @@ const Body = ({ children }) => {
     return (
         <>
             {children}
-            {(client.loading || modal.loading) && (
+            {(client.loading || modal.loading || pageLoading) && (
                 <Loader className="position-fixed top-50 start-50 translate-middle bg-white" style={{ zIndex: 2000 }} />
             )}
         </>
@@ -239,7 +240,7 @@ const Body = ({ children }) => {
 };
 
 const Footer = () => {
-    const settings = useSettings();
+    const appSettings = useAppSettings();
 
     return (
         <footer id="footer" className="text-center bg-dark text-white py-2">
@@ -255,39 +256,39 @@ const Footer = () => {
             </div>
             <div>
                 <div className="container d-flex flex-wrap justify-content-center justify-content-md-between py-3">
-                    <div className="mb-3">Copyright © 2021 - 2022 Academy of ours. All rights reserved</div>
+                    <div className="mb-3">Copyright © {new Date().getFullYear()} Academy of ours. All rights reserved</div>
                     <div className="hstack gap-2 d-inline-flex mb-3">
-                        {settings.company.facebookLink && (
+                        {appSettings.company.facebookLink && (
                             <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Check out our facebook</Tooltip>}>
-                                <a href={settings.company.facebookLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
+                                <a href={appSettings.company.facebookLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
                                     <span className="svg-icon svg-icon-xs"><SvgFacebookLogo /></span>
                                 </a>
                             </OverlayTrigger>
                         )}
-                        {settings.company.instagramLink && (
+                        {appSettings.company.instagramLink && (
                             <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Join our instagram</Tooltip>}>
-                                <a href={settings.company.instagramLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
+                                <a href={appSettings.company.instagramLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
                                     <span className="svg-icon svg-icon-xs"><SvgInstagramLogo /></span>
                                 </a>
                             </OverlayTrigger>
                         )}
-                        {settings.company.linkedinLink && (
+                        {appSettings.company.linkedinLink && (
                             <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Follow us on Linkedin</Tooltip>}>
-                                <a href={settings.company.linkedinLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
+                                <a href={appSettings.company.linkedinLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
                                     <span className="svg-icon svg-icon-xs"><SvgLinkedinLogo /></span>
                                 </a>
                             </OverlayTrigger>
                         )}
-                        {settings.company.twitterLink && (
+                        {appSettings.company.twitterLink && (
                             <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>See what we tweet about</Tooltip>}>
-                                <a href={settings.company.linkedinLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
+                                <a href={appSettings.company.linkedinLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
                                     <span className="svg-icon svg-icon-xs"><SvgTwitterLogo /></span>
                                 </a>
                             </OverlayTrigger>
                         )}
-                        {settings.company.youtubeLink && (
+                        {appSettings.company.youtubeLink && (
                             <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Watch our Youtube</Tooltip>}>
-                                <a href={settings.company.youtubeLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
+                                <a href={appSettings.company.youtubeLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
                                     <span className="svg-icon svg-icon-xs"><SvgYoutubeLogo /></span>
                                 </a>
                             </OverlayTrigger>

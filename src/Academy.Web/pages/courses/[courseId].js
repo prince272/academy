@@ -18,9 +18,10 @@ import { pascalCase } from 'change-case';
 import { withRemount } from '../../utils/hooks';
 import * as moment from 'moment';
 import * as Scroll from 'react-scroll';
-import { useSettings } from '../../utils/settings';
+import { useAppSettings } from '../../utils/appSettings';
 import { useDialog } from '../../utils/dialog';
 import CertificateViewDialog from '../../modals/courses/CertificateViewDialog';
+import { useEventDispatcher } from '../../utils/eventDispatcher';
 
 const QuestionItem = ({ course, section, lesson, question, editable }) => {
     const client = useClient();
@@ -403,8 +404,9 @@ const CoursePage = withRemount(({ remount }) => {
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState({});
 
-    const settings = useSettings();
+    const appSettings = useAppSettings();
     const client = useClient();
+    const eventDispatcher = useEventDispatcher();
 
     const dialog = useDialog();
 
@@ -447,12 +449,12 @@ const CoursePage = withRemount(({ remount }) => {
             router.replace('/courses');
         };
 
-        modal.events.on('editCourse', handleEditCourse);
-        modal.events.on('deleteCourse', handleDeleteCourse);
+        eventDispatcher.on('editCourse', handleEditCourse);
+        eventDispatcher.on('deleteCourse', handleDeleteCourse);
 
         return () => {
-            modal.events.off('editCourse', handleEditCourse);
-            modal.events.off('deleteCourse', handleDeleteCourse);
+            eventDispatcher.off('editCourse', handleEditCourse);
+            eventDispatcher.off('deleteCourse', handleDeleteCourse);
         }
     }, []);
 
@@ -466,12 +468,12 @@ const CoursePage = withRemount(({ remount }) => {
             remount();
         };
 
-        client.events.on('signinComplete', handleSigninComplete);
-        client.events.on('signoutComplete', handleSignoutComplete);
+        eventDispatcher.on('signinComplete', handleSigninComplete);
+        eventDispatcher.on('signoutComplete', handleSignoutComplete);
 
         return () => {
-            client.events.off('signinComplete', handleSigninComplete);
-            client.events.off('signoutComplete', handleSignoutComplete);
+            eventDispatcher.off('signinComplete', handleSigninComplete);
+            eventDispatcher.off('signoutComplete', handleSignoutComplete);
         };
     }, []);
 
@@ -496,7 +498,7 @@ const CoursePage = withRemount(({ remount }) => {
                                     </AspectRatio>
                                 </div>
                                 <div className="ms-3">
-                                    <div className="d-inline-block badge text-dark bg-white mb-1">{settings.courseSubjects.find(subject => course.subject == subject.value)?.name}</div>
+                                    <div className="d-inline-block badge text-dark bg-white mb-1">{appSettings.courseSubjects.find(subject => course.subject == subject.value)?.name}</div>
                                     <div className="d-flex align-items-center mb-1">
                                         <TruncateMarkup lines={1}><div className="h5 text-white mb-0">{course.title}</div></TruncateMarkup>
                                         {editable && (

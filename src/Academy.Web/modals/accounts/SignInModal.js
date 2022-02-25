@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { cleanObject, preventDefault } from '../../utils/helpers';
 import { ModalPathPrefix } from '..';
 import PhoneInput from '../../components/PhoneInput';
-import { useSettings } from '../../utils/settings';
+import { useAppSettings } from '../../utils/appSettings';
 
 const SignInModal = (props) => {
     const { route, modal } = props;
@@ -20,7 +20,7 @@ const SignInModal = (props) => {
     const returnUrl = route.query.returnUrl;
     const client = useClient();
 
-    const settings = useSettings();
+    const appSettings = useAppSettings();
 
     useEffect(() => {
         const inputs = JSON.parse(route.query.inputs || null);
@@ -75,7 +75,7 @@ const SignInModal = (props) => {
                             <div className="col-12">
                                 <label className="form-label">Email or phone number</label>
                                 <FormController name="username" control={form.control} render={({ field }) => {
-                                    return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.username ? 'is-invalid' : ''}`} defaultCountry={settings.company.countryCode} />);
+                                    return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.username ? 'is-invalid' : ''}`} defaultCountry={appSettings.company.countryCode} />);
                                 }} />
                                 <div className="invalid-feedback">{formState.errors.username?.message}</div>
                             </div>

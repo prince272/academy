@@ -8,7 +8,7 @@ import { cleanObject, preventDefault } from '../utils/helpers';
 import { useClient } from '../utils/client';
 import { sentenceCase } from 'change-case';
 import PhoneInput from '../components/PhoneInput';
-import { useSettings } from '../utils/settings';
+import { useAppSettings } from '../utils/appSettings';
 
 const ContactModal = (props) => {
     const { route, modal } = props;
@@ -16,7 +16,7 @@ const ContactModal = (props) => {
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
     const [submitting, setSubmitting] = useState(false);
-    const settings = useSettings();
+    const appSettings = useAppSettings();
 
     const subject = route.query.subject;
 
@@ -68,7 +68,7 @@ const ContactModal = (props) => {
                     <div className="col-12 col-sm-7">
                         <label className="form-label">Email or phone number</label>
                         <FormController name="info" control={form.control} render={({ field }) => {
-                            return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.info ? 'is-invalid' : ''}`} defaultCountry={settings.company.countryCode} />);
+                            return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.info ? 'is-invalid' : ''}`} defaultCountry={appSettings.company.countryCode} />);
                         }} />
                         <div className="invalid-feedback">{formState.errors.info?.message}</div>
                     </div>

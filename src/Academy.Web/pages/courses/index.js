@@ -15,11 +15,12 @@ import { CourseItem } from '../../components/courses';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
 import { useForm } from 'react-hook-form';
 import { sentenceCase } from 'change-case';
-import { useSettings } from '../../utils/settings';
+import { useAppSettings } from '../../utils/appSettings';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { cleanObject } from '../../utils/helpers';
 import { SvgWebSearchIllus } from '../../resources/images/illustrations';
 import Mounted from '../../components/Mounted';
+import { useEventDispatcher } from '../../utils/eventDispatcher';
 
 const CoursesPage = withRemount((props) => {
     const { remount } = props;
@@ -28,8 +29,9 @@ const CoursesPage = withRemount((props) => {
     const [page, setPage] = useState(null);
     const router = useRouter();
     const client = useClient();
+    const eventDispatcher = useEventDispatcher();
 
-    const settings = useSettings();
+    const appSettings = useAppSettings();
     const search = useForm({ shouldUnregister: true });
 
     const load = async (params, next) => {
@@ -85,14 +87,14 @@ const CoursesPage = withRemount((props) => {
             setPage(page => crud(page, 'items', course, 'delete'));
         };
 
-        modal.events.on('addCourse', handleAddCourse);
-        modal.events.on('editCourse', handleEditCourse);
-        modal.events.on('deleteCourse', handleDeleteCourse);
+        eventDispatcher.on('addCourse', handleAddCourse);
+        eventDispatcher.on('editCourse', handleEditCourse);
+        eventDispatcher.on('deleteCourse', handleDeleteCourse);
 
         return () => {
-            modal.events.off('addCourse', handleAddCourse);
-            modal.events.off('editCourse', handleEditCourse);
-            modal.events.off('deleteCourse', handleDeleteCourse);
+            eventDispatcher.off('addCourse', handleAddCourse);
+            eventDispatcher.off('editCourse', handleEditCourse);
+            eventDispatcher.off('deleteCourse', handleDeleteCourse);
         }
     }, []);
 
@@ -106,12 +108,12 @@ const CoursesPage = withRemount((props) => {
             remount();
         };
 
-        client.events.on('signinComplete', handleSigninComplete);
-        client.events.on('signoutComplete', handleSignoutComplete);
+        eventDispatcher.on('signinComplete', handleSigninComplete);
+        eventDispatcher.on('signoutComplete', handleSignoutComplete);
 
         return () => {
-            client.events.off('signinComplete', handleSigninComplete);
-            client.events.off('signoutComplete', handleSignoutComplete);
+            eventDispatcher.off('signinComplete', handleSigninComplete);
+            eventDispatcher.off('signoutComplete', handleSignoutComplete);
         };
     }, []);
 
@@ -120,9 +122,9 @@ const CoursesPage = withRemount((props) => {
 
         items.push(() => (
             <Dropdown className="mx-2 pe-auto">
-                <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Subject`))(settings.courseSubjects.find(item => item.value == search.watch('subject')))}</Dropdown.Toggle>
+                <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Subject`))(appSettings.courseSubjects.find(item => item.value == search.watch('subject')))}</Dropdown.Toggle>
                 <Dropdown.Menu style={{ margin: 0 }}>
-                    {[{ name: 'Any', value: null }, ...settings.courseSubjects].map(item => (
+                    {[{ name: 'Any', value: null }, ...appSettings.courseSubjects].map(item => (
                         <Link key={item.value || 'null'} href={{ pathname: router.basePath, query: cleanObject({ ...searchParams, subject: item.value }) }} passHref><Dropdown.Item className={`cursor-pointer ${item.value == search.watch('subject') ? 'bg-soft-primary' : ''}`}>{item.name}</Dropdown.Item></Link>
                     ))}
                 </Dropdown.Menu>
@@ -131,9 +133,9 @@ const CoursesPage = withRemount((props) => {
 
         items.push(() => (
             <Dropdown className="mx-2 pe-auto">
-                <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Sort`))(settings.courseSorts.find(item => item.value == search.watch('sort')))}</Dropdown.Toggle>
+                <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Sort`))(appSettings.courseSorts.find(item => item.value == search.watch('sort')))}</Dropdown.Toggle>
                 <Dropdown.Menu style={{ margin: 0 }}>
-                    {[{ name: 'Any', value: null }, ...settings.courseSorts].map(item => (
+                    {[{ name: 'Any', value: null }, ...appSettings.courseSorts].map(item => (
                         <Link key={item.value || 'null'} href={{ pathname: router.basePath, query: cleanObject({ ...searchParams, sort: item.value }) }} passHref><Dropdown.Item className={`cursor-pointer ${item.value == search.watch('sort') ? 'bg-soft-primary' : ''}`}>{item.name}</Dropdown.Item></Link>
                     ))}
                 </Dropdown.Menu>

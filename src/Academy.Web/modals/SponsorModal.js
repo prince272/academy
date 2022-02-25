@@ -8,7 +8,7 @@ import { cleanObject, preventDefault } from '../utils/helpers';
 import { useClient } from '../utils/client';
 import { sentenceCase } from 'change-case';
 import PhoneInput from '../components/PhoneInput';
-import { useSettings } from '../utils/settings';
+import { useAppSettings } from '../utils/appSettings';
 import Cleave from 'cleave.js/react';
 import { ModalPathPrefix } from './';
 import { BsHeartFill } from 'react-icons/bs';
@@ -19,7 +19,7 @@ const SponsorModal = (props) => {
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
     const [submitting, setSubmitting] = useState(false);
-    const settings = useSettings();
+    const appSettings = useAppSettings();
 
     const client = useClient();
 
@@ -66,7 +66,7 @@ const SponsorModal = (props) => {
                     <div className="col-12">
                         <label className="form-label">Amount</label>
                         <div className="input-group input-group-merge">
-                            <div className="input-group-prepend input-group-text">{settings.currency.symbol}</div>
+                            <div className="input-group-prepend input-group-text">{appSettings.currency.symbol}</div>
                             <FormController name="amount" control={form.control}
                                 render={({ field }) => {
                                     return (
@@ -86,7 +86,7 @@ const SponsorModal = (props) => {
                     <div className="col-12">
                         <label className="form-label">Email or phone number</label>
                         <FormController name="contactInfo" control={form.control} render={({ field }) => {
-                            return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.contactInfo ? 'is-invalid' : ''}`} defaultCountry={settings.company.countryCode} />);
+                            return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.contactInfo ? 'is-invalid' : ''}`} defaultCountry={appSettings.company.countryCode} />);
                         }} />
                         <div className="invalid-feedback">{formState.errors.contactInfo?.message}</div>
                     </div>

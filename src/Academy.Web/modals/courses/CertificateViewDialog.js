@@ -21,6 +21,7 @@ import {
     TwitterShareButton, TwitterIcon
 
 } from "react-share";
+import { useEventDispatcher } from '../../utils/eventDispatcher';
 
 
 const CertificateViewDialog = ({ params, opended, close, dispose }) => {
@@ -33,6 +34,8 @@ const CertificateViewDialog = ({ params, opended, close, dispose }) => {
     const modal = useModal();
     const confetti = useConfetti();
     const client = useClient();
+
+    const eventDispatcher = useEventDispatcher();
 
     const submit = () => {
         form.handleSubmit(async (inputs) => {
@@ -51,14 +54,14 @@ const CertificateViewDialog = ({ params, opended, close, dispose }) => {
 
             let _course = (await client.get(`/courses/${course.id}`, { throwIfError: true })).data.data;
             setCourse(_course);
-            modal.events.emit(`editCourse`, _course);
+            eventDispatcher.emit(`editCourse`, _course);
             confetti.fire();
             setSubmitting(false);
         })();
     };
 
     return (
-        <Modal {...DefaultModalProps} show={opended} onHide={() => close()} onExited={() => dispose()}>
+        <Modal {...DefaultModalProps} show={opended} onHide={() => close.current()} onExited={() => dispose.current()}>
             <Modal.Header closeButton>
                 <Modal.Title>{course.title} Certificate</Modal.Title>
             </Modal.Header>

@@ -131,8 +131,8 @@ namespace Academy.Server
     public enum BitRuleType
     {
         CompleteLesson,
-        AnswerQuestionCorrectly,
-        AnswerQuestionWrongly,
-        FindQuestionAnswer
+        AnswerCorrectly,
+        AnswerWrongly,
+        SkipQuestion
     }
 }

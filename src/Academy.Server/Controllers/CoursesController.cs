@@ -159,42 +159,61 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Progresss(int courseId, [FromBody] CourseProgressModel form)
         {
             var user = await HttpContext.GetCurrentUserAsync();
-            var lessonProgress = user.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Lesson && _.Id == form.LessonId);
-            if (lessonProgress == null) user.Progresses.Add(lessonProgress = new CourseProgress() { CourseId = courseId, Type = CourseProgressType.Lesson, Id = form.LessonId, Started = DateTimeOffset.UtcNow });
-            user.Progresses.Move(user.Progresses.IndexOf(lessonProgress), 0);
-
-            CourseProgress questionProgress = null;
+            var questionProgress = user.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Question && _.Id == form.QuestionId);
 
             if (form.QuestionId != null)
             {
-                questionProgress = user.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Question && _.Id == form.QuestionId);
+                if (form.Skip)
+                {
+                    var remainingBits = user.Bits + appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.SkipQuestion).Value;
+                    if (remainingBits < 0)
+                    {
+                        var requiredBits = Math.Abs(remainingBits);
+                        return Result.Failed(StatusCodes.Status400BadRequest, $"You need {"bit".ToQuantity(requiredBits)} to find the answer.");
+                    }
+                    else
+                    {
+                        user.Bits = remainingBits;
+                    }
+                }
+
                 if (questionProgress == null) user.Progresses.Add(questionProgress = new CourseProgress() { CourseId = courseId, Type = CourseProgressType.Question, Id = form.QuestionId.Value, Started = DateTimeOffset.UtcNow });
                 questionProgress.Choices.Add((form.Skip, form.Answers));
                 user.Progresses.Move(user.Progresses.IndexOf(questionProgress), 0);
             }
 
-            var courseModel = await GetCourseModel(courseId);
-            var lessonModel = courseModel.Sections.SelectMany(_ => _.Lessons).FirstOrDefault(_ => _.Id == form.LessonId);
-            var questionModel = courseModel.Sections.SelectMany(_ => _.Lessons).SelectMany(_ => _.Questions).FirstOrDefault(_ => _.Id == form.QuestionId);
+            var lessonProgress = user.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Lesson && _.Id == form.LessonId);
+            if (lessonProgress == null)
+            {
+                user.Progresses.Add(lessonProgress = new CourseProgress() { CourseId = courseId, Type = CourseProgressType.Lesson, Id = form.LessonId, Started = DateTimeOffset.UtcNow });
+                user.Progresses.Move(user.Progresses.IndexOf(lessonProgress), 0);
+            }
 
+            var courseModel = await GetCourseModel(courseId);
+
+            var questionModel = courseModel.Sections.SelectMany(_ => _.Lessons).SelectMany(_ => _.Questions).FirstOrDefault(_ => _.Id == form.QuestionId);
+            if (questionModel != null && questionModel.Status == CourseStatus.Completed)
+            {
+                if (questionProgress.Completed == null)
+                {
+                    if (!questionProgress.Choices.Any(_ => _.Skip))
+                    {
+                        user.Bits += (questionModel.Choices.FirstOrDefault() ?
+                            appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerCorrectly).Value :
+                            appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerWrongly).Value);
+                    }
+
+                    questionProgress.Completed = DateTimeOffset.UtcNow;
+                }
+            }
+
+            var lessonModel = courseModel.Sections.SelectMany(_ => _.Lessons).FirstOrDefault(_ => _.Id == form.LessonId);
             if (lessonModel.Status == CourseStatus.Completed)
             {
                 if (lessonProgress.Completed == null)
                 {
                     user.Bits += appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.CompleteLesson).Value;
                     lessonProgress.Completed = DateTimeOffset.UtcNow;
-                }
-            }
-
-            if (questionModel != null && questionModel.Status == CourseStatus.Completed)
-            {
-                if (questionProgress.Completed == null)
-                {
-                    user.Bits += (questionModel.Choices.FirstOrDefault() ?
-                        appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionCorrectly).Value :
-                        appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerQuestionWrongly).Value);
-
-                    questionProgress.Completed = DateTimeOffset.UtcNow;
                 }
             }
 
@@ -607,14 +626,7 @@ namespace Academy.Server.Controllers
             question.LessonId = lesson.Id; // Set the owner of the question.
 
             await unitOfWork.CreateAsync(question);
-            await unitOfWork.UpdateCollectionAsync(question.Answers, form.Answers.Select((mapping, mappingIndex) => new QuestionAnswer
-            {
-                QuestionId = question.Id,
-                Index = mappingIndex,
-                Id = mapping.Id,
-                Text = mapping.Text,
-                Checked = mapping.Checked
-            }).ToList(), _ => _.Id);
+            await UpdateAnswers(question, form);
 
             // Calculate question duration.
             question.Duration = await sharedService.CalculateDurationAsync(question);
@@ -649,20 +661,39 @@ namespace Academy.Server.Controllers
             question.Type = form.Type;
 
             await unitOfWork.UpdateAsync(question);
-            await unitOfWork.UpdateCollectionAsync(question.Answers, form.Answers.Select((mapping, mappingIndex) => new QuestionAnswer
-            {
-                QuestionId = question.Id,
-                Index = mappingIndex,
-                Id = mapping.Id,
-                Text = mapping.Text,
-                Checked = mapping.Checked
-            }).ToList(), _ => _.Id);
+            await UpdateAnswers(question, form);
 
             // Calculate question duration.
             question.Duration = await sharedService.CalculateDurationAsync(question);
             await unitOfWork.UpdateAsync(question);
 
             return Result.Succeed();
+        }
+
+        [NonAction]
+        private async Task UpdateAnswers(Question question, QuestionEditModel form)
+        {
+            var itemsToDelete = question.Answers.Where(item => !form.Answers.Any(entry => item.Id == entry.Id)).ToList();
+            await unitOfWork.DeleteAsync(itemsToDelete);
+
+            var itemsToAddOrUpdate = form.Answers.GroupJoin(question.Answers, _ => _.Id, _ => _.Id, (entry, items) => (entry, items.FirstOrDefault())).ToList();
+            foreach (var (entry, item) in itemsToAddOrUpdate)
+            {
+                var entryIndex = itemsToAddOrUpdate.IndexOf((entry, item));
+                var answer = item;
+
+                if (answer == null)
+                {
+                    answer = new QuestionAnswer();
+                    answer.QuestionId = question.Id;
+                    await unitOfWork.CreateAsync(answer);
+                }
+
+                answer.Index = entryIndex;
+                answer.Text = entry.Text;
+                answer.Checked = entry.Checked;
+                await unitOfWork.UpdateAsync(answer);
+            }
         }
 
         [Authorize]

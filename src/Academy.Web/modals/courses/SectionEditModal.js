@@ -9,6 +9,7 @@ import { preventDefault } from '../../utils/helpers';
 import { withRemount } from '../../utils/hooks';
 import Loader from '../../components/Loader';
 import { useClient } from '../../utils/client';
+import { useEventDispatcher } from '../../utils/eventDispatcher';
 
 const SectionEditModal = withRemount((props) => {
     const { route, modal, remount } = props;
@@ -20,6 +21,8 @@ const SectionEditModal = withRemount((props) => {
     const [action, setAction] = useState(route.query.action);
     const courseId = route.query.courseId;
     const sectionId = route.query.sectionId;
+
+    const eventDispatcher = useEventDispatcher();
 
     const client = useClient();
 
@@ -66,7 +69,7 @@ const SectionEditModal = withRemount((props) => {
             }
 
             try {
-                modal.events.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
+                eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
             }
             finally {
                 setSubmitting(false);

@@ -19,7 +19,7 @@ namespace Academy.Server.Models.Courses
     {
         public ProgressValidator()
         {
-            RuleFor(_ => _.Answers).NotEmpty().When(_ => _.QuestionId != null);
+            RuleFor(_ => _.Answers).NotEmpty().When(_ => _.QuestionId != null && !_.Skip);
         }
     }
 }

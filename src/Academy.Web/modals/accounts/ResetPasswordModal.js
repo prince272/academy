@@ -10,7 +10,7 @@ import Countdown from 'react-countdown';
 import { useClient } from '../../utils/client';
 import { ModalPathPrefix } from '../../modals';
 import PhoneInput from '../../components/PhoneInput';
-import { useSettings } from '../../utils/settings';
+import { useAppSettings } from '../../utils/appSettings';
 
 const ResetPasswordModal = (props) => {
     const { route } = props;
@@ -25,7 +25,7 @@ const ResetPasswordModal = (props) => {
     const [codeSent, setCodeSent] = useState(0);
     const [codeSentDate, setCodeSentDate] = useState(null);
 
-    const settings = useSettings();
+    const appSettings = useAppSettings();
 
     const sendCode = () => {
         form.handleSubmit(async (inputs) => {
@@ -96,7 +96,7 @@ const ResetPasswordModal = (props) => {
                     <div className="col-12">
                         <label className="form-label">Email or phone number</label>
                         <FormController name="username" control={form.control} render={({ field }) => {
-                            return (<PhoneInput disabled={codeSent} value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.username ? 'is-invalid' : ''}`} defaultCountry={settings.company.countryCode} />);
+                            return (<PhoneInput disabled={codeSent} value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.username ? 'is-invalid' : ''}`} defaultCountry={appSettings.company.countryCode} />);
                         }} />
                         <div className="invalid-feedback">{formState.errors.username?.message}</div>
                     </div>

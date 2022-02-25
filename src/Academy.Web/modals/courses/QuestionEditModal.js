@@ -7,10 +7,12 @@ import { useRouter } from 'next/router';
 import { pascalCase } from 'change-case';
 import { arrayMove, preventDefault } from '../../utils/helpers';
 import { withRemount } from '../../utils/hooks';
-import DocumentEditor from '../../components/document-editor/DocumentEditor';
+import DocumentEditor from '../../components/DocumentEditor';
 import Loader from '../../components/Loader';
 
 import { useClient } from '../../utils/client';
+import { useEventDispatcher } from '../../utils/eventDispatcher';
+
 import { BsChevronBarLeft, BsGripVertical, BsThreeDots, BsTrash } from 'react-icons/bs';
 
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
@@ -29,6 +31,8 @@ const QuestionEditModal = withRemount((props) => {
     const sectionId = route.query.sectionId;
     const lessonId = route.query.lessonId;
     const questionId = route.query.questionId;
+
+    const eventDispatcher = useEventDispatcher();
 
     const answersController = useFieldArray({
         control: form.control,
@@ -106,7 +110,7 @@ const QuestionEditModal = withRemount((props) => {
             }
 
             try {
-                modal.events.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data); 
+                eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data); 
             }
             finally {
                 setSubmitting(false);

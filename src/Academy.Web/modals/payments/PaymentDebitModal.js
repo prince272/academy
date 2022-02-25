@@ -9,7 +9,7 @@ import { cleanObject, preventDefault, sleep } from '../../utils/helpers';
 import { useClient } from '../../utils/client';
 import { noCase, sentenceCase } from 'change-case';
 import PhoneInput from '../../components/PhoneInput';
-import { useSettings } from '../../utils/settings';
+import { useAppSettings } from '../../utils/appSettings';
 import Cleave from 'cleave.js/react';
 import { AspectRatio } from 'react-aspect-ratio';
 import Loader from '../../components/Loader';
@@ -23,7 +23,7 @@ const PaymentProcessModal = withRemount((props) => {
     const formState = form.formState;
     const [loading, setLoading] = useState({});
     const [submitting, setSubmitting] = useState(false);
-    const settings = useSettings();
+    const appSettings = useAppSettings();
     const paymentId = route.query.paymentId;
     const [payment, setPayment] = useState(null);
 
@@ -136,7 +136,7 @@ const PaymentProcessModal = withRemount((props) => {
                                                 <div className="col-12">
                                                     <label className="form-label">Mobile number</label>
                                                     <FormController name="mobileNumber" control={form.control} render={({ field }) => {
-                                                        return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.mobileNumber ? 'is-invalid' : ''}`} defaultCountry={settings.company.countryCode} />);
+                                                        return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.mobileNumber ? 'is-invalid' : ''}`} defaultCountry={appSettings.company.countryCode} />);
                                                     }} />
                                                     <div className="invalid-feedback">{formState.errors.mobileNumber?.message}</div>
                                                 </div>
@@ -144,7 +144,7 @@ const PaymentProcessModal = withRemount((props) => {
 
                                                     <button className="btn btn-primary w-100" type="button" onClick={() => submit()} disabled={submitting}>
                                                         <div className="position-relative d-flex align-items-center justify-content-center">
-                                                            <div className={`${submitting ? 'invisible' : ''}`}>Pay <span>{settings.currency.symbol}{payment.amount}</span></div>
+                                                            <div className={`${submitting ? 'invisible' : ''}`}>Pay <span>{appSettings.currency.symbol}{payment.amount}</span></div>
                                                             {submitting && <div className="position-absolute top-50 start-50 translate-middle"><div className="spinner-border spinner-border-sm"></div></div>}
                                                         </div>
                                                     </button>
@@ -166,7 +166,7 @@ const PaymentProcessModal = withRemount((props) => {
                                         <div className="px-4 py-3">
                                             <button className="btn btn-primary w-100" type="button" onClick={() => submit()} disabled={submitting}>
                                                 <div className="position-relative d-flex align-items-center justify-content-center">
-                                                    <div className={`${submitting ? 'invisible' : ''}`}>Pay <span>{settings.currency.symbol}{payment.amount}</span></div>
+                                                    <div className={`${submitting ? 'invisible' : ''}`}>Pay <span>{appSettings.currency.symbol}{payment.amount}</span></div>
                                                     {submitting && <div className="position-absolute top-50 start-50 translate-middle"><div className="spinner-border spinner-border-sm"></div></div>}
                                                 </div>
                                             </button>
