@@ -98,25 +98,17 @@ const QuestionEditModal = withRemount((props) => {
                 'delete': () => client.delete(`/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/questions/${questionId}`)
             })[action]();
 
-            setSubmitting(false);
-
             if (result.error) {
-                setSubmitting(false);
-
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
                 toast.error(error.message);
+                setSubmitting(false);
                 return;
             }
-
-            try {
-                eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data); 
-            }
-            finally {
-                setSubmitting(false);
-                toast.success(`Question ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
-                modal.close();
-            }
+            
+            eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
+            toast.success(`Question ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
+            modal.close();
         })();
     };
 

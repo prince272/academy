@@ -49,11 +49,11 @@ const CoursesPage = withRemount((props) => {
         setLoading(null);
     };
 
-    const searchParams = search.watch();
-
     useEffect(() => {
         search.reset();
-        Object.entries(router.query).forEach(([name, value]) => { search.setValue(name, value); });
+        Object.entries(router.query).forEach(([name, value]) => {
+            search.setValue(name, value);
+        });
         load(router.query);
     }, [router.query]);
 
@@ -117,7 +117,7 @@ const CoursesPage = withRemount((props) => {
         };
     }, []);
 
-    const getScrollItems = () => {
+    const scrollItems = (() => {
         const items = [];
 
         items.push(() => (
@@ -125,7 +125,7 @@ const CoursesPage = withRemount((props) => {
                 <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Subject`))(appSettings.courseSubjects.find(item => item.value == search.watch('subject')))}</Dropdown.Toggle>
                 <Dropdown.Menu style={{ margin: 0 }}>
                     {[{ name: 'Any', value: null }, ...appSettings.courseSubjects].map(item => (
-                        <Link key={item.value || 'null'} href={{ pathname: router.basePath, query: cleanObject({ ...searchParams, subject: item.value }) }} passHref><Dropdown.Item className={`cursor-pointer ${item.value == search.watch('subject') ? 'bg-soft-primary' : ''}`}>{item.name}</Dropdown.Item></Link>
+                        <Link key={item.value || 'null'} href={{ pathname: router.basePath, query: cleanObject({ ...search.watch(), subject: item.value }) }} passHref><Dropdown.Item className={`cursor-pointer ${item.value == search.watch('subject') ? 'bg-soft-primary' : ''}`}>{item.name}</Dropdown.Item></Link>
                     ))}
                 </Dropdown.Menu>
             </Dropdown>
@@ -136,16 +136,14 @@ const CoursesPage = withRemount((props) => {
                 <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Sort`))(appSettings.courseSorts.find(item => item.value == search.watch('sort')))}</Dropdown.Toggle>
                 <Dropdown.Menu style={{ margin: 0 }}>
                     {[{ name: 'Any', value: null }, ...appSettings.courseSorts].map(item => (
-                        <Link key={item.value || 'null'} href={{ pathname: router.basePath, query: cleanObject({ ...searchParams, sort: item.value }) }} passHref><Dropdown.Item className={`cursor-pointer ${item.value == search.watch('sort') ? 'bg-soft-primary' : ''}`}>{item.name}</Dropdown.Item></Link>
+                        <Link key={item.value || 'null'} href={{ pathname: router.basePath, query: cleanObject({ ...search.watch(), sort: item.value }) }} passHref><Dropdown.Item className={`cursor-pointer ${item.value == search.watch('sort') ? 'bg-soft-primary' : ''}`}>{item.name}</Dropdown.Item></Link>
                     ))}
                 </Dropdown.Menu>
             </Dropdown>
         ));
 
         return items;
-    };
-
-    const scrollItems = getScrollItems();
+    })();
 
     return (
         <>
@@ -154,76 +152,74 @@ const CoursesPage = withRemount((props) => {
                     <div className="d-flex align-items-center py-2">
                         <div className="h3 mb-0">Courses</div>
                     </div>
-                    <Mounted>
-                        <ScrollMenu
-                            LeftArrow={(() => {
-                                const {
-                                    isFirstItemVisible,
-                                    scrollPrev,
-                                    visibleItemsWithoutSeparators,
-                                    initComplete
-                                } = useContext(VisibilityContext);
+                    <ScrollMenu
+                        LeftArrow={(() => {
+                            const {
+                                isFirstItemVisible,
+                                scrollPrev,
+                                visibleItemsWithoutSeparators,
+                                initComplete
+                            } = useContext(VisibilityContext);
 
-                                const [disabled, setDisabled] = useState(
-                                    !initComplete || (initComplete && isFirstItemVisible)
-                                );
+                            const [disabled, setDisabled] = useState(
+                                !initComplete || (initComplete && isFirstItemVisible)
+                            );
 
-                                useEffect(() => {
-                                    // NOTE: detect if whole component visible
-                                    if (visibleItemsWithoutSeparators.length) {
-                                        setDisabled(isFirstItemVisible);
-                                    }
-                                }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
-
-                                return (<div className={`p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
-                            })}
-
-                            RightArrow={() => {
-                                const {
-                                    isLastItemVisible,
-                                    scrollNext,
-                                    visibleItemsWithoutSeparators
-                                } = useContext(VisibilityContext);
-
-                                // console.log({ isLastItemVisible });
-                                const [disabled, setDisabled] = useState(
-                                    !visibleItemsWithoutSeparators.length && isLastItemVisible
-                                );
-                                useEffect(() => {
-                                    if (visibleItemsWithoutSeparators.length) {
-                                        setDisabled(isLastItemVisible);
-                                    }
-                                }, [isLastItemVisible, visibleItemsWithoutSeparators]);
-
-
-                                return (<div className={`p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
-                            }}
-
-                            onWheel={(apiObj, ev) => {
-                                const isThouchpad = Math.abs(ev.deltaX) !== 0 || Math.abs(ev.deltaY) < 15;
-
-                                if (isThouchpad) {
-                                    ev.stopPropagation();
-                                    return;
+                            useEffect(() => {
+                                // NOTE: detect if whole component visible
+                                if (visibleItemsWithoutSeparators.length) {
+                                    setDisabled(isFirstItemVisible);
                                 }
+                            }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
 
-                                if (ev.deltaY < 0) {
-                                    apiObj.scrollNext();
-                                } else if (ev.deltaY > 0) {
-                                    apiObj.scrollPrev();
+                            return (<div className={`p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
+                        })}
+
+                        RightArrow={() => {
+                            const {
+                                isLastItemVisible,
+                                scrollNext,
+                                visibleItemsWithoutSeparators
+                            } = useContext(VisibilityContext);
+
+                            // console.log({ isLastItemVisible });
+                            const [disabled, setDisabled] = useState(
+                                !visibleItemsWithoutSeparators.length && isLastItemVisible
+                            );
+                            useEffect(() => {
+                                if (visibleItemsWithoutSeparators.length) {
+                                    setDisabled(isLastItemVisible);
                                 }
-                            }}
+                            }, [isLastItemVisible, visibleItemsWithoutSeparators]);
 
-                            wrapperClassName="position-absolute w-100 h-75"
-                            scrollContainerClassName="h-100 mx-auto w-100">
-                            {scrollItems.map((ScrollItem, scrollItemIndex) => <ScrollItem key={`scroll-item-${scrollItemIndex}`} itemId={`scroll-item-${scrollItemIndex}`} />)}
-                        </ScrollMenu>
-                    </Mounted>
+
+                            return (<div className={`p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
+                        }}
+
+                        onWheel={(apiObj, ev) => {
+                            const isThouchpad = Math.abs(ev.deltaX) !== 0 || Math.abs(ev.deltaY) < 15;
+
+                            if (isThouchpad) {
+                                ev.stopPropagation();
+                                return;
+                            }
+
+                            if (ev.deltaY < 0) {
+                                apiObj.scrollNext();
+                            } else if (ev.deltaY > 0) {
+                                apiObj.scrollPrev();
+                            }
+                        }}
+
+                        wrapperClassName="position-absolute w-100 h-75"
+                        scrollContainerClassName="h-100 mx-auto w-100">
+                        {scrollItems.map((ScrollItem, scrollItemIndex) => <ScrollItem key={`scroll-item-${scrollItemIndex}`} itemId={`scroll-item-${scrollItemIndex}`} />)}
+                    </ScrollMenu>
                     {(!page || page.items.length) ? (
                         <InfiniteScroll
                             className="row g-3 pt-6 pe-auto h-100"
                             dataLength={page ? page.items.length : 0}
-                            next={() => load({ ...searchParams, pageNumber: page ? (page.pageNumber + 1) : 1 }, true)}
+                            next={() => load({ ...search.watch(), pageNumber: page ? (page.pageNumber + 1) : 1 }, true)}
                             hasMore={page ? ((page.pageNumber + 1) <= page.totalPages) : false}
                             loader={(loading ? (<Loader {...loading} />) : <></>)}>
                             {page?.items.map((course, courseIndex) => {

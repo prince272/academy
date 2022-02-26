@@ -32,13 +32,12 @@ const ContactModal = (props) => {
             setSubmitting(true);
 
             let result = await client.post('/contact', inputs);
-            setSubmitting(false);
 
             if (result.error) {
                 const error = result.error;
-
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
                 toast.error(error.message);
+                setSubmitting(false);
                 return;
             }
 

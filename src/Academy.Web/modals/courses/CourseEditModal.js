@@ -71,27 +71,22 @@ const CourseEditModal = withRemount((props) => {
             })[action]();
 
             if (result.error) {
-                setSubmitting(false);
-
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
                 toast.error(error.message);
+                setSubmitting(false);
                 return;
             }
 
-            try {
-                if (action == 'add' || action == 'edit') {
-                    eventDispatcher.emit(`${action}Course`, (await client.get(`/courses/${result.data || courseId}`, { throwIfError: true })).data.data);
-                }
-                else if (action == 'delete') {
-                    eventDispatcher.emit(`${action}Course`, { id: courseId });
-                }
-            } 
-            finally {
-                setSubmitting(false);
-                toast.success(`Course ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
-                modal.close();
+            if (action == 'add' || action == 'edit') {
+                eventDispatcher.emit(`${action}Course`, (await client.get(`/courses/${result.data || courseId}`, { throwIfError: true })).data.data);
             }
+            else if (action == 'delete') {
+                eventDispatcher.emit(`${action}Course`, { id: courseId });
+            }
+
+            toast.success(`Course ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
+            modal.close();
         })();
     };
 
@@ -163,7 +158,7 @@ const CourseEditModal = withRemount((props) => {
                                 )}>
                                     <span className="link-primary svg-icon svg-icon-xs d-inline-block mx-1"><BsInfoCircle /></span>
                                 </OverlayTrigger>
-                                (<span>{form.watch('cost') != 0 ? 'paid' : 'free'}</span> course)
+                                (<span>{form.watch('cost') > 0 ? 'paid' : 'free'}</span> course)
                             </label>
                             <div className="input-group input-group-merge">
                                 <div className="input-group-prepend input-group-text">{appSettings.currency.symbol}</div>

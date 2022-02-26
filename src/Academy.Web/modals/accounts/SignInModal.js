@@ -39,18 +39,15 @@ const SignInModal = (props) => {
             let result = await client.post('/accounts/signin', inputs);
 
             if (result.error) {
-                setSubmitting(false);
-
                 const error = result.error;
 
                 if (error.details.confirmUsername) {
                     router.replace({ pathname: `${ModalPathPrefix}/accounts/confirm`, query: cleanObject({ returnUrl, provider, inputs: JSON.stringify(inputs) }) });
                 }
                 else {
-
                     Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-
                     toast.error(error.message);
+                    setSubmitting(false);
                 }
 
                 return;

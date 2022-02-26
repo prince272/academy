@@ -10,7 +10,6 @@ namespace Academy.Server.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Payment> builder)
         {
-            builder.OwnsOne(payment => payment.Details);
         }
     }
 }

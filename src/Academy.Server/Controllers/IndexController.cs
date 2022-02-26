@@ -91,17 +91,22 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Sponsor([FromBody] SponsorModel form)
         {
             var payment = new Payment();
-            payment.Title = "Payment to sponsor";
+            payment.Title = "Sponsor the Academy of ours";
+            payment.Reason = PaymentReason.Sponsor;
+            payment.ReasonId = Compute.GenerateNumber(8);
             payment.Status = PaymentStatus.Pending;
             payment.Amount = form.Amount;
-            payment.ContactName = form.ContactName;
-            payment.ContactInfo = form.ContactInfo;
             payment.Type = PaymentType.Debit;
             payment.IpAddress = Request.GetIPAddress();
             payment.UAString = Request.GetUAString();
+            payment.Issued = DateTimeOffset.UtcNow;
+
+            if (ValidationHelper.PhoneOrEmail(form.ContactInfo))
+                payment.PhoneNumber = form.ContactInfo;
+            else payment.Email = form.ContactInfo;
 
             await unitOfWork.CreateAsync(payment);
-            return Result.Succeed(data: payment.Id);
+            return Result.Succeed(data: new { PaymentId = payment.Id });
         }
     }
 }

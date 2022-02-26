@@ -57,18 +57,14 @@ const ResetPasswordModal = (props) => {
         }
 
         form.handleSubmit(async (inputs) => {
-
             setSubmitting(true);
             let result = await client.post('/accounts/password/reset', inputs);
-            setSubmitting(false);
 
             if (result.error) {
                 const error = result.error;
-
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-
                 toast.error(error.message);
-
+                setSubmitting(false);
                 return;
             }
 

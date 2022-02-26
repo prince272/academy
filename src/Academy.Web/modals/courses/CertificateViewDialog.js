@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { pascalCase } from 'change-case';
 import { downloadFromUrl, preventDefault } from '../../utils/helpers';
-import { withRemount, useConfetti } from '../../utils/hooks';
+import { withRemount, useConfetti, withAsync } from '../../utils/hooks';
 import Loader from '../../components/Loader';
 import { useClient } from '../../utils/client';
 import { BsAward, BsAwardFill, BsDownload, BsPatchCheckFill, BsShare } from 'react-icons/bs';
@@ -25,7 +25,7 @@ import { useEventDispatcher } from '../../utils/eventDispatcher';
 
 
 const CertificateViewDialog = ({ params, opended, close, dispose }) => {
-    const [course, setCourse] = useState(params.course);
+    const [course, setCourse] = withAsync(useState(params.course));
     const router = useRouter();
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
@@ -44,17 +44,15 @@ const CertificateViewDialog = ({ params, opended, close, dispose }) => {
             let result = await client.post(`/courses/${course.id}/certificate`);
 
             if (result.error) {
-                setSubmitting(false);
-                
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
                 toast.error(error.message);
+                setSubmitting(false);
                 return;
             }
 
-            let _course = (await client.get(`/courses/${course.id}`, { throwIfError: true })).data.data;
-            setCourse(_course);
-            eventDispatcher.emit(`editCourse`, _course);
+            course = await setCourse((await client.get(`/courses/${course.id}`, { throwIfError: true })).data.data);
+            eventDispatcher.emit(`editCourse`, course);
             confetti.fire();
             setSubmitting(false);
         })();

@@ -180,7 +180,8 @@ namespace Academy.Server
                     .WithOrigins(Configuration.GetSection("AllowedOrigins").Get<string[]>())
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .AllowCredentials();
+                    .AllowCredentials()
+                    .WithExposedHeaders("Content-Disposition");
                 });
             });
 

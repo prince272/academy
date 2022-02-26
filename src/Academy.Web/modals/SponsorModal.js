@@ -35,17 +35,16 @@ const SponsorModal = (props) => {
             setSubmitting(true);
 
             let result = await client.post('/sponsor', inputs);
-            setSubmitting(false);
 
-            if (result.error) {
+            if (result.error) {               
                 const error = result.error;
-
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
                 toast.error(error.message);
+                setSubmitting(false);
                 return;
             }
 
-            const paymentId = result.data;
+            const paymentId = result.data.paymentId;
             router.replace({ pathname: `${ModalPathPrefix}/payments/${paymentId}/debit`, query: { returnUrl: route.url } });
         })();
     };
@@ -63,7 +62,7 @@ const SponsorModal = (props) => {
                     <p>If you think Academy of Ours is valuable to you, Sponsor!</p>
                 </div>
                 <div className="row g-3">
-                    <div className="col-12">
+                    <div className="col-12 col-sm-5">
                         <label className="form-label">Amount</label>
                         <div className="input-group input-group-merge">
                             <div className="input-group-prepend input-group-text">{appSettings.currency.symbol}</div>
@@ -78,12 +77,7 @@ const SponsorModal = (props) => {
                         </div>
                         <div className="invalid-feedback">{formState.errors.amount?.message}</div>
                     </div>
-                    <div className="col-12">
-                        <label className="form-label">Name</label>
-                        <input {...form.register("contactName")} className={`form-control  ${formState.errors.contactName ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{formState.errors.contactName?.message}</div>
-                    </div>
-                    <div className="col-12">
+                    <div className="col-12 col-sm-7">
                         <label className="form-label">Email or phone number</label>
                         <FormController name="contactInfo" control={form.control} render={({ field }) => {
                             return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.contactInfo ? 'is-invalid' : ''}`} defaultCountry={appSettings.company.countryCode} />);
@@ -91,8 +85,13 @@ const SponsorModal = (props) => {
                         <div className="invalid-feedback">{formState.errors.contactInfo?.message}</div>
                     </div>
                     <div className="col-12">
+                        <label className="form-label">Name</label>
+                        <input {...form.register("contactName")} className={`form-control  ${formState.errors.contactName ? 'is-invalid' : ''}`} />
+                        <div className="invalid-feedback">{formState.errors.contactName?.message}</div>
+                    </div>
+                    <div className="col-12">
                         <label className="form-label">Message</label>
-                        <textarea {...form.register("message")} className={`form-control ${formState.errors.message ? 'is-invalid' : ''}`} rows="1" placeholder={`Say something nice...`} />
+                        <textarea {...form.register("message")} className={`form-control ${formState.errors.message ? 'is-invalid' : ''}`} rows="3" placeholder={`Say something nice...`} />
                         <div className="invalid-feedback">{formState.errors.message?.message}</div>
                     </div>
                 </div>
@@ -112,7 +111,7 @@ const SponsorModal = (props) => {
 
 SponsorModal.getModalProps = () => {
     return {
-        size: 'sm'
+
     };
 };
 

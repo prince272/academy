@@ -35,17 +35,19 @@ namespace Academy.Server.Models.Courses
 
         public CertificateModel Certificate { get; set; }
 
-        public long? Duration { get; set; }
+        public long Duration { get; set; }
 
-        public double? Progress { get; set; }
+        public double Progress { get; set; }
 
         public SectionModel[] Sections { get; set; }
 
-        public CourseStatus? Status { get; set; }
+        public CourseStatus Status { get; set; }
 
         public decimal? Cost { get; set; }
 
-        public decimal? Price { get; set; }
+        public decimal Price { get; set; }
+
+        public bool Purchased { get; set; }
 
         public DateTimeOffset? Started { get; set; }
 
@@ -65,11 +67,11 @@ namespace Academy.Server.Models.Courses
 
         public string Title { get; set; }
 
-        public double? Progress { get; set; }
+        public double Progress { get; set; }
 
-        public long? Duration { get; set; }
+        public long Duration { get; set; }
 
-        public CourseStatus? Status { get; set; }
+        public CourseStatus Status { get; set; }
 
         public LessonModel[] Lessons { get; set; }
     }
@@ -90,7 +92,7 @@ namespace Academy.Server.Models.Courses
 
         public long Duration { get; set; }
 
-        public CourseStatus? Status { get; set; }
+        public CourseStatus Status { get; set; }
 
         public QuestionModel[] Questions { get; set; }
     }
@@ -107,7 +109,7 @@ namespace Academy.Server.Models.Courses
 
         public QuestionType Type { get; set; }
 
-        public CourseStatus? Status { get; set; }
+        public CourseStatus Status { get; set; }
 
         public long Duration { get; set; }
 

@@ -31,8 +31,6 @@ namespace Academy.Server.Models
         public SponsorValidator(IServiceProvider serviceProvider)
         {
             var settings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
-
-            RuleFor(_ => _.ContactName).NotEmpty();
             RuleFor(_ => _.ContactInfo).PhoneOrEmail();
             RuleFor(_ => _.Amount).LessThanOrEqualTo(settings.Currency.Limit).GreaterThan(0);
         }

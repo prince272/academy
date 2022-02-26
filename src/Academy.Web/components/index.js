@@ -232,7 +232,7 @@ const Body = ({ children }) => {
     return (
         <>
             {children}
-            {(client.loading || modal.loading || pageLoading) && (
+            {(client.loading || modal.loading) && (
                 <Loader className="position-fixed top-50 start-50 translate-middle bg-white" style={{ zIndex: 2000 }} />
             )}
         </>

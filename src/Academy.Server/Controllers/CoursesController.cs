@@ -145,14 +145,39 @@ namespace Academy.Server.Controllers
             query = (pageInfo.SkipItems > 0 ? query.Skip(pageInfo.SkipItems) : query).Take(pageInfo.PageSize);
 
             var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async courseId => {
-                var course = await GetCourseModel(courseId);
-                if (course == null) throw new ArgumentException();
-                return course;
+                var courseModel = await GetCourseModel(courseId);
+                if (courseModel == null) throw new ArgumentException();
+                return courseModel;
             });
 
             return Result.Succeed(data: TypeMerger.Merge(new { Items = pageItems }, pageInfo));
         }
 
+        [Authorize]
+        [HttpPost("/courses/{courseId}/pay")]
+        public async Task<IActionResult> Pay(int courseId)
+        {
+            var courseModel = await GetCourseModel(courseId);
+            if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var user = await HttpContext.GetCurrentUserAsync();
+
+            var payment = new Payment();
+            payment.Title = courseModel.Title;
+            payment.Reason = PaymentReason.Course;
+            payment.ReasonId = courseModel.Id;
+            payment.Status = PaymentStatus.Pending;
+            payment.Amount = courseModel.Price;
+            payment.Type = PaymentType.Debit;
+            payment.IpAddress = Request.GetIPAddress();
+            payment.UAString = Request.GetUAString();
+            payment.Issued = DateTimeOffset.UtcNow;
+            payment.PhoneNumber = user.PhoneNumber;
+            payment.Email = user.Email;
+
+            await unitOfWork.CreateAsync(payment);
+            return Result.Succeed(data: new { PaymentId = payment.Id });
+        }
 
         [Authorize]
         [HttpPost("/courses/{courseId}/progress")]
@@ -169,7 +194,7 @@ namespace Academy.Server.Controllers
                     if (remainingBits < 0)
                     {
                         var requiredBits = Math.Abs(remainingBits);
-                        return Result.Failed(StatusCodes.Status400BadRequest, $"You need {"bit".ToQuantity(requiredBits)} to find the answer.");
+                        return Result.Failed(StatusCodes.Status400BadRequest, $"{"bit".ToQuantity(requiredBits)} is required to find the answer.");
                     }
                     else
                     {
@@ -190,6 +215,10 @@ namespace Academy.Server.Controllers
             }
 
             var courseModel = await GetCourseModel(courseId);
+            if (courseModel.Price > 0 && !courseModel.Purchased)
+            {
+                return Result.Failed(StatusCodes.Status400BadRequest, "Payment required to take this course.");
+            }
 
             var questionModel = courseModel.Sections.SelectMany(_ => _.Lessons).SelectMany(_ => _.Questions).FirstOrDefault(_ => _.Id == form.QuestionId);
             if (questionModel != null && questionModel.Status == CourseStatus.Completed)
@@ -472,22 +501,16 @@ namespace Academy.Server.Controllers
             return Result.Succeed();
         }
 
-        [Authorize]
         [HttpGet("/courses/{courseId}/sections/{sectionId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId)
         {
-            var section = await unitOfWork.Query<Section>().AsSingleQuery()
-                .Include(_ => _.Course)
-                .FirstOrDefaultAsync(_ => _.Id == sectionId);
-            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
+            var courseModel = (await GetCourseModel(courseId, sectionId));
+            if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var course = section.CourseId == courseId ? section.Course : null;
-            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
+            var sectionModel = courseModel.Sections.FirstOrDefault(_ => _.Id == sectionId);
+            if (sectionModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var user = await HttpContext.GetCurrentUserAsync();
-            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
-
-            return Result.Succeed(data: mapper.Map<SectionModel>(section));
+            return Result.Succeed(data: sectionModel);
         }
 
 
@@ -582,21 +605,16 @@ namespace Academy.Server.Controllers
         [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId)
         {
-            var lesson = await unitOfWork.Query<Lesson>().AsSingleQuery()
-                .Include(_ => _.Questions.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
-                .ThenInclude(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
-                .Include(_ => _.Section).ThenInclude(_ => _.Course)
-                .FirstOrDefaultAsync(_ => _.Id == lessonId);
+            var courseModel = (await GetCourseModel(courseId, sectionId, lessonId));
+            if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
+            var sectionModel = courseModel.Sections.FirstOrDefault(_ => _.Id == sectionId);
+            if (sectionModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var section = lesson.SectionId == sectionId ? lesson.Section : null;
-            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
+            var lessonModel = sectionModel.Lessons.FirstOrDefault(_ => _.Id == lessonId);
+            if (lessonModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var course = lesson.Section.CourseId == courseId ? lesson.Section.Course : null;
-            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
-
-            return Result.Succeed(data: mapper.Map<LessonModel>(lesson));
+            return Result.Succeed(data: lessonModel);
         }
 
         [Authorize]
@@ -727,30 +745,24 @@ namespace Academy.Server.Controllers
         [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions/{questionId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId, int questionId)
         {
-            var question = await unitOfWork.Query<Question>().AsSingleQuery()
-                .Include(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
-                .Include(_ => _.Lesson).ThenInclude(_ => _.Section).ThenInclude(_ => _.Course)
-                .FirstOrDefaultAsync(_ => _.Id == questionId);
-            if (question == null) return Result.Failed(StatusCodes.Status404NotFound);
+            var courseModel = (await GetCourseModel(courseId, sectionId, lessonId, questionId));
+            if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var lesson = question.LessonId == lessonId ? question.Lesson : null;
-            if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
+            var sectionModel = courseModel.Sections.FirstOrDefault(_ => _.Id == sectionId);
+            if (sectionModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var section = question.Lesson.SectionId == sectionId ? question.Lesson.Section : null;
-            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
+            var lessonModel = sectionModel.Lessons.FirstOrDefault(_ => _.Id == lessonId);
+            if (lessonModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var course = question.Lesson.Section.CourseId == courseId ? question.Lesson.Section.Course : null;
-            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
+            var questionModel = lessonModel.Questions.FirstOrDefault(_ => _.Id == questionId);
+            if (questionModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var user = await HttpContext.GetCurrentUserAsync();
-            if (!user.CanManageCourse(course)) return Result.Failed(StatusCodes.Status403Forbidden);
-
-            return Result.Succeed(data: mapper.Map<QuestionModel>(question));
+            return Result.Succeed(data: questionModel);
         }
 
 
         [NonAction]
-        private async Task<CourseModel> GetCourseModel(int courseId)
+        private async Task<CourseModel> GetCourseModel(int courseId, int? sectionId = null, int? lessonId = null, int? questionId = null)
         {
             var course = await unitOfWork.Query<Course>().AsNoTrackingWithIdentityResolution()
                                 .Include(_ => _.User)
@@ -771,7 +783,7 @@ namespace Academy.Server.Controllers
                     .ProjectTo<Lesson>(new MapperConfiguration(config =>
                     {
                         var map = config.CreateMap<Lesson, Lesson>();
-                        map.ForMember(_ => _.Document, config => config.Ignore());
+                        map.ForMember(_ => _.Document, config => config.MapFrom(_ => _.Id == lessonId ? _.Document : null));
                     })).ToListAsync();
 
                 foreach (var lesson in section.Lessons)
@@ -792,7 +804,7 @@ namespace Academy.Server.Controllers
                             .ProjectTo<QuestionAnswer>(new MapperConfiguration(config =>
                             {
                                 var map = config.CreateMap<QuestionAnswer, QuestionAnswer>();
-                                map.ForMember(_ => _.Text, config => config.Ignore());
+                                map.ForMember(_ => _.Text, config => config.MapFrom(_ => _.Question.LessonId == lessonId ? _.Text : null));
                             })).ToListAsync();
                     }
                 }
@@ -816,10 +828,18 @@ namespace Academy.Server.Controllers
 
             var started = true;
 
+            var courseCertificate = user?.Certificates.FirstOrDefault(_ => _.CourseId == course.Id);
+            var coursePurchased = user != null ? await unitOfWork.Query<Payment>()
+                .AnyAsync(_ => _.UserId == user.Id &&
+                               _.Reason == PaymentReason.Course &&
+                               _.ReasonId == course.Id &&
+                               _.Status == PaymentStatus.Complete) : false;
+
             var courseModel = mapper.Map<CourseModel>(course);
             courseModel.Course = course;
-            courseModel.Certificate = mapper.Map<CertificateModel>(user?.Certificates.FirstOrDefault(_ => _.CourseId == course.Id));
+            courseModel.Certificate = mapper.Map<CertificateModel>(courseCertificate);
             courseModel.Price = await sharedService.CalculatePriceAsync(course);
+            courseModel.Purchased = coursePurchased;
             courseModel.Duration = course.Sections.SelectMany(_ => _.Lessons).Select(_ => _.Duration).Sum();
             courseModel.Sections = course.Sections.Select(section =>
             {
@@ -857,7 +877,7 @@ namespace Academy.Server.Controllers
                         return questionModel;
                     }).ToArray();
                     lessonModel.Status = GetStatus(lessonModel.Questions.Select(question => question.Status)
-                        .Prepend(progress != null ? CourseStatus.Completed : CourseStatus.Locked).Select(_ => _.Value).ToArray());
+                        .Prepend(progress != null ? CourseStatus.Completed : CourseStatus.Locked).ToArray());
 
                     if (lessonModel.Status == CourseStatus.Locked && started)
                     {
@@ -878,8 +898,7 @@ namespace Academy.Server.Controllers
                 }).ToArray();
 
                 var statuses = sectionModel.Lessons
-                .SelectMany(lessonModel => lessonModel.Questions.Select(questionModel => questionModel.Status).Prepend(lessonModel.Status))
-                .Select(_ => _.Value).ToArray();
+                .SelectMany(lessonModel => lessonModel.Questions.Select(questionModel => questionModel.Status).Prepend(lessonModel.Status)).ToArray();
 
                 sectionModel.Status = GetStatus(statuses);
                 sectionModel.Progress = GetProgress(statuses);
@@ -892,8 +911,7 @@ namespace Academy.Server.Controllers
             courseModel.Completed = user?.Progresses.Where(_ => _.CourseId == course.Id).OrderByDescending(_ => _.Completed).FirstOrDefault()?.Completed;
 
             var statuses = courseModel.Sections.SelectMany(_ => _.Lessons)
-                .SelectMany(lessonModel => lessonModel.Questions.Select(questionModel => questionModel.Status).Prepend(lessonModel.Status))
-                .Select(_ => _.Value).ToArray();
+                .SelectMany(lessonModel => lessonModel.Questions.Select(questionModel => questionModel.Status).Prepend(lessonModel.Status)).ToArray();
 
             courseModel.Status = GetStatus(statuses);
             courseModel.Progress = GetProgress(statuses);

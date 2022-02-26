@@ -13,7 +13,8 @@ const DefaultModalProps = {
     size: 'md',
     fullscreen: 'sm-down',
     contentClassName: '',
-    backdrop: 'static'
+    backdrop: 'static',
+    animation: false
 };
 
 const ModalPathPrefix = "/modal";

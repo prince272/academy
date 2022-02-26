@@ -13,6 +13,10 @@ import { ModalPathPrefix, useModal } from '../modals';
 import { useAppSettings } from '../utils/appSettings';
 
 import * as moment from 'moment';
+import momentDurationFormatSetup from 'moment-duration-format';
+momentDurationFormatSetup(moment);
+
+import { DialogProvider } from '../utils/dialog';
 
 const CourseItem = ({ course }) => {
     const appSettings = useAppSettings();
@@ -33,8 +37,9 @@ const CourseItem = ({ course }) => {
                 <div className="fs-6 mb-2" style={{ height: "48px" }}>
                     <TruncateMarkup lines={2}><div>{course.title}</div></TruncateMarkup>
                 </div>
-                <div className="d-flex small mb-2">
-                    <div><span className="text-primary"><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).humanize()}</div>
+                <div class="hstack gap-3 justify-content-between">
+                    <div>{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
+                    <div><span className="text-primary"><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
                 </div>
                 {editable && (
                     <div className="position-absolute top-0 end-0 zi-2">

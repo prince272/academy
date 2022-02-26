@@ -27,7 +27,7 @@ const LessonEditModal = withRemount((props) => {
     const lessonId = route.query.lessonId;
 
     const eventDispatcher = useEventDispatcher();
-    
+
     const client = useClient();
 
     const load = async () => {
@@ -44,7 +44,7 @@ const LessonEditModal = withRemount((props) => {
             }
 
             form.reset({
-                ...result.data, 
+                ...result.data,
                 mediaId: result.data.media?.id,
             });
 
@@ -67,22 +67,16 @@ const LessonEditModal = withRemount((props) => {
             })[action]();
 
             if (result.error) {
-                setSubmitting(false);
-
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
                 toast.error(error.message);
+                setSubmitting(false);
                 return;
             }
-            
-            try {
-                eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data); 
-            }
-            finally {
-                setSubmitting(false);
-                toast.success(`Lesson ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
-                modal.close();
-            }
+
+            eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
+            toast.success(`Lesson ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
+            modal.close();
         })();
     };
 

@@ -48,72 +48,53 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
         public async Task ProcessAsync(Payment payment, CancellationToken cancellationToken = default)
         {
-            if (payment == null)
-                throw new ArgumentNullException(nameof(payment));
+            if (payment == null) throw new ArgumentNullException(nameof(payment));
 
-            payment.Gateway = Name;
-
-            if (payment.Status == PaymentStatus.Pending)
+            if (payment.GetData<MobileDetails>(nameof(MobileDetails)) is MobileDetails mobileDetails)
             {
-                if (payment.Details != null)
+                var mobileIssuers = await GetMobileIssuersAsync(cancellationToken);
+
+                if (string.IsNullOrWhiteSpace(mobileDetails.MobileNumber))
+                    throw new MobileDetailsException(nameof(mobileDetails.MobileNumber), "'Mobile number' must not be empty.");
+
+                PhoneNumber mobileNumberInfo = null;
+
+                try
                 {
-                    if (payment.Details.IssuerType == PaymentIssuerType.Mobile && payment.Type == PaymentType.Debit)
-                    {
-                        var requestHeaders = new Dictionary<string, string>();
-                        var requestData = new Dictionary<string, string>
+                    var mobileUtil = PhoneNumberUtil.GetInstance();
+                    if (!mobileUtil.IsValidNumber(mobileNumberInfo = mobileUtil.Parse(mobileDetails.MobileNumber, null)))
+                        throw new MobileDetailsException(nameof(mobileDetails.MobileNumber), "'Mobile number' is not valid.");
+                }
+                catch (NumberParseException)
+                {
+                    throw new MobileDetailsException(nameof(mobileDetails.MobileNumber), "'Mobile number' is not valid.");
+                }
+
+                var mobileIssuer = mobileIssuers.FirstOrDefault(_ => Regex.IsMatch($"{mobileNumberInfo.CountryCode}{mobileNumberInfo.NationalNumber}", _.Pattern));
+                if (mobileIssuer == null) throw new MobileDetailsException(nameof(mobileDetails.MobileNumber), $"'Mobile number' is not supported by any of these mobile issuers. {mobileIssuers.Select(_ => _.Name).Humanize()}");
+                mobileDetails.MobileIssuer = mobileIssuer;
+
+                var requestHeaders = new Dictionary<string, string>();
+                var requestData = new Dictionary<string, string>
                                     {
                                         { "merchant_id", paymentOptions.MerchantId },
                                         { "transaction_id", GetTransactionId(payment.Id) },
                                         { "amount", (payment.Amount * 100).ToString("000000000000") },
                                         { "processing_code", "000200" },
-                                        { "r-switch", payment.Details.IssuerCode },
+                                        { "r-switch", mobileIssuer.Code },
                                         { "desc", payment.Title },
-                                        { "subscriber_number", payment.Details.MobileNumber.TrimStart('+') },
+                                        { "subscriber_number", mobileDetails.MobileNumber.TrimStart('+') },
                                     };
+                 httpClient.SendAsJsonAsync(HttpMethod.Post, "/v1.1/transaction/process", requestData, requestHeaders, cancellationToken).Forget();
 
-                        httpClient.SendAsJsonAsync(HttpMethod.Post, "/v1.1/transaction/process", requestData, requestHeaders, cancellationToken).Forget();
-
-                        payment.Status = PaymentStatus.Processing;
-                        await unitOfWork.UpdateAsync(payment);
-                    }
-                    else if (payment.Details.IssuerType == PaymentIssuerType.Mobile && payment.Type == PaymentType.Credit)
-                    {
-                        var requestHeaders = new Dictionary<string, string>();
-                        var requestData = new Dictionary<string, string>
-                    {
-                        { "merchant_id", paymentOptions.MerchantId },
-                        { "transaction_id", GetTransactionId(payment.Id) },
-                        { "amount", (payment.Amount * 100).ToString("000000000000") },
-                        { "processing_code", "404000" },
-                        { "r-switch", "FLT" },
-                        { "desc", payment.Title },
-                        { "pass_code", paymentOptions.MerchantSecret },
-                        { "account_number", payment.Details.MobileNumber.TrimStart('+') },
-                        { "account_issuer", payment.Details.IssuerCode },
-                    };
-
-                        var response = await httpClient.SendAsJsonAsync(HttpMethod.Post, "/v1.1/transaction/process", requestData, requestHeaders, cancellationToken);
-
-                        try
-                        {
-                            var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>(cancellationToken);
-                            payment.Status = (responseData["code"] == "000") ? PaymentStatus.Complete : PaymentStatus.Failed;
-                            await unitOfWork.UpdateAsync(payment);
-                        }
-                        catch (Exception ex)
-                        {
-                            var responseText = await response.Content.ReadAsStringAsync(cancellationToken);
-                            logger.LogError(ex, responseText);
-
-                            payment.Status = PaymentStatus.Failed;
-                            await unitOfWork.UpdateAsync(payment);
-                        }
-                    }
-                }
-                else
-                {
-                    var requestHeaders = new Dictionary<string, string>();
-                    var requestData = new Dictionary<string, string>
+                payment.SetData(nameof(MobileDetails), mobileDetails);
+                payment.Status = PaymentStatus.Processing;
+                await unitOfWork.UpdateAsync(payment);
+            }
+            else
+            {
+                var requestHeaders = new Dictionary<string, string>();
+                var requestData = new Dictionary<string, string>
                     {
                         { "merchant_id", paymentOptions.MerchantId },
                         { "transaction_id", GetTransactionId(payment.Id) },
@@ -125,103 +106,81 @@ namespace Academy.Server.Extensions.PaymentProcessor
                         { "apiuser", paymentOptions.ClientId },
                     };
 
-                    var response = await httpClient.SendAsJsonAsync(HttpMethod.Post, "/checkout/initiate", requestData, requestHeaders, cancellationToken);
-                    response.EnsureSuccessStatusCode();
+                var response = await httpClient.SendAsJsonAsync(HttpMethod.Post, "/checkout/initiate", requestData, requestHeaders, cancellationToken);
+                response.EnsureSuccessStatusCode();
 
-                    try
-                    {
-                        var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>();
+                Dictionary<string, string> responseData = null;
 
-                        payment.Status = (responseData["code"] == "200") ? PaymentStatus.Processing : PaymentStatus.Failed;
-                        payment.CheckoutUrl = responseData.GetValueOrDefault("checkout_url");
+                try { responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>(); }
+                catch (Exception ex) { logger.LogError(ex, await response.Content.ReadAsStringAsync()); throw; }
 
-                        await unitOfWork.UpdateAsync(payment);
-                    }
-                    catch (Exception ex)
-                    {
-                        var responseText = await response.Content.ReadAsStringAsync();
-                        logger.LogError(ex, responseText);
 
-                        payment.Status = PaymentStatus.Failed;
-                        await unitOfWork.UpdateAsync(payment);
-                    }
-                }
-            }
-            else if (payment.Status == PaymentStatus.Processing)
-            {
-                var requestHeaders = new Dictionary<string, string> { { "Merchant-Id", paymentOptions.MerchantId } };
-                var response = await httpClient.SendAsJsonAsync(HttpMethod.Get, $"/v1.1/users/transactions/{GetTransactionId(payment.Id)}/status", value: null, headers: requestHeaders, cancellationToken);
-
-                try
+                if (responseData["code"] == "200")
                 {
-                    var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>(cancellationToken);
-
-                    if (payment.Status == PaymentStatus.Processing)
-                    {
-                        payment.Status = responseData.GetValueOrDefault("code") == "000" ? PaymentStatus.Complete : PaymentStatus.Failed;
-                        payment.Completed = DateTimeOffset.UtcNow;
-
-                        await unitOfWork.UpdateAsync(payment);
-                    }
+                    payment.Status = PaymentStatus.Processing;
+                    payment.CheckoutUrl = responseData.GetValueOrDefault("checkout_url");
+                    await unitOfWork.UpdateAsync(payment);
                 }
-                catch (Exception ex)
+                else
                 {
-                    var responseText = await response.Content.ReadAsStringAsync(cancellationToken);
-                    logger.LogError(ex, responseText);
+                    throw new InvalidOperationException("Unable to process payment.");
                 }
             }
         }
 
-        public async Task VerityAsync(Payment payment, CancellationToken cancellationToken)
+        public async Task VerityAsync(Payment payment, CancellationToken cancellationToken = default)
         {
-            if (payment == null)
-                throw new ArgumentNullException(nameof(payment));
+            if (payment == null) throw new ArgumentNullException(nameof(payment));
 
-            if ((++payment.Attempts) > Payment.MAX_ATTEMPTS)
+            var maxVerityInMinutes = 15;
+
+            if (payment.Status == PaymentStatus.Processing)
             {
-                payment.Status = PaymentStatus.Failed;
-            }
-            else
-            {
-                try
+                if ((DateTimeOffset.UtcNow - payment.Issued) >= TimeSpan.FromMinutes(maxVerityInMinutes))
                 {
-                    var requestHeaders = new Dictionary<string, string>();
-                    var requestData = new Dictionary<string, string>();
-                    var response = await httpClient.SendAsJsonAsync(HttpMethod.Get, $"/v1.1/users/transactions/{GetTransactionId(payment.Id)}/status", requestData, requestHeaders, cancellationToken);
-                    response.EnsureSuccessStatusCode();
-                    var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>(cancellationToken);
-
-                    if (responseData.GetValueOrDefault("code") == "000")
-                        payment.Status = PaymentStatus.Complete;
-
-                    else if (payment.Attempts == Payment.MAX_ATTEMPTS) payment.Status = PaymentStatus.Failed;
+                    payment.Status = PaymentStatus.Failed;
+                    await unitOfWork.UpdateAsync(payment);
+                    return;
                 }
-                catch (Exception ex)
+
+                var requestHeaders = new Dictionary<string, string>();
+                var requestData = new Dictionary<string, string>();
+                var response = await httpClient.SendAsJsonAsync(HttpMethod.Get, $"/v1.1/users/transactions/{GetTransactionId(payment.Id)}/status", requestData, requestHeaders, cancellationToken);
+                response.EnsureSuccessStatusCode();
+                var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>(cancellationToken);
+
+                if (responseData.GetValueOrDefault("code") == "000")
                 {
-                    logger.LogWarning(ex, $"Something went wrong while verifying payment with the Id: {payment.Id}.");
+                    payment.Status = PaymentStatus.Complete;
+                    await unitOfWork.UpdateAsync(payment);
                 }
             }
-
-            await unitOfWork.UpdateAsync(payment);
+            else if (payment.Status == PaymentStatus.Pending)
+            {
+                if ((DateTimeOffset.UtcNow - payment.Issued) >= TimeSpan.FromMinutes(maxVerityInMinutes))
+                {
+                    payment.Status = PaymentStatus.Failed;
+                    await unitOfWork.UpdateAsync(payment);
+                    return;
+                }
+            }
         }
 
-        public Task<PaymentIssuer[]> GetIssuersAsync(CancellationToken cancellationToken)
-        {
-            var issuers = new PaymentIssuer[]
-            {
-                new PaymentIssuer(PaymentIssuerType.Mobile, "MTN", "^(24|54|55|59)", "MTN"),
-                new PaymentIssuer(PaymentIssuerType.Mobile, "VDF", "^(20|50)", "Vodafone"),
-                new PaymentIssuer(PaymentIssuerType.Mobile, "ATL", "^(27|57|26|56)", "AirtelTigo"),
 
-                new PaymentIssuer(PaymentIssuerType.Card, "VIS", @"^4[0-9]{12}(?:[0-9]{3})?$", "Visa"),
-                new PaymentIssuer(PaymentIssuerType.Card, "MAS", @"^(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}$", "MasterCard"),
+        private Task<MobileIssuer[]> GetMobileIssuersAsync(CancellationToken cancellationToken = default)
+        {
+            var issuers = new MobileIssuer[]
+            {
+                new MobileIssuer("MTN", "^233(24|54|55|59)", "MTN"),
+                new MobileIssuer("VDF", "^233(20|50)", "Vodafone"),
+                new MobileIssuer("ATL", "^233(27|57|26|56)", "AirtelTigo")
             };
             return Task.FromResult(issuers);
         }
 
         private string GetTransactionId(int paymentId)
         {
-            return $"{paymentId:D12}";
+            return $"{paymentId:D13}";
         }
     }
 
@@ -230,7 +189,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
         private readonly IServiceProvider services;
         private readonly ILogger<PaySwitchPaymentHostedService> logger;
         private int executionCount = 0;
-        private bool executionError;
+        private bool errorLogged;
 
         public PaySwitchPaymentHostedService(IServiceProvider serviceProvider,
             ILogger<PaySwitchPaymentHostedService> logger)
@@ -255,41 +214,79 @@ namespace Academy.Server.Extensions.PaymentProcessor
         {
             logger.LogInformation($"{nameof(PaySwitchPaymentHostedService)} is running.");
 
-            using (var scope = services.CreateScope())
+            while (!cancellationToken.IsCancellationRequested)
             {
-                var serviceProvider = scope.ServiceProvider;
-                var unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
-                var paymentProcessor = serviceProvider.GetRequiredService<IPaymentProcessor>();
-
-                while (!cancellationToken.IsCancellationRequested)
+                using (var scope = services.CreateScope())
                 {
+                    var serviceProvider = scope.ServiceProvider;
+                    var unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
+                    var paymentProcessor = serviceProvider.GetRequiredService<IPaymentProcessor>();
+
+
                     executionCount += 1;
 
                     try
                     {
-                        var payments = await unitOfWork.Query<Payment>().Where(_ => _.Status == PaymentStatus.Processing).ToListAsync(cancellationToken);
+                        var payments = await unitOfWork.Query<Payment>()
+                            .Where(_ => _.Status == PaymentStatus.Pending || _.Status == PaymentStatus.Processing)
+                            .ToListAsync(cancellationToken);
 
                         foreach (var payment in payments)
                         {
                             await paymentProcessor.VerityAsync(payment, cancellationToken);
                         }
 
-                        executionError = false;
+                        errorLogged = false;
                     }
                     catch (Exception ex)
                     {
-                        if (executionError)
+                        if (!errorLogged)
                         {
                             logger.LogError(ex, $"{nameof(PaySwitchPaymentHostedService)} throw an exception.");
                         }
 
-                        executionError = true;
+                        errorLogged = true;
                     }
 
-                    await Task.Delay(5000, cancellationToken);
+                    await Task.Delay(10000, cancellationToken);
                 }
             }
 
         }
+    }
+
+    public class MobileDetails
+    {
+        public string MobileNumber { get; set; }
+
+        public MobileIssuer MobileIssuer { get; set; }
+    }
+
+    [Serializable]
+    public class MobileDetailsException : Exception
+    {
+
+        public MobileDetailsException(string name, string message) : base(message)
+        {
+            Name = name;
+        }
+
+        public string Name { get; set; }
+    }
+
+    public class MobileIssuer
+    {
+        public MobileIssuer(string code, string pattern, string name)
+        {
+            Code = code;
+            Pattern = pattern;
+            Name = name;
+        }
+
+        public string Code { get; set; }
+
+        public string Pattern { get; set; }
+
+        public string Name { get; set; }
     }
 }

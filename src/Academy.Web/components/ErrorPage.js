@@ -31,12 +31,12 @@ const ErrorPage = ({ error }) => {
                     {error.message && <div className="mb-3">{error.message} status: {error.status}</div>}
                     <div className="hstack gap-3 mx-auto">
                         <button type="button" className="btn btn-secondary btn-sm" onClick={() => {
-                            window.location.href = "/";
+                            window.location.assign("/")
                         }}>
                             <span className="svg-icon svg-icon-xs d-inline-block me-1"><BsHouse /></span><span>Home</span>
                         </button>
                         <button type="button" className="btn btn-primary btn-sm" onClick={() => {
-                            window.location.reload();
+                            window.location.reload(true);
                         }}>
                             <span className="svg-icon svg-icon-xs d-inline-block me-1"><BsArrowRepeat /></span><span>Reload</span>
                         </button>

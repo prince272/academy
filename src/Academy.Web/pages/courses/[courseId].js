@@ -16,7 +16,11 @@ import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { arrayMove, arrayTransfer, preventDefault, stopPropagation, stripHtml } from '../../utils/helpers';
 import { pascalCase } from 'change-case';
 import { withRemount } from '../../utils/hooks';
+
 import * as moment from 'moment';
+import momentDurationFormatSetup from 'moment-duration-format';
+momentDurationFormatSetup(moment);
+
 import * as Scroll from 'react-scroll';
 import { useAppSettings } from '../../utils/appSettings';
 import { useDialog } from '../../utils/dialog';
@@ -483,7 +487,7 @@ const CoursePage = withRemount(({ remount }) => {
 
     return (
         <>
-            <div className="bg-primary position-absolute w-100" style={{ height: "350px" }}></div>
+            <div className="bg-dark position-absolute w-100" style={{ height: "350px" }}></div>
             <div className="container position-relative zi-1 h-100">
                 <div className="row justify-content-center h-100">
                     <div className="col-12 col-md-9 align-self-start">
@@ -497,31 +501,17 @@ const CoursePage = withRemount(({ remount }) => {
                                             (<div className="rounded svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center"><BsCardImage /></div>)}
                                     </AspectRatio>
                                 </div>
-                                <div className="ms-3">
-                                    <div className="d-inline-block badge text-dark bg-white mb-1">{appSettings.courseSubjects.find(subject => course.subject == subject.value)?.name}</div>
+                                <div className="ms-3 text-white">
+                                    <div className="d-inline-block badge text-dark bg-white mb-2">{appSettings.courseSubjects.find(subject => course.subject == subject.value)?.name}</div>
                                     <div className="d-flex align-items-center mb-1">
                                         <TruncateMarkup lines={1}><div className="h5 text-white mb-0">{course.title}</div></TruncateMarkup>
-                                        {editable && (
-                                            <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Options</Tooltip>}>
-                                                {({ ...triggerHandler }) => (
-                                                    <Dropdown>
-                                                        <Dropdown.Toggle {...triggerHandler} variant="primary" size="sm" bsPrefix=" " className="btn-icon btn-no-focus rounded-pill border-0 mx-1">
-                                                            <span className="svg-icon svg-icon-xs d-inline-block" ><BsThreeDots /></span>
-                                                        </Dropdown.Toggle>
-
-                                                        <Dropdown.Menu style={{ margin: 0 }}>
-                                                            <Link href={`${ModalPathPrefix}/courses/${course.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
-                                                            <Link href={`${ModalPathPrefix}/courses/${course.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
-                                                        </Dropdown.Menu>
-                                                    </Dropdown>
-                                                )}
-                                            </OverlayTrigger>
-                                        )}
                                     </div>
-                                    <div className="mb-1"><TruncateMarkup lines={2}><div className="text-white">{course.description}</div></TruncateMarkup></div>
-                                    <div className="d-flex small">
-                                        <div className="text-white"><span><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).humanize()}</div>
+                                    <div class="hstack">
+                                        <div>{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
+                                        <span class="mx-2">·</span>
+                                        <div><span><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
                                     </div>
+                                    <div className="mb-1"><TruncateMarkup lines={2}><div>{course.description}</div></TruncateMarkup></div>
                                 </div>
                             </div>
                         </div>

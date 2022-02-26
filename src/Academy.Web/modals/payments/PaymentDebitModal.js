@@ -7,16 +7,22 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import { cleanObject, preventDefault, sleep } from '../../utils/helpers';
 import { useClient } from '../../utils/client';
-import { noCase, sentenceCase } from 'change-case';
+import { noCase } from 'change-case';
 import PhoneInput from '../../components/PhoneInput';
 import { useAppSettings } from '../../utils/appSettings';
 import Cleave from 'cleave.js/react';
 import { AspectRatio } from 'react-aspect-ratio';
 import Loader from '../../components/Loader';
-import { withRemount } from '../../utils/hooks';
-import { BsCheckCircleFill, BsXCircleFill } from 'react-icons/bs';
+import { withAsync, withRemount } from '../../utils/hooks';
+import { BsCheckCircleFill, BsClockHistory, BsXCircleFill } from 'react-icons/bs';
+import { ModalPathPrefix } from '..';
+import TruncateMarkup from 'react-truncate-markup';
 
-const PaymentProcessModal = withRemount((props) => {
+function lowerCaseFirst(input) {
+    return input.charAt(0).toLowerCase() + input.substr(1);
+}
+
+const PaymentDebitModal = withRemount((props) => {
     const { route, modal, remount } = props;
     const router = useRouter();
     const form = useForm({ shouldUnregister: true });
@@ -25,16 +31,9 @@ const PaymentProcessModal = withRemount((props) => {
     const [submitting, setSubmitting] = useState(false);
     const appSettings = useAppSettings();
     const paymentId = route.query.paymentId;
-    const [payment, setPayment] = useState(null);
+    let [payment, setPayment] = withAsync(useState(null));
 
-    if (!route.query.returnUrl) throw new Error(`The query param 'returnUrl' was not found. url: ${route.url}`);
-
-    const mounted = useRef(false);
-
-    useEffect(() => {
-        mounted.current = true;
-        return () => { mounted.current = false; };
-    }, []);
+    if (!route.query.returnUrl) throw new Error(`The query parameter 'returnUrl' was not found. url: ${route.url}`);
 
     const client = useClient();
 
@@ -46,22 +45,14 @@ const PaymentProcessModal = withRemount((props) => {
         if (result.error) {
             const error = result.error;
 
-            setLoading({ ...error, message: 'Unable to process payment.', remount });
+            setLoading({ ...error, message: 'Unable to load payment.', fallback: modal.close, remount });
             return;
         }
 
-        const payment = result.data;
-        setPayment(payment);
+        payment = await setPayment(result.data);
 
         if (payment.status == 'processing') {
             checkPayment();
-        }
-        else {
-            form.setValue('issuerType', '');
-
-            const returnURL = new URL(route.url);
-            returnURL.searchParams.set('returnUrl', route.query.returnUrl);
-            form.setValue('returnUrl', returnURL.href);
         }
 
         setLoading(null);
@@ -70,43 +61,46 @@ const PaymentProcessModal = withRemount((props) => {
     const submit = () => {
 
         form.handleSubmit(async (inputs) => {
-
             setSubmitting(true);
-            let result = await client.post(`/payments/${paymentId}/process`, inputs);
-            setSubmitting(false);
+
+            const paymentMode = form.watch('mode');
+
+            let result = await ({
+                'mobile': () => client.post(`/payments/${paymentId}/mobile/process`, inputs, { params: { returnUrl: route.url } }),
+                'checkout': () => client.post(`/payments/${paymentId}/checkout`, null, { params: { returnUrl: route.url } }),
+            })[paymentMode]();
 
             if (result.error) {
                 const error = result.error;
-
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
                 toast.error(error.message);
+                setSubmitting(false);
                 return;
             }
 
-            const payment = result.data;
-            setPayment(payment);
-
+            payment = await setPayment({ ...payment, status: 'processing' });
             checkPayment();
 
-            if (payment.checkoutUrl) {
-                router.replace(payment.checkoutUrl);
+            if (paymentMode == 'checkout') {
+                window.location.assign(result.data.checkoutUrl);
             }
         })();
     };
 
     const checkPayment = async () => {
-
-        for (let count = 0; count < 120; count++) {
+        for (let count = 0; count < 5; count++) {
             const result = await client.get(`/payments/${paymentId}`);
 
             if (!result.error) {
-                const payment = result.data;
-                setPayment(payment);
+                payment = await setPayment(result.data);
                 if (payment.status != 'processing') break;
             }
 
             await sleep(5000);
         }
+
+        if (payment.status == 'processing')
+            payment = await setPayment({ ...payment, status: 'timeout' });
     };
 
     useEffect(load, []);
@@ -115,21 +109,23 @@ const PaymentProcessModal = withRemount((props) => {
 
     return (
         <>
-            <Modal.Header closeButton>
-                <Modal.Title as="h5">Payment {payment.status == 'pending' ? 'options' : noCase(payment.status)}</Modal.Title>
-            </Modal.Header>
+            <Modal.Header bsPrefix="modal-close" closeButton></Modal.Header>
             <Modal.Body className="p-0" as={Form} onSubmit={preventDefault(() => submit())}>
+                <div className="mt-3 px-4">
+                    <TruncateMarkup lines={2}><h4>{payment.status == 'pending' ? payment.title : <>Payment {noCase(payment.status)}</>}</h4></TruncateMarkup>
+                    <p className="mb-0"><span>{appSettings.currency.symbol}{payment.amount}</span></p>
+                </div>
                 {payment.status == 'pending' && (
                     <div>
                         <div className="list-group list-group-flush py-5">
                             <div className="list-group-item p-0">
                                 <div className="px-4">
-                                    <div className="form-check mb-0 py-3" onClick={() => form.setValue('issuerType', 'mobile')}>
-                                        <input type="radio" className="form-check-input" name="formRadio" checked={form.watch('issuerType') == 'mobile'} />
+                                    <div className="form-check mb-0 py-3" onClick={() => form.setValue('mode', 'mobile')}>
+                                        <input type="radio" className="form-check-input" name="formRadio" checked={form.watch('mode') == 'mobile'} />
                                         <label className="form-check-label">Pay with <span className="fw-bold">Mobile Money</span></label>
                                     </div>
                                 </div>
-                                <Collapse in={form.watch('issuerType') == 'mobile'}>
+                                <Collapse in={form.watch('mode') == 'mobile'}>
                                     <div>
                                         <div className="px-4 py-3">
                                             <div className="row g-3">
@@ -144,7 +140,7 @@ const PaymentProcessModal = withRemount((props) => {
 
                                                     <button className="btn btn-primary w-100" type="button" onClick={() => submit()} disabled={submitting}>
                                                         <div className="position-relative d-flex align-items-center justify-content-center">
-                                                            <div className={`${submitting ? 'invisible' : ''}`}>Pay <span>{appSettings.currency.symbol}{payment.amount}</span></div>
+                                                            <div className={`${submitting ? 'invisible' : ''}`}>Pay</div>
                                                             {submitting && <div className="position-absolute top-50 start-50 translate-middle"><div className="spinner-border spinner-border-sm"></div></div>}
                                                         </div>
                                                     </button>
@@ -156,17 +152,17 @@ const PaymentProcessModal = withRemount((props) => {
                             </div>
                             <div className="list-group-item p-0">
                                 <div className="px-4">
-                                    <div className="form-check mb-0 py-3" onClick={() => form.setValue('issuerType', null)}>
-                                        <input type="radio" className="form-check-input" name="formRadio" checked={form.watch('issuerType') == null} />
+                                    <div className="form-check mb-0 py-3" onClick={() => form.setValue('mode', 'checkout')}>
+                                        <input type="radio" className="form-check-input" name="formRadio" checked={form.watch('mode') == 'checkout'} />
                                         <label className="form-check-label">Pay with <span className="fw-bold">PaySwitch</span></label>
                                     </div>
                                 </div>
-                                <Collapse in={form.watch('issuerType') == null}>
+                                <Collapse in={form.watch('mode') == 'checkout'}>
                                     <div>
                                         <div className="px-4 py-3">
                                             <button className="btn btn-primary w-100" type="button" onClick={() => submit()} disabled={submitting}>
                                                 <div className="position-relative d-flex align-items-center justify-content-center">
-                                                    <div className={`${submitting ? 'invisible' : ''}`}>Pay <span>{appSettings.currency.symbol}{payment.amount}</span></div>
+                                                    <div className={`${submitting ? 'invisible' : ''}`}>Pay</div>
                                                     {submitting && <div className="position-absolute top-50 start-50 translate-middle"><div className="spinner-border spinner-border-sm"></div></div>}
                                                 </div>
                                             </button>
@@ -180,13 +176,14 @@ const PaymentProcessModal = withRemount((props) => {
                 {payment.status == 'processing' && (
                     <div>
                         <Loader message={({
-                            'mobile': <span><span className="fw-bold">Heads-up!</span> You'll receive a prompt on your mobile device to authorize this payment. If the prompt delays, check your approvals list to complete the payment.</span>,
-                        })[form.watch('issuerType')] || <span>You may be redirected to third party payment provider to continue the payment process.</span>} />
+                            'mobile': <span><span className="fw-bold">Heads-up!</span> We're waiting for approval from your phone to complete this payment. Please check your approvals list on your phone and approve this payment.</span>,
+                            'checkout': <span>You will be redirected to third party payment provider to continue the payment process. If not, retry the payment again!</span>
+                        })[form.watch('mode')]} />
                     </div>
                 )}
                 {payment.status == 'failed' && (
                     <div>
-                        <div className="d-flex flex-column text-center justify-content-center py-8 px-4">
+                        <div className="d-flex flex-column text-center justify-content-center p-4">
                             <div className="mb-3 px-10"><span className="svg-icon svg-icon-lg text-danger"><BsXCircleFill /></span></div>
                             <div className="h3">Payment failed</div>
                             <div className="mb-3">Something went wrong while processing your payment.</div>
@@ -196,11 +193,28 @@ const PaymentProcessModal = withRemount((props) => {
                 )}
                 {payment.status == 'complete' && (
                     <div>
-                        <div className="d-flex flex-column text-center justify-content-center py-8 px-4">
+                        <div className="d-flex flex-column text-center justify-content-center p-4">
                             <div className="mb-3 px-10"><span className="svg-icon svg-icon-lg text-success"><BsCheckCircleFill /></span></div>
                             <div className="h3">Payment Complete</div>
                             <div className="mb-3">Thank you for your payment.</div>
                             <Link href={route.query.returnUrl}><a className="btn btn-success">Continue</a></Link>
+                        </div>
+                    </div>
+                )}
+                {payment.status == 'timeout' && (
+                    <div>
+                        <div className="d-flex flex-column text-center justify-content-center p-4">
+                            <div className="mb-3 px-10"><span className="svg-icon svg-icon-lg text-info"><BsClockHistory /></span></div>
+                            <div className="h3">Payment Timeout</div>
+                            <div className="mb-3">Well, It looks like we've waited long enough. Please tap the check button after you have approved this payment from your phone.</div>
+
+                            <div className="vstack gap-3">
+                                <button type="button" className="btn btn-primary" onClick={async () => {
+                                    payment = await setPayment({ ...payment, status: 'processing' });
+                                    checkPayment();
+                                }}>Check</button>
+                                <Link href={route.query.returnUrl}><a className="btn btn-secondary">Cancel</a></Link>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -222,10 +236,10 @@ const PaymentProcessModal = withRemount((props) => {
     );
 });
 
-PaymentProcessModal.getModalProps = () => {
+PaymentDebitModal.getModalProps = () => {
     return {
         size: 'sm'
     };
 };
 
-export default PaymentProcessModal;
+export default PaymentDebitModal;

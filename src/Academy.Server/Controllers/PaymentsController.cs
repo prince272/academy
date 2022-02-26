@@ -1,7 +1,6 @@
 ﻿using Academy.Server.Data;
 using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.PaymentProcessor;
-using Academy.Server.Models.Payments;
 using Academy.Server.Utilities;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -44,61 +43,52 @@ namespace Academy.Server.Controllers
             });
         }
 
-        [HttpPost("{paymentId}/process")]
-        public async Task<IActionResult> Process(int paymentId, PaymentDetailsModel form)
+        [HttpPost("{paymentId}/mobile/process")]
+        public async Task<IActionResult> ProcessMobile(int paymentId, string returnUrl, [FromBody] MobileDetails form)
         {
+            if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
+                throw new ArgumentException("Url is not valid.", nameof(returnUrl));
+
             var query = unitOfWork.Query<Payment>();
             var payment = await query.FirstOrDefaultAsync(_ => _.Id == paymentId);
             if (payment == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            if (form.IssuerType != null)
+            try
             {
-                try
-                {
-                    var issuers = await paymentProcessor.GetIssuersAsync();
-
-                    payment.Details = new PaymentDetails
-                    {
-                        IssuerType = form.IssuerType.Value,
-                        MobileNumber = form.MobileNumber,
-                        CardNumber = form.CardNumber,
-                        CardExpiry = form.CardExpiry,
-                        CardCvv = form.CardCvv,
-                    };
-                    payment.Details.Resolve(issuers);
-                }
-                catch (PaymentDetailsException ex)
-                {
-                    return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.Name, ex.Message));
-                }
+                payment.RedirectUrl = Url.ActionLink(nameof(Callback), values: new { paymentId, returnUrl });
+                payment.SetData(nameof(MobileDetails), form);
+                await paymentProcessor.ProcessAsync(payment);
+                return Result.Succeed();
             }
-
-             payment.RedirectUrl = Url.ActionLink(nameof(ProcessCallback), values: new { paymentId, returnUrl = form.ReturnUrl });
-            await paymentProcessor.ProcessAsync(payment);
-
-            return Result.Succeed(data: new
+            catch (MobileDetailsException ex)
             {
-                payment.Title,
-                payment.Amount,
-                payment.Status,
-                payment.CheckoutUrl
-            });
+                return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.Name, ex.Message));
+            }
         }
 
+        [HttpPost("{paymentId}/checkout")]
+        public async Task<IActionResult> Checkout(int paymentId, string returnUrl)
+        {
+            if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
+                throw new ArgumentException("Url is not in a valid format.", nameof(returnUrl));
 
-        [HttpGet("{paymentId}/process/callback")]
-        public async Task<IActionResult> ProcessCallback(int paymentId)
+            var query = unitOfWork.Query<Payment>();
+            var payment = await query.FirstOrDefaultAsync(_ => _.Id == paymentId);
+            if (payment == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            payment.RedirectUrl = Url.ActionLink(nameof(Callback), values: new { paymentId, returnUrl });
+            await paymentProcessor.ProcessAsync(payment);
+            return Result.Succeed(data: new { payment.CheckoutUrl });
+        }
+
+        [HttpGet("{paymentId}/callback")]
+        public async Task<IActionResult> Callback(int paymentId)
         {
             var query = unitOfWork.Query<Payment>();
             var payment = await query.FirstOrDefaultAsync(_ => _.Id == paymentId);
             if (payment == null) return NotFound();
 
-
-            if (payment.Status == PaymentStatus.Processing)
-            {
-                payment.Attempts = Payment.MAX_ATTEMPTS;
-                await paymentProcessor.VerityAsync(payment);
-            }
+            await paymentProcessor.VerityAsync(payment);
 
             var returnUrl = HttpUtility.ParseQueryString(new Uri(payment.RedirectUrl).Query).Get("returnUrl");
 

@@ -152,6 +152,38 @@ export function withRemount(Component) {
     return WrapperComponent;
 }
 
+export function withAsync([state, setState]) {
+    const resolveState = React.useRef();
+    const isMounted = React.useRef(false);
+
+    React.useEffect(() => {
+        isMounted.current = true;
+
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
+
+    React.useEffect(() => {
+        if (resolveState.current) {
+            resolveState.current(state);
+        }
+    }, [state]);
+
+    const setAsyncState = React.useCallback(
+        newState =>
+            new Promise(resolve => {
+                if (isMounted.current) {
+                    resolveState.current = resolve;
+                    setState(newState);
+                }
+            }),
+        []
+    );
+
+    return [state, setAsyncState];
+}
+
 export function useAsyncState(initialState) {
     const [state, setState] = React.useState(initialState);
     const resolveState = React.useRef();

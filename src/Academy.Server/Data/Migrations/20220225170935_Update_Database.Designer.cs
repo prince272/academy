@@ -4,14 +4,16 @@ using Academy.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Academy.Server.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220225170935_Update_Database")]
+    partial class Update_Database
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -172,19 +174,22 @@ namespace Academy.Server.Data.Migrations
                         .HasPrecision(18, 6)
                         .HasColumnType("decimal(18,6)");
 
+                    b.Property<int>("Attempts")
+                        .HasColumnType("int");
+
                     b.Property<string>("CheckoutUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("Completed")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("ContactInfo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContactName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ExtensionData")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Gateway")
@@ -193,11 +198,8 @@ namespace Academy.Server.Data.Migrations
                     b.Property<string>("IpAddress")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("Issued")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Mode")
+                        .HasColumnType("int");
 
                     b.Property<int>("Reason")
                         .HasColumnType("int");
@@ -695,6 +697,47 @@ namespace Academy.Server.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Section");
+                });
+
+            modelBuilder.Entity("Academy.Server.Data.Entities.Payment", b =>
+                {
+                    b.OwnsOne("Academy.Server.Data.Entities.PaymentDetails", "Details", b1 =>
+                        {
+                            b1.Property<int>("PaymentId")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                            b1.Property<string>("CardCvv")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("CardExpiry")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("CardNumber")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("IssuerCode")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("IssuerName")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<int>("IssuerType")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("MobileNumber")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("PaymentId");
+
+                            b1.ToTable("Payment");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PaymentId");
+                        });
+
+                    b.Navigation("Details");
                 });
 
             modelBuilder.Entity("Academy.Server.Data.Entities.Post", b =>

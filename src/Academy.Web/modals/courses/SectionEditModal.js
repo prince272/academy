@@ -60,22 +60,16 @@ const SectionEditModal = withRemount((props) => {
             })[action]();
 
             if (result.error) {
-                setSubmitting(false);
-
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
                 toast.error(error.message);
+                setSubmitting(false);
                 return;
             }
-
-            try {
-                eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
-            }
-            finally {
-                setSubmitting(false);
-                toast.success(`Section ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
-                modal.close();
-            }
+            
+            eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
+            toast.success(`Section ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
+            modal.close();
         })();
     };
 

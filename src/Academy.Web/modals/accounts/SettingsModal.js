@@ -30,24 +30,20 @@ const EditProfileTab = ({ }) => {
 
     const submit = () => {
         form.handleSubmit(async (inputs) => {
-
             setSubmitting(true);
-
             let result = await client.put(`/accounts/profile`, inputs);
-
-            setSubmitting(false);
 
             if (result.error) {
                 const error = result.error;
-
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-
                 toast.error(error.message);
+                setSubmitting(false);
                 return;
             }
 
-            toast.success(`Profile saved.`);
             await client.reloadUser();
+            toast.success(`Profile saved.`);
+            setSubmitting(false);
         })();
     };
 
@@ -147,20 +143,18 @@ const ChangeAccountTab = ({ }) => {
 
             setSubmitting(true);
             let result = await client.post('/accounts/change', inputs);
-            setSubmitting(false);
 
             if (result.error) {
                 const error = result.error;
-
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-
                 toast.error(error.message);
-
+                setSubmitting(false);
                 return;
             }
 
             form.reset();
             toast.success('Account changed.');
+            setSubmitting(false);
         })();
     };
 
@@ -246,25 +240,21 @@ const ChangePasswordTab = ({ }) => {
 
     const submit = () => {
         form.handleSubmit(async (inputs) => {
-
             setSubmitting(true);
 
             let result = await client.post(`/accounts/password/change`, inputs);
 
-            setSubmitting(false);
-
             if (result.error) {
                 const error = result.error;
-
-
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-
                 toast.error(error.message);
+                setSubmitting(false);
                 return;
             }
 
             form.reset();
             toast.success(`Password changed.`);
+            setSubmitting(false);
         })();
     };
 

@@ -5,7 +5,7 @@ import { useForm, Controller as FormController } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 
-import { useAsyncState, useConfetti, withRemount } from '../../utils/hooks';
+import { useConfetti, withAsync, withRemount } from '../../utils/hooks';
 import { arrayMove, preventDefault, stripHtml } from '../../utils/helpers';
 
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
@@ -25,13 +25,16 @@ import { useClient } from '../../utils/client';
 import { useDialog } from '../../utils/dialog';
 import CertificateViewDialog from './CertificateViewDialog';
 import { useEventDispatcher } from '../../utils/eventDispatcher';
+import { useAppSettings } from '../../utils/appSettings';
+import { ModalPathPrefix } from '..';
+
 
 const LessonView = (props) => {
-    const { lesson, setLesson } = props;
+    const { lesson, setCurrentView } = props;
 
     useEffect(() => {
         const newLesson = { ...lesson, _submitted: false, _data: { lessonId: lesson.id } };
-        setLesson(newLesson);
+        setCurrentView(newLesson);
     }, []);
 
     const tabs = useMemo(() => {
@@ -138,7 +141,7 @@ LessonView.displayName = 'LessonView';
 
 const QuestionView = (props) => {
     const client = useClient();
-    const { lesson, question, setQuestion } = props;
+    const { lesson, question, setCurrentView } = props;
 
     useEffect(() => {
         // shuffle answers.
@@ -153,7 +156,7 @@ const QuestionView = (props) => {
                 answers: question.type == 'reorder' ? answers.map(answer => answer.id) : []
             }
         };
-        setQuestion(newQuestion);
+        setCurrentView(newQuestion);
     }, []);
 
     const handleAnswer = (index) => {
@@ -176,7 +179,7 @@ const QuestionView = (props) => {
                     answers: answers.filter(answer => answer.checked).map(answer => answer.id)
                 }
             };
-            setQuestion(newQuestion);
+            setCurrentView(newQuestion);
         }
     };
 
@@ -287,8 +290,8 @@ const LessonViewModal = withRemount((props) => {
     const sectionId = route.query.sectionId;
     const lessonId = route.query.lessonId;
 
-    const [course, setCourse] = useAsyncState(null);
-    const [lesson, setLesson] = useState(null);
+    let [course, setCourse] = withAsync(useState(null));
+    let [lesson, setLesson] = withAsync(useState(null));
     const [views, setViews] = useState([]);
     const [currentView, setCurrentView] = useState(null);
 
@@ -307,24 +310,23 @@ const LessonViewModal = withRemount((props) => {
             return;
         }
 
-        const newCourse = result.data;
+        course = await setCourse(result.data);
 
         result = await client.get(`/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`);
 
         if (result.error) {
             const error = result.error;
-            setLoading({ ...error, message: 'Unable to load lesson.', remount });
+            setLoading({ ...error, message: 'Unable to load lesson.', fallback: modal.close, remount });
             return;
         }
 
-        const newLesson = result.data;
+        lesson = await setLesson(result.data);
 
         const newViews = [];
-        newViews.push({ ...newLesson, _id: _.uniqueId(), _type: 'lesson' });
-        newLesson.questions.forEach(question => { newViews.push({ ...question, _id: _.uniqueId(), _type: 'question' }) })
 
-        setCourse(newCourse);
-        setLesson(newLesson);
+        newViews.push({ ...lesson, _id: _.uniqueId(), _type: 'lesson' });
+        lesson.questions.forEach(question => { newViews.push({ ...question, _id: _.uniqueId(), _type: 'question' }) })
+
         setViews(newViews);
         setCurrentView(newViews[0]);
         setLoading(null);
@@ -348,39 +350,56 @@ const LessonViewModal = withRemount((props) => {
 
     const moveForward = async (skip) => {
 
-        if (currentView._type != 'question') {
-
+        if (course.price > 0 && !course.purchased) {
             setSubmitting(true);
-            let result = await client.post(`/courses/${courseId}/progress`, currentView._data);
-            setSubmitting(false);
+
+            let result = await client.post(`/courses/${courseId}/pay`);
 
             if (result.error) {
                 const error = result.error;
                 toast.error(error.message);
+                setSubmitting(false);
                 return;
             }
 
-            const course = (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data;
+            const paymentId = result.data.paymentId;
+            router.replace({ pathname: `${ModalPathPrefix}/payments/${paymentId}/debit`, query: { returnUrl: route.url } });
+            return;
+        }
+
+        if (currentView._type != 'question') {
+
+            setSubmitting(true);
+            let result = await client.post(`/courses/${courseId}/progress`, currentView._data);
+
+            if (result.error) {
+                const error = result.error;
+                toast.error(error.message);
+                setSubmitting(false);
+                return;
+            }
+
+            course = await setCourse((await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
             eventDispatcher.emit(`editCourse`, course);
-            await setCourse(course);
             await client.reloadUser();
+            setSubmitting(false);
         }
         else if (currentView._type == 'question' && (!currentView._submitted || (skip && !currentView._correctAnswer))) {
 
             setSubmitting(true);
             let result = await client.post(`/courses/${courseId}/progress`, { ...currentView._data, skip });
-            setSubmitting(false);
 
             if (result.error) {
                 const error = result.error;
                 toast.error(error.message);
+                setSubmitting(false);
                 return;
             }
 
-            const course = (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data;
+            course = await setCourse((await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
             eventDispatcher.emit(`editCourse`, course);
-            await setCourse(course);
             await client.reloadUser();
+            setSubmitting(false);
 
             const question = course.sections
                 .flatMap(section => section.lessons)
@@ -426,11 +445,11 @@ const LessonViewModal = withRemount((props) => {
             setCurrentView(nextView);
         }
         else {
-
-            const isLastLesson = course.sections.flatMap(section => section.lessons).slice(-1)[0]?.id == lesson.id;
             modal.close();
 
-            if (isLastLesson && course.certificateTemplate) {
+            const lessons = course.sections.flatMap(section => section.lessons);
+            const lessonComplete = lessons.slice(-1)[0]?.id == lesson.id && lessons.every(_lesson => _lesson.status == 'completed');
+            if (lessonComplete && course.certificateTemplate) {
                 dialog.open({ course }, CertificateViewDialog);
             }
         }
@@ -440,7 +459,7 @@ const LessonViewModal = withRemount((props) => {
 
     return (
         <>
-            <Modal.Header className="bg-light py-2 px-2 zi-1">
+            <Modal.Header className="py-2 px-2 zi-1">
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
                         <div className="d-flex align-items-center justify-content-between">
@@ -467,13 +486,14 @@ const LessonViewModal = withRemount((props) => {
                 </div>
             </Modal.Header>
 
-            <Modal.Body className="bg-light position-static">
+            <Modal.Body className="position-static">
                 <>
-                    {currentView._type == 'lesson' && <LessonView key={currentView.id} {...{ course, lesson: currentView, setLesson: setCurrentView, moveBackward, moveForward }} />}
-                    {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, lesson, question: currentView, setQuestion: setCurrentView, moveBackward, moveForward }} />}
+                    {currentView._type == 'lesson' && <LessonView key={currentView.id} {...{ course, lesson: currentView, setCurrentView, moveBackward, moveForward }} />}
+                    {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, lesson, question: currentView, setCurrentView, moveBackward, moveForward }} />}
                 </>
             </Modal.Body>
-            <Modal.Footer className="bg-light zi-1 py-3">
+            
+            <Modal.Footer className="zi-1 py-3">
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
                         <div className="d-flex gap-3 justify-content-end w-100">
