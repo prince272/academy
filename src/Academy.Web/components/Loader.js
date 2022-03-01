@@ -1,3 +1,4 @@
+import { Spinner } from "react-bootstrap";
 import { BsArrowLeft, BsArrowRepeat, BsChevronLeft } from "react-icons/bs";
 import { SvgPageNotFoundIllus, SvgServerDownIllus } from '../resources/images/illustrations';
 
@@ -31,7 +32,7 @@ const Loader = ({ status, message, remount, fallback, ...props }) => {
     else {
         render = (
             <div className="d-flex flex-column text-center justify-content-center">
-                <div className="mb-3"><div className="spinner-border text-primary" style={{ width: "3rem", height: "3rem" }}></div></div>
+                <div className="mb-3"><Spinner animation="grow" variant="primary" /></div>
                 {message && <div>{message}</div>}
             </div>
         );

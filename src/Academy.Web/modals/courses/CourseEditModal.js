@@ -28,7 +28,6 @@ const CourseEditModal = withRemount((props) => {
     const courseId = route.query.courseId;
     const eventDispatcher = useEventDispatcher();
     const appSettings = useAppSettings();
-
     const client = useClient();
 
     const load = async () => {
@@ -104,8 +103,12 @@ const CourseEditModal = withRemount((props) => {
         load();
     }, []);
 
+
     if (loading) return (<Loader {...loading} />);
 
+    const courseCost = parseFloat(`${form.watch("cost")}`.replace(/,/g, '')) || 0;
+    const coursePrice = ((appSettings.company.courseRate * courseCost) + courseCost).toFixed(2) * 1;
+    
     return (
         <>
             <Modal.Header closeButton>
@@ -151,14 +154,14 @@ const CourseEditModal = withRemount((props) => {
                                 <OverlayTrigger trigger="hover" rootClose placement="top" overlay={(popoverProps) => (
                                     <Popover {...popoverProps} arrowProps={{ style: { display: "none" } }}>
                                         <Popover.Body className="p-3">
-                                            <div className="small">The expense incurred for making this course. The actual price of the course would be automatically calculated depending on our policies.</div>
+                                            <div className="small">The expense incurred for making this course.</div>
                                         </Popover.Body>
                                     </Popover>
 
                                 )}>
                                     <span className="link-primary svg-icon svg-icon-xs d-inline-block mx-1"><BsInfoCircle /></span>
                                 </OverlayTrigger>
-                                (<span>{form.watch('cost') > 0 ? 'paid' : 'free'}</span> course)
+                                (<span>{courseCost > 0 ? 'paid' : 'free'}</span> course)
                             </label>
                             <div className="input-group input-group-merge">
                                 <div className="input-group-prepend input-group-text">{appSettings.currency.symbol}</div>
@@ -167,11 +170,16 @@ const CourseEditModal = withRemount((props) => {
                                         return (
                                             <Cleave value={field.value}
                                                 options={{ numeral: true, numeralThousandsGroupStyle: "thousand" }}
-                                                onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.fee ? 'is-invalid' : ''}`} />
+                                                onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.cost ? 'is-invalid' : ''}`} />
                                         );
                                     }} />
                             </div>
                             <div className="invalid-feedback">{formState.errors.cost?.message}</div>
+                            <input {...form.register("cost")} type="hidden" />
+                        </div>
+                        <div className="col-5">
+                            <label className="form-label">Price</label>
+                            <input type="text" class="form-control-plaintext" value={coursePrice} readOnly />
                         </div>
                         <div className="col-12">
                             <label className="form-label">Image</label>

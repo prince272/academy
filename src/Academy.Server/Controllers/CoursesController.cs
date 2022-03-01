@@ -59,6 +59,7 @@ namespace Academy.Server.Controllers
             course.Created = DateTimeOffset.UtcNow;
             course.Published = form.Published ? course.Published ?? DateTimeOffset.UtcNow : null;
             course.Cost = Math.Round(form.Cost, 2, MidpointRounding.AwayFromZero);
+            course.Price = form.Cost > 0 ? Math.Round((appSettings.Company.CourseRate * form.Cost) + form.Cost, 2, MidpointRounding.AwayFromZero) : 0;
             course.Image = (await unitOfWork.FindAsync<Media>(form.ImageId));
             course.CertificateTemplate = (await unitOfWork.FindAsync<Media>(form.CertificateTemplateId));
             course.UserId = user.Id; // Set the owner of the course.
@@ -85,6 +86,7 @@ namespace Academy.Server.Controllers
             course.Updated = DateTimeOffset.UtcNow;
             course.Published = form.Published ? course.Published ?? DateTimeOffset.UtcNow : null;
             course.Cost = Math.Round(form.Cost, 2, MidpointRounding.AwayFromZero);
+            course.Price = form.Cost > 0 ? Math.Round((appSettings.Company.CourseRate * form.Cost) + form.Cost, 2, MidpointRounding.AwayFromZero) : 0;
             course.Image = (await unitOfWork.FindAsync<Media>(form.ImageId));
             course.CertificateTemplate = (await unitOfWork.FindAsync<Media>(form.CertificateTemplateId));
 
@@ -157,23 +159,25 @@ namespace Academy.Server.Controllers
         [HttpPost("/courses/{courseId}/pay")]
         public async Task<IActionResult> Pay(int courseId)
         {
-            var courseModel = await GetCourseModel(courseId);
-            if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
+            var course = await unitOfWork.Query<Course>()
+                .FirstOrDefaultAsync(_ => _.Id == courseId);
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
 
             var payment = new Payment();
-            payment.Title = courseModel.Title;
+            payment.Title = course.Title;
             payment.Reason = PaymentReason.Course;
-            payment.ReasonId = courseModel.Id;
+            payment.ReasonId = course.Id;
             payment.Status = PaymentStatus.Pending;
-            payment.Amount = courseModel.Price;
+            payment.Amount = course.Price;
             payment.Type = PaymentType.Debit;
-            payment.IpAddress = Request.GetIPAddress();
+            payment.IPAddress = Request.GetIPAddress();
             payment.UAString = Request.GetUAString();
             payment.Issued = DateTimeOffset.UtcNow;
             payment.PhoneNumber = user.PhoneNumber;
             payment.Email = user.Email;
+            payment.FullName = user.FullName;
 
             await unitOfWork.CreateAsync(payment);
             return Result.Succeed(data: new { PaymentId = payment.Id });
@@ -275,7 +279,7 @@ namespace Academy.Server.Controllers
                 {
                     UserId = user.Id,
                     CourseId = courseModel.Id,
-                    Number = DateTimeOffset.UtcNow.Year + Compute.GenerateNumber(8)
+                    Number = DateTimeOffset.UtcNow.Year + Compute.GenerateString(8, Compute.WHOLE_NUMERIC_CHARS)
                 });
                 await unitOfWork.CreateAsync(certificate);
             }
@@ -646,9 +650,9 @@ namespace Academy.Server.Controllers
             await unitOfWork.CreateAsync(question);
             await UpdateAnswers(question, form);
 
-            // Calculate question duration.
-            question.Duration = await sharedService.CalculateDurationAsync(question);
-            await unitOfWork.UpdateAsync(question);
+            // Calculate lesson duration.
+            lesson.Duration = await sharedService.CalculateDurationAsync(lesson);
+            await unitOfWork.UpdateAsync(lesson);
 
             return Result.Succeed(data: question.Id);
         }
@@ -681,9 +685,9 @@ namespace Academy.Server.Controllers
             await unitOfWork.UpdateAsync(question);
             await UpdateAnswers(question, form);
 
-            // Calculate question duration.
-            question.Duration = await sharedService.CalculateDurationAsync(question);
-            await unitOfWork.UpdateAsync(question);
+            // Calculate lesson duration.
+            lesson.Duration = await sharedService.CalculateDurationAsync(lesson);
+            await unitOfWork.UpdateAsync(lesson);
 
             return Result.Succeed();
         }
@@ -770,6 +774,16 @@ namespace Academy.Server.Controllers
 
             if (course == null) return null;
 
+            var user = await HttpContext.GetCurrentUserAsync();
+            var userCanManageCourse = user?.CanManageCourse(course) ?? false;
+
+            var courseCertificate = user?.Certificates.FirstOrDefault(_ => _.CourseId == course.Id);
+            var coursePurchased = user != null ? await unitOfWork.Query<Payment>()
+                .AnyAsync(_ => _.UserId == user.Id &&
+                               _.Reason == PaymentReason.Course &&
+                               _.ReasonId == course.Id &&
+                               _.Status == PaymentStatus.Complete) : false;
+
             course.Sections = await unitOfWork.Query<Section>().AsNoTrackingWithIdentityResolution()
                              .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
                              .Where(_ => _.CourseId == course.Id)
@@ -810,9 +824,6 @@ namespace Academy.Server.Controllers
                 }
             }
 
-            var user = await HttpContext.GetCurrentUserAsync();
-            var userCanManageCourse = user?.CanManageCourse(course) ?? false;
-
             CourseStatus GetStatus(CourseStatus[] statuses)
             {
                 return statuses.Any(status => status == CourseStatus.Started) ? CourseStatus.Started :
@@ -820,25 +831,17 @@ namespace Academy.Server.Controllers
                   statuses.Any() ? CourseStatus.Completed : CourseStatus.Locked;
             }
 
-            double GetProgress(CourseStatus[] statuses)
+            decimal GetProgress(CourseStatus[] statuses)
             {
                 var complete = statuses.Count(status => status == CourseStatus.Completed);
-                return (Math.Round(complete / (double)Math.Max(statuses.Count(), 1), 2, MidpointRounding.ToZero));
+                return (Math.Round(complete / (decimal)Math.Max(statuses.Count(), 1), 2, MidpointRounding.ToZero));
             };
 
             var started = true;
 
-            var courseCertificate = user?.Certificates.FirstOrDefault(_ => _.CourseId == course.Id);
-            var coursePurchased = user != null ? await unitOfWork.Query<Payment>()
-                .AnyAsync(_ => _.UserId == user.Id &&
-                               _.Reason == PaymentReason.Course &&
-                               _.ReasonId == course.Id &&
-                               _.Status == PaymentStatus.Complete) : false;
-
             var courseModel = mapper.Map<CourseModel>(course);
             courseModel.Course = course;
             courseModel.Certificate = mapper.Map<CertificateModel>(courseCertificate);
-            courseModel.Price = await sharedService.CalculatePriceAsync(course);
             courseModel.Purchased = coursePurchased;
             courseModel.Duration = course.Sections.SelectMany(_ => _.Lessons).Select(_ => _.Duration).Sum();
             courseModel.Sections = course.Sections.Select(section =>
@@ -855,7 +858,6 @@ namespace Academy.Server.Controllers
                         var progress = user?.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Question && _.Id == question.Id);
 
                         var questionModel = mapper.Map<QuestionModel>(question);
-                        questionModel.Text = (userCanManageCourse || progress != null) ? question.Text : null;
                         questionModel.Answers = question.Answers.Select((answer, answerIndex) =>
                         {
                             var answerModel = mapper.Map<QuestionAnswerModel>(answer);
@@ -878,7 +880,6 @@ namespace Academy.Server.Controllers
                     }).ToArray();
                     lessonModel.Status = GetStatus(lessonModel.Questions.Select(question => question.Status)
                         .Prepend(progress != null ? CourseStatus.Completed : CourseStatus.Locked).ToArray());
-
                     if (lessonModel.Status == CourseStatus.Locked && started)
                     {
                         lessonModel.Status = CourseStatus.Started;
@@ -894,6 +895,13 @@ namespace Academy.Server.Controllers
                         started = false;
                     }
 
+
+                    lessonModel.Document = (userCanManageCourse || (lessonModel.Status != CourseStatus.Locked)) ? lessonModel.Document : null;
+                    lessonModel.Media = (userCanManageCourse || (lessonModel.Status != CourseStatus.Locked)) ? lessonModel.Media : null;
+                    lessonModel.Questions.ForEach(questionModel =>
+                    {
+                        questionModel.Text = (userCanManageCourse || (questionModel.Status != CourseStatus.Locked)) ? questionModel.Text : null;
+                    });
                     return lessonModel;
                 }).ToArray();
 

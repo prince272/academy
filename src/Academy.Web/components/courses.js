@@ -37,8 +37,8 @@ const CourseItem = ({ course }) => {
                 <div className="fs-6 mb-2" style={{ height: "48px" }}>
                     <TruncateMarkup lines={2}><div>{course.title}</div></TruncateMarkup>
                 </div>
-                <div class="hstack gap-3 justify-content-between">
-                    <div>{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
+                <div className="hstack gap-3 justify-content-between">
+                    <div className="text-primary">{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
                     <div><span className="text-primary"><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
                 </div>
                 {editable && (

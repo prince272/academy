@@ -32,6 +32,8 @@ namespace Academy.Server.Data.Entities
 
         public decimal Cost { get; set; }
 
+        public decimal Price { get; set; }
+
         public virtual ICollection<Section> Sections { get; set; } = new List<Section>();
     }
 

@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { BsArrowRepeat, BsHouse } from "react-icons/bs";
 import { SvgAppWordmark } from "../resources/images/icons";
 import { SvgPageNotFoundIllus, SvgServerDownIllus } from "../resources/images/illustrations";
+import { preventDefault } from "../utils/helpers";
 
 const ErrorPage = ({ error }) => {
     const router = useRouter();
@@ -15,7 +16,7 @@ const ErrorPage = ({ error }) => {
         <div className="d-flex flex-column justify-content-center align-items-center h-100">
             <header className="navbar navbar-height navbar-light navbar-absolute-top mt-2">
                 <div className="container">
-                    <a className="navbar-brand mx-auto" href="/">
+                    <a className="navbar-brand mx-auto" href="#" onClick={preventDefault(() => window.location.assign("/"))}>
                         <div className="svg-icon"><SvgAppWordmark style={{ width: "auto", height: "2.5rem" }} /></div>
                     </a>
                 </div>
@@ -31,7 +32,7 @@ const ErrorPage = ({ error }) => {
                     {error.message && <div className="mb-3">{error.message} status: {error.status}</div>}
                     <div className="hstack gap-3 mx-auto">
                         <button type="button" className="btn btn-secondary btn-sm" onClick={() => {
-                            window.location.assign("/")
+                            window.location.assign("/");
                         }}>
                             <span className="svg-icon svg-icon-xs d-inline-block me-1"><BsHouse /></span><span>Home</span>
                         </button>
@@ -47,7 +48,7 @@ const ErrorPage = ({ error }) => {
                 <footer className="container py-4">
                     <div className="row align-items-md-center text-center">
                         <div className="col-md mb-3 mb-md-0">
-                            <p className="mb-0">Copyright © {new Date().getFullYear()} Academy of ours. All rights reserved</p>
+                            <p className="mb-0">Copyright © {new Date().getFullYear()} Academy of Ours. All rights reserved</p>
                         </div>
                     </div>
                 </footer>

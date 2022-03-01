@@ -1,4 +1,4 @@
-import { Dropdown, Nav, Navbar, OverlayTrigger, Tooltip, Popover } from 'react-bootstrap';
+import { Dropdown, Nav, Navbar, OverlayTrigger, Tooltip, Modal } from 'react-bootstrap';
 import Link from 'next/link';
 import { useClient } from '../utils/client';
 import { cleanObject } from '../utils/helpers';
@@ -9,20 +9,53 @@ import { useEffect, useRef, useState, } from 'react';
 import _ from 'lodash';
 import { Toaster } from 'react-hot-toast';
 
-import { ModalPathPrefix, ModalProvider, useModal } from '../modals';
+import { DefaultModalProps, ModalPathPrefix, ModalProvider, useModal } from '../modals';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import Loader from '../components/Loader';
 import { SvgAppWordmark, SvgFacebookLogo, SvgInstagramLogo, SvgLinkedinLogo, SvgTwitterLogo, SvgYoutubeLogo, SvgBitCube, SvgBitCubes } from '../resources/images/icons';
-import { BsPerson, BsPersonFill } from 'react-icons/bs';
+import { BsPersonFill } from 'react-icons/bs';
 import { useAppSettings } from '../utils/appSettings';
-import Mounted from '../components/Mounted';
 import { useEventDispatcher } from '../utils/eventDispatcher';
+import { useDialog } from '../utils/dialog';
+
+const BitInfoDialog = () => {
+    const appSettings = useAppSettings();
+    const client = useClient();
+    const dialog = useDialog();
+    const { opended, close, params } = dialog;
+
+    return (
+        <Modal {...DefaultModalProps} size="sm" show={opended} onHide={() => close()}>
+            <Modal.Header bsPrefix="modal-close" closeButton></Modal.Header>
+            <Modal.Body>
+                <div className="text-center">
+                    <div className="h5 mb-0">Your Bits</div>
+                    <div className="d-inline-flex align-items-center my-3"><div className="svg-icon-sm"><SvgBitCubes /></div><div className="ms-2 h5 mb-0">{client.user.bits}</div></div>
+                    <div className="text-center text-muted small">Use them to unlock practice features. Keep learning every day to collect more!</div>
+                </div>
+                <hr />
+                <div className="h6 mb-3">How you may earn or lose bits:</div>
+                <div className="vstack gap-2 small">
+                    {appSettings.currency.bitRules.map((bitRule) => {
+                        return (
+                            <div key={bitRule.type} className="hstack gap-3 justify-content-between align-items-center text-nowrap">
+                                <div className="text-muted">{bitRule.description}</div>
+                                <div className="fw-bold text-nowrap">{(bitRule.value <= 0 ? "" : "+") + bitRule.value} {bitRule.value == 1 ? 'Bit' : 'Bits'}</div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </Modal.Body>
+        </Modal>
+    );
+};
 
 const Header = () => {
     const client = useClient();
     const router = useRouter();
     const appSettings = useAppSettings();
+    const dialog = useDialog();
 
     return (
 
@@ -37,36 +70,11 @@ const Header = () => {
                 {client.user && (
                     <>
                         <Nav.Item className=" me-2 order-md-3">
-                            <OverlayTrigger trigger="click" rootClose placement="bottom" overlay={(popoverProps) => (
-                                <Popover {...popoverProps} arrowProps={{ style: { display: "none" } }}>
-                                    <Popover.Body>
-                                        <div className="text-center">
-                                            <div className="h5 mb-0">Your bits</div>
-                                            <div className="d-inline-flex align-items-center my-3"><div className="svg-icon-sm"><SvgBitCubes /></div><div className="ms-2 h5 mb-0">{client.user.bits}</div></div>
-                                            <div className="text-center text-muted small">Use them to unlock practice features. Keep learning every day to collect more!</div>
-                                        </div>
-
-                                        <hr />
-                                        <div className="h6 mb-3">How you may earn or lose bits:</div>
-                                        <div className="vstack gap-2 small">
-                                            {appSettings.currency.bitRules.map((bitRule) => {
-
-                                                return (
-                                                    <div key={bitRule.type} className="hstack gap-3 justify-content-between align-items-center text-nowrap">
-                                                        <div className="text-muted">{bitRule.description}</div>
-                                                        <div className="fw-bold text-nowrap">{(bitRule.value <= 0 ? "" : "+") + bitRule.value} {bitRule.value == 1 ? 'Bit' : 'Bits'}</div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </Popover.Body>
-                                </Popover>
-
-                            )}>
-                                <button className="btn btn-outline-secondary btn-no-focus border-0 p-2">
-                                    <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{client.user.bits}</div></div>
-                                </button>
-                            </OverlayTrigger>
+                            <button className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
+                                dialog.open({}, BitInfoDialog);
+                            }}>
+                                <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{client.user.bits}</div></div>
+                            </button>
                         </Nav.Item>
                     </>
                 )}
@@ -74,15 +82,6 @@ const Header = () => {
 
                 <Navbar.Collapse className="flex-grow-0">
                     <Nav>
-                        <Nav.Item>
-                            <Dropdown>
-                                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">How it works</Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                    <Link href="/teach" passHref><Dropdown.Item>For teachers</Dropdown.Item></Link>
-                                    <Link href="/" passHref><Dropdown.Item>For students</Dropdown.Item></Link>
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        </Nav.Item>
                         <Nav.Item>
                             <Dropdown>
                                 <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Courses</Dropdown.Toggle>
@@ -94,7 +93,18 @@ const Header = () => {
                                 </Dropdown.Menu>
                             </Dropdown>
                         </Nav.Item>
-
+                        <Nav.Item>
+                            <Dropdown>
+                                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Features</Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Link href="/teach" passHref><Dropdown.Item>For teachers</Dropdown.Item></Link>
+                                    <Link href="/" passHref><Dropdown.Item>For students</Dropdown.Item></Link>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </Nav.Item>
+                        <Nav.Item>
+                            <Link href="/about"><a className="btn btn-outline-secondary border-0 p-2 mb-2 mb-lg-0">About</a></Link>
+                        </Nav.Item>
                         {client.user ? (
                             <>
                                 <Nav.Item>
@@ -189,8 +199,9 @@ const Body = ({ children }) => {
 
         const handleRouteStart = (url) => {
             try {
-                setPageLoading(true);
-                modal.open(url);
+                if (!modal.open(url)) {
+                    setPageLoading(true);
+                }
             }
             catch (ex) {
                 setPageLoading(false);
@@ -232,7 +243,7 @@ const Body = ({ children }) => {
     return (
         <>
             {children}
-            {(client.loading || modal.loading) && (
+            {(client.loading || modal.loading || pageLoading) && (
                 <Loader className="position-fixed top-50 start-50 translate-middle bg-white" style={{ zIndex: 2000 }} />
             )}
         </>
@@ -256,7 +267,7 @@ const Footer = () => {
             </div>
             <div>
                 <div className="container d-flex flex-wrap justify-content-center justify-content-md-between py-3">
-                    <div className="mb-3">Copyright © {new Date().getFullYear()} Academy of ours. All rights reserved</div>
+                    <div className="mb-3">Copyright © {new Date().getFullYear()} Academy of Ours. All rights reserved</div>
                     <div className="hstack gap-2 d-inline-flex mb-3">
                         {appSettings.company.facebookLink && (
                             <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Check out our facebook</Tooltip>}>

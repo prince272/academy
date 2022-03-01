@@ -19,8 +19,6 @@ namespace Academy.Server.Data.Entities
 
         public QuestionType Type { get; set; }
 
-        public long Duration { get; set; }
-
         public virtual ICollection<QuestionAnswer> Answers { get; set; } = new List<QuestionAnswer>();
 
         public bool CheckAnswer(string[] answers)

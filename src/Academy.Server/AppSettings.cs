@@ -42,6 +42,8 @@ namespace Academy.Server
         public string TwitterLink { get; set; }
 
         public string YoutubeLink { get; set; }
+
+        public decimal CourseRate { get; set; }
     }
 
     public class CurrencyInfo

@@ -1,10 +1,8 @@
 import _ from 'lodash';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import dynamic from 'next/dynamic';
 import matchPath from '../utils/matchPath';
 import { Modal as BsModal } from 'react-bootstrap';
-import { withRemount } from '../utils/hooks';
 import { useClient } from '../utils/client';
 
 const DefaultModalProps = {
@@ -38,7 +36,8 @@ const useModalProvider = () => {
     const modal = {
         loading,
         close: () => {
-            setModalProps((modalProps) => ({ ...modalProps, onExited: () => setRoute(null), show: false }));
+            setModalProps((modalProps) => ({ ...modalProps, show: false }));
+            setRoute(null);
         },
         open: (url, state, abort = true) => {
             const abortRouteChange = (url) => { throw `Route change to "${url}" was aborted (this error can be safely ignored).`; };
@@ -73,6 +72,8 @@ const useModalProvider = () => {
             else {
                 modal.close();
             }
+
+            return currentRoute != null;
         },
     };
 

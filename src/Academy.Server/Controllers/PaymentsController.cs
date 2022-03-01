@@ -44,7 +44,7 @@ namespace Academy.Server.Controllers
         }
 
         [HttpPost("{paymentId}/mobile/process")]
-        public async Task<IActionResult> ProcessMobile(int paymentId, string returnUrl, [FromBody] MobileDetails form)
+        public async Task<IActionResult> ProcessMobile(int paymentId, string returnUrl, [FromBody] MobileDetails mobileDetails)
         {
             if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
                 throw new ArgumentException("Url is not valid.", nameof(returnUrl));
@@ -55,15 +55,18 @@ namespace Academy.Server.Controllers
 
             try
             {
-                payment.RedirectUrl = Url.ActionLink(nameof(Callback), values: new { paymentId, returnUrl });
-                payment.SetData(nameof(MobileDetails), form);
-                await paymentProcessor.ProcessAsync(payment);
-                return Result.Succeed();
+                var mobileIssuers = (await paymentProcessor.GetIssuersAsync()).OfType<MobileIssuer>().ToArray();
+                mobileDetails.Resolve(mobileIssuers);
             }
             catch (MobileDetailsException ex)
             {
                 return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.Name, ex.Message));
             }
+
+            payment.RedirectUrl = Url.ActionLink(nameof(Callback), values: new { paymentId, returnUrl });
+            payment.SetData(nameof(MobileDetails), mobileDetails);
+            await paymentProcessor.ProcessAsync(payment);
+            return Result.Succeed();
         }
 
         [HttpPost("{paymentId}/checkout")]

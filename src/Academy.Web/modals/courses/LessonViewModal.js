@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 
 import { useConfetti, withAsync, withRemount } from '../../utils/hooks';
-import { arrayMove, preventDefault, stripHtml } from '../../utils/helpers';
+import { arrayMove, preventDefault, sleep, stripHtml } from '../../utils/helpers';
 
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 
@@ -279,7 +279,7 @@ const QuestionView = (props) => {
 QuestionView.displayName = 'QuestionView';
 
 const LessonViewModal = withRemount((props) => {
-    const { route, modal, remount } = props;
+    const { route, modal, remount, updateModalProps } = props;
     const router = useRouter();
     const client = useClient();
     const dialog = useDialog();
@@ -302,6 +302,7 @@ const LessonViewModal = withRemount((props) => {
     const load = async () => {
         setLoading({});
 
+        await sleep(1000);
         let result = await client.get(`/courses/${courseId}`);
 
         if (result.error) {
@@ -311,6 +312,27 @@ const LessonViewModal = withRemount((props) => {
         }
 
         course = await setCourse(result.data);
+
+        if (course.price > 0 && !course.purchased) {
+
+            result = await client.post(`/courses/${courseId}/pay`);
+
+            if (result.error) {
+                const error = result.error;
+                setLoading({ ...error, message: 'Unable to load lesson.', fallback: modal.close, remount });
+                return;
+            }
+
+            const paymentId = result.data.paymentId;
+            router.replace({ pathname: `${ModalPathPrefix}/payments/${paymentId}/debit`, query: { returnUrl: route.url } });
+            return;
+        }
+        else {
+            updateModalProps({
+                contentClassName: 'h-100',
+                fullscreen: true
+            });
+        }
 
         result = await client.get(`/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`);
 
@@ -492,7 +514,7 @@ const LessonViewModal = withRemount((props) => {
                     {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, lesson, question: currentView, setCurrentView, moveBackward, moveForward }} />}
                 </>
             </Modal.Body>
-            
+
             <Modal.Footer className="zi-1 py-3">
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
@@ -524,8 +546,7 @@ const LessonViewModal = withRemount((props) => {
 
 LessonViewModal.getModalProps = () => {
     return {
-        contentClassName: 'h-100',
-        fullscreen: true
+        size: 'sm'
     };
 };
 

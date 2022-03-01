@@ -18,6 +18,8 @@ namespace Academy.Server.Data.Entities
 
         public int? UserId { get; set; }
 
+        public string TransactionId { get; set; }
+
         public int Id { get; set; }
 
         public PaymentReason Reason { get; set; }
@@ -34,7 +36,7 @@ namespace Academy.Server.Data.Entities
 
         public string Title { get; set; }
 
-        public string IpAddress { get; set; }
+        public string IPAddress { get; set; }
 
         public DateTimeOffset Issued { get; set; }
 

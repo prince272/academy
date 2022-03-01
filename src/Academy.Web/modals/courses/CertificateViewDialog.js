@@ -22,16 +22,16 @@ import {
 
 } from "react-share";
 import { useEventDispatcher } from '../../utils/eventDispatcher';
+import { useDialog } from '../../utils/dialog';
 
 
-const CertificateViewDialog = ({ params, opended, close, dispose }) => {
-    const [course, setCourse] = withAsync(useState(params.course));
+const CertificateViewDialog = () => {
+    const dialog = useDialog();
+    let [course, setCourse] = withAsync(useState(dialog.params.course));
     const router = useRouter();
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
     const [submitting, setSubmitting] = useState(false);
-
-    const modal = useModal();
     const confetti = useConfetti();
     const client = useClient();
 
@@ -59,7 +59,7 @@ const CertificateViewDialog = ({ params, opended, close, dispose }) => {
     };
 
     return (
-        <Modal {...DefaultModalProps} show={opended} onHide={() => close.current()} onExited={() => dispose.current()}>
+        <Modal {...DefaultModalProps} show={dialog.opended} onHide={() => dialog.close()}>
             <Modal.Header closeButton>
                 <Modal.Title>{course.title} Certificate</Modal.Title>
             </Modal.Header>

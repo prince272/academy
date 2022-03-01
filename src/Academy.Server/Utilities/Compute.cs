@@ -113,13 +113,6 @@ namespace Academy.Server.Utilities
             return new Random(BitConverter.ToInt32(randomNumberBuffer, 0)).Next(min, max);
         }
 
-        public static int GenerateNumber(int length)
-        {
-            var min = (int)Math.Pow(10, length - 1);
-            var max = (int)Math.Pow(10, length) - 1;
-            return GenerateNumber(min, max);
-        }
-
         // source: How to make random string of numbers and letters with a length of 5? [duplicate]
         // https://stackoverflow.com/questions/9995839/how-to-make-random-string-of-numbers-and-letters-with-a-length-of-5
         public static string GenerateString(int length, string characters)

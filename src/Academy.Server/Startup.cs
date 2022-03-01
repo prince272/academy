@@ -11,6 +11,7 @@ using FFMpegCore;
 using FluentValidation.AspNetCore;
 using Humanizer;
 using IdentityModel;
+using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
@@ -75,7 +76,7 @@ namespace Academy.Server
                                       $"/{directoryName}" +
                                       $"/{currentDateTime.Year}" +
                                       $"/{mediaType.ToString().Pluralize().ToLowerInvariant()}" +
-                                      $"/{mediaTypeShortName.ToUpperInvariant()}-{currentDateTime:yyyyMMdd}-{Compute.GenerateNumber(8)}{System.IO.Path.GetExtension(mediaName).ToLowerInvariant()}";
+                                      $"/{mediaTypeShortName.ToUpperInvariant()}-{currentDateTime.Year + Compute.GenerateString(8, Compute.WHOLE_NUMERIC_CHARS)}{System.IO.Path.GetExtension(mediaName).ToLowerInvariant()}";
                         return path;
                     }
                 };
@@ -100,14 +101,16 @@ namespace Academy.Server
                     Country = "Ghana",
                     CountryCode = "GH",
                     Province = "Greater Accra",
-                    ProvinceCode = "GA"
+                    ProvinceCode = "GA",
+
+                    CourseRate = 0.15m
                 };
 
                 options.Currency = new CurrencyInfo
                 {
                     Name = "Ghanaian cedi",
                     Code = "GHS",
-                    Symbol = "₵",
+                    Symbol = "GH₵",
                     Limit = 1000,
 
                     BitRules = new List<BitRule>
@@ -221,6 +224,8 @@ namespace Academy.Server
             {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "Academy.Server", Version = "v1" });
             });
+
+            services.AddMediatR(Assembly.GetExecutingAssembly());
 
             services.AddFluentValidation(options =>
             {

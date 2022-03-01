@@ -32,6 +32,8 @@ namespace Academy.Server.Models.Accounts
 
         public string Bio { get; set; }
 
+        public decimal Balance { get; set; }
+
         public MediaModel Avatar { get; set; }
     }
 

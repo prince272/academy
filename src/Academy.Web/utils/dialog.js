@@ -1,26 +1,29 @@
 import { createContext, useCallback, useContext, useRef, useState } from "react";
 import { Modal } from "react-bootstrap";
 
-const ConfirmationDialog = ({ params, opended, close, dispose }) => {
+const ConfirmationDialog = () => {
+    const dialog = useDialog();
+    const { opended, close, params } = dialog;
 
     return (
-        <Modal show={opended} onHide={() => close.current()} onExited={() => dispose.current()}>
+        <Modal show={opended} onHide={() => close()}>
             <Modal.Header closeButton>
                 <Modal.Title>{params.title}</Modal.Title>
             </Modal.Header>
             <Modal.Body>{params.body}</Modal.Body>
             <Modal.Footer>
-                <button className="btn btn-secondary" onClick={() => close.current()} {...params.cancelButtonProps}>Cancel</button>
-                <button className="btn btn-primary" style={{ minWidth: "88px" }} onClick={() => close.current(true)} {...params.proceedButtonProps}>Proceed</button>
+                <button className="btn btn-secondary" onClick={() => close()} {...params.cancelButtonProps}>Cancel</button>
+                <button className="btn btn-primary" style={{ minWidth: "88px" }} onClick={() => close(true)} {...params.proceedButtonProps}>Proceed</button>
             </Modal.Footer>
         </Modal>
     );
 };
 
-const useDialogProvider = () => {
+const DialogContext = createContext({});
+
+const DialogProvider = ({ children }) => {
 
     const [opended, setOpened] = useState(false);
-    const [result, setResult] = useState(null);
     const [params, setParams] = useState(null);
     const [view, setView] = useState({ Component: null });
 
@@ -28,50 +31,33 @@ const useDialogProvider = () => {
         throw new Error("Trying to close dialog without opening it.");
     });
 
-    const dispose = useRef(() => {
-        setView({ Component: null });
-        setParams(null);
-    });
-
     const prepare = useCallback((params, Component) => {
         setOpened(true);
-        setResult(null);
         setParams(params);
-
         setView({ Component: Component });
 
         return new Promise((resolve) => {
             close.current = (result) => {
+                setView({ Component: null });
+                setParams(null);
                 setOpened(false);
-                setResult(result);
+
                 resolve(result);
+                close.current = () => { throw new Error("Trying to close dialog without opening it."); };
             };
         });
     }, []);
 
-    const Component = ((view.Component && <view.Component {...{ opended, params, close, dispose }} />) || (<></>));
-
-    return {
-        Component,
-        opended,
-        params,
-        result,
-        open: (params, Component) => prepare(params, Component),
-        confirm: (params) => prepare(params, ConfirmationDialog),
-        close: close.current,
-    };
-};
-
-const DialogContext = createContext({});
-
-const DialogProvider = ({ children }) => {
-
-    const value = useDialogProvider();
-
     return (
-        <DialogContext.Provider value={value}>
+        <DialogContext.Provider value={{
+            opended,
+            params,
+            open: (params, Component) => prepare(params, Component),
+            confirm: (params) => prepare(params, ConfirmationDialog),
+            close: close.current,
+        }}>
             {children}
-            {value.Component}
+            {((view.Component && <view.Component />) || (<></>))}
         </DialogContext.Provider>
     )
 };

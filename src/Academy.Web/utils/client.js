@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Oidc, { UserManager, WebStorageStateStore } from 'oidc-client-ts';
 import { AsyncLocker } from './helpers';
 import queryString from 'qs';
-import { useAsyncState, useSessionState } from './hooks';
+import { useSessionState, withAsync } from './hooks';
 import { useEventDispatcher } from './eventDispatcher';
 import axios from 'axios';
 import * as https from 'https';
@@ -80,8 +80,8 @@ const useClientProvider = () => {
 
     const userManagerLocker = useMemo(() => new AsyncLocker());
     const userManagerRef = useRef(null);
-    const [user, setUser] = useAsyncState(null);
-    const [userContext, setUserContext] = useAsyncState(null);
+    let [user, setUser] = withAsync(useState(null));
+    let [userContext, setUserContext] = withAsync(useState(null));
 
     const httpClient = createHttpClient({
         headers: (() => {

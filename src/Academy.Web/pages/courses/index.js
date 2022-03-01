@@ -54,6 +54,7 @@ const CoursesPage = withRemount((props) => {
         Object.entries(router.query).forEach(([name, value]) => {
             search.setValue(name, value);
         });
+        setPage(null);
         load(router.query);
     }, [router.query]);
 
@@ -215,31 +216,34 @@ const CoursesPage = withRemount((props) => {
                         scrollContainerClassName="h-100 mx-auto w-100">
                         {scrollItems.map((ScrollItem, scrollItemIndex) => <ScrollItem key={`scroll-item-${scrollItemIndex}`} itemId={`scroll-item-${scrollItemIndex}`} />)}
                     </ScrollMenu>
-                    {(!page || page.items.length) ? (
-                        <InfiniteScroll
-                            className="row g-3 pt-6 pe-auto h-100"
-                            dataLength={page ? page.items.length : 0}
-                            next={() => load({ ...search.watch(), pageNumber: page ? (page.pageNumber + 1) : 1 }, true)}
-                            hasMore={page ? ((page.pageNumber + 1) <= page.totalPages) : false}
-                            loader={(loading ? (<Loader {...loading} />) : <></>)}>
-                            {page?.items.map((course, courseIndex) => {
-                                return (
-                                    <div key={course.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
-                                        <CourseItem course={course} />
+                    <div className="pe-auto">
+                        {(page && page.items.length) ? (
+                            <InfiniteScroll
+                                className="row g-3 py-6 h-100"
+                                dataLength={page.items.length}
+                                next={() => load({ ...search.watch(), pageNumber: page.pageNumber + 1 }, true)}
+                                hasMore={(page.pageNumber + 1) <= page.totalPages}
+                                loader={<Loader {...loading} />}>
+                                {page.items.map((course) => {
+                                    return (
+                                        <div key={course.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
+                                            <CourseItem course={course} />
+                                        </div>
+                                    );
+                                })}
+                            </InfiniteScroll>
+
+                        ) : ((!loading) ?
+                            (<>
+                                <div className="d-flex flex-column text-center justify-content-center pt-10 mt-10">
+                                    <div className="mb-4">
+                                        <SvgWebSearchIllus style={{ width: "auto", height: "128px" }} />
                                     </div>
-                                );
-                            })}
-                        </InfiniteScroll>
-                    ) : (
-                        <>
-                            <div className="d-flex flex-column text-center justify-content-center pt-10 mt-10">
-                                <div className="mb-4">
-                                    <SvgWebSearchIllus style={{ width: "auto", height: "128px" }} />
+                                    <div className="mb-3">There are no courses here.</div>
                                 </div>
-                                <div className="mb-3">There are not courses here.</div>
-                            </div>
-                        </>
-                    )}
+                            </>) : (<Loader {...loading} />)
+                        )}
+                    </div>
                 </div>
             </div>
             {

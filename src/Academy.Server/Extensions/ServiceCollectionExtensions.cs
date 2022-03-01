@@ -56,6 +56,7 @@ namespace Academy.Server.Services
             services.Configure(configure);
 
             services.AddHttpClient(nameof(PaySwitchPaymentProcessor))
+                   .AddTraceLogHandler()
                    .ConfigurePrimaryHttpMessageHandler(_ =>
                    {
                        var handler = new HttpClientHandler();

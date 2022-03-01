@@ -5,7 +5,7 @@ import { forwardRef, useEffect, useState } from 'react';
 import Loader from '../../components/Loader';
 
 import TruncateMarkup from 'react-truncate-markup';
-import { BsGripVertical, BsCardImage, BsChevronDown, BsChevronRight, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsFilm, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill } from 'react-icons/bs';
+import { BsGripVertical, BsCardImage, BsChevronDown, BsChevronRight, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsFilm, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill, BsCart, BsCart2, BsBasket2, BsCart4, BsCart3 } from 'react-icons/bs';
 import { Collapse, Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import Link from 'next/link';
 import { useClient } from '../../utils/client';
@@ -148,7 +148,7 @@ const LessonItem = ({ course, section, lesson, toggler, editable }) => {
                                 </div>
                                 <div className={`p-0 d-flex align-items-center rounded-pill text-white bg-${lesson.status == 'completed' ? 'success' : lesson.status == 'started' ? 'primary' : 'dark'}`}>
                                     <div className={`rounded-pill d-flex justify-content-center align-items-center`} style={{ height: "32px", width: "32px" }}>
-                                        <span className="svg-icon svg-icon-xs d-inline-block" >{lesson.status == 'completed' ? <BsCheck2 /> : lesson.status == 'started' ? <BsPlayFill /> : <BsLockFill />}</span>
+                                        <span className="svg-icon svg-icon-xs d-inline-block" >{lesson.status == 'completed' ? <BsCheck2 /> : lesson.status == 'started' ? (course.price > 0 && !course.purchased ? <BsCart3 /> : <BsPlayFill />) : <BsLockFill />}</span>
                                     </div>
                                 </div>
                             </div>
@@ -506,9 +506,9 @@ const CoursePage = withRemount(({ remount }) => {
                                     <div className="d-flex align-items-center mb-1">
                                         <TruncateMarkup lines={1}><div className="h5 text-white mb-0">{course.title}</div></TruncateMarkup>
                                     </div>
-                                    <div class="hstack">
-                                        <div>{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
-                                        <span class="mx-2">·</span>
+                                    <div className="hstack">
+                                        <div className="text-primary">{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
+                                        <span className="mx-2">·</span>
                                         <div><span><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
                                     </div>
                                     <div className="mb-1"><TruncateMarkup lines={2}><div>{course.description}</div></TruncateMarkup></div>

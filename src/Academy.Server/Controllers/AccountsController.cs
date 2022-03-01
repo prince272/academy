@@ -1,6 +1,7 @@
 ﻿using Academy.Server.Data;
 using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.EmailSender;
+using Academy.Server.Extensions.PaymentProcessor;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Extensions.ViewRenderer;
 using Academy.Server.Models.Accounts;

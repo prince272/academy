@@ -12,5 +12,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
         Task ProcessAsync(Payment payment, CancellationToken cancellationToken = default);
 
         Task VerityAsync(Payment payment, CancellationToken cancellationToken = default);
+
+        Task<object[]> GetIssuersAsync(CancellationToken cancellationToken = default);
     }
 }

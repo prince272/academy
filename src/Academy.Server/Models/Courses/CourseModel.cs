@@ -37,7 +37,7 @@ namespace Academy.Server.Models.Courses
 
         public long Duration { get; set; }
 
-        public double Progress { get; set; }
+        public decimal Progress { get; set; }
 
         public SectionModel[] Sections { get; set; }
 
@@ -67,7 +67,7 @@ namespace Academy.Server.Models.Courses
 
         public string Title { get; set; }
 
-        public double Progress { get; set; }
+        public decimal Progress { get; set; }
 
         public long Duration { get; set; }
 

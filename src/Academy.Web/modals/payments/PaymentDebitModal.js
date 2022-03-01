@@ -40,6 +40,8 @@ const PaymentDebitModal = withRemount((props) => {
     const load = async () => {
         setLoading({});
 
+        form.setValue('mode', 'mobile');
+
         let result = await client.get(`/payments/${paymentId}`);
 
         if (result.error) {
@@ -113,11 +115,10 @@ const PaymentDebitModal = withRemount((props) => {
             <Modal.Body className="p-0" as={Form} onSubmit={preventDefault(() => submit())}>
                 <div className="mt-3 px-4">
                     <TruncateMarkup lines={2}><h4>{payment.status == 'pending' ? payment.title : <>Payment {noCase(payment.status)}</>}</h4></TruncateMarkup>
-                    <p className="mb-0"><span>{appSettings.currency.symbol}{payment.amount}</span></p>
                 </div>
                 {payment.status == 'pending' && (
                     <div>
-                        <div className="list-group list-group-flush py-5">
+                        <div className="list-group list-group-flush">
                             <div className="list-group-item p-0">
                                 <div className="px-4">
                                     <div className="form-check mb-0 py-3" onClick={() => form.setValue('mode', 'mobile')}>
@@ -140,7 +141,7 @@ const PaymentDebitModal = withRemount((props) => {
 
                                                     <button className="btn btn-primary w-100" type="button" onClick={() => submit()} disabled={submitting}>
                                                         <div className="position-relative d-flex align-items-center justify-content-center">
-                                                            <div className={`${submitting ? 'invisible' : ''}`}>Pay</div>
+                                                            <div className={`${submitting ? 'invisible' : ''}`}>Pay <span className="mb-0"><span>{appSettings.currency.symbol}{payment.amount}</span></span></div>
                                                             {submitting && <div className="position-absolute top-50 start-50 translate-middle"><div className="spinner-border spinner-border-sm"></div></div>}
                                                         </div>
                                                     </button>
@@ -162,7 +163,7 @@ const PaymentDebitModal = withRemount((props) => {
                                         <div className="px-4 py-3">
                                             <button className="btn btn-primary w-100" type="button" onClick={() => submit()} disabled={submitting}>
                                                 <div className="position-relative d-flex align-items-center justify-content-center">
-                                                    <div className={`${submitting ? 'invisible' : ''}`}>Pay</div>
+                                                    <div className={`${submitting ? 'invisible' : ''}`}>Pay <span className="mb-0"><span>{appSettings.currency.symbol}{payment.amount}</span></span></div>
                                                     {submitting && <div className="position-absolute top-50 start-50 translate-middle"><div className="spinner-border spinner-border-sm"></div></div>}
                                                 </div>
                                             </button>
