@@ -27,11 +27,7 @@ const useModalProvider = () => {
     const routesRef = useRef([]);
     const [loading, setLoading] = useState(true);
 
-    const defaultModalProps = {
-        ...DefaultModalProps,
-        onHide: () => modal.close(),
-    };
-    const [modalProps, setModalProps] = useState(defaultModalProps);
+    const [modalProps, setModalProps] = useState(DefaultModalProps);
 
     const modal = {
         loading,
@@ -62,7 +58,7 @@ const useModalProvider = () => {
 
                     const updateModalProps = (modalProps) => setModalProps(_modalProps => ({ ..._modalProps, ...modalProps }))
 
-                    setModalProps(() => ({ ...defaultModalProps, ...(ModalBody.getModalProps && ModalBody.getModalProps() || {}), show: true }));
+                    setModalProps(() => ({ ...DefaultModalProps, ...(ModalBody.getModalProps && ModalBody.getModalProps() || {}), show: true, onHide: () => modal.close() }));
 
                     setRoute({ ...currentRoute, component: (<ModalBody {...{ route: currentRoute, modal, updateModalProps, ...state }} />) });
                 }
