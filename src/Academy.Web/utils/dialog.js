@@ -54,7 +54,7 @@ const DialogProvider = ({ children }) => {
             params,
             open: (params, Component) => prepare(params, Component),
             confirm: (params) => prepare(params, ConfirmationDialog),
-            close: close.current,
+            close: (...args) => close.current(...args),
         }}>
             {children}
             {((view.Component && <view.Component />) || (<></>))}

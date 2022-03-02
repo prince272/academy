@@ -18,6 +18,7 @@ import { BsPersonFill } from 'react-icons/bs';
 import { useAppSettings } from '../utils/appSettings';
 import { useEventDispatcher } from '../utils/eventDispatcher';
 import { useDialog } from '../utils/dialog';
+import LoadingBar from 'react-top-loading-bar';
 
 const BitInfoDialog = () => {
     const appSettings = useAppSettings();
@@ -156,6 +157,8 @@ const Body = ({ children }) => {
     const [pageLoading, setPageLoading] = useState(true);
     const modalUrlRef = useRef(null);
     const eventDispatcher = useEventDispatcher();
+    const loadingBarRef = useRef(null);
+    const [loadingBarColor, setLoadingBarColor] = useState(null);
 
     useEffect(() => {
 
@@ -199,18 +202,18 @@ const Body = ({ children }) => {
 
         const handleRouteStart = (url) => {
             try {
-                if (!modal.open(url)) {
-                    setPageLoading(true);
-                }
+                modal.open(url);
+                setPageLoading(true);
+                loadingBarRef.current.continuousStart();
             }
             catch (ex) {
-                setPageLoading(false);
                 throw ex;
             }
         };
 
         const handleRouteComplete = () => {
             setPageLoading(false);
+            loadingBarRef.current.complete();
         };
 
         router.events.on('routeChangeStart', handleRouteStart);
@@ -231,6 +234,8 @@ const Body = ({ children }) => {
         }
     }, []);
 
+    useEffect(() => setLoadingBarColor(getComputedStyle(document.body).getPropertyValue('--bs-primary')), []);
+
     useEffect(() => {
         if (!client.loading && !modal.loading) {
             if (modalUrlRef.current != null)
@@ -242,10 +247,9 @@ const Body = ({ children }) => {
 
     return (
         <>
+            <LoadingBar color={loadingBarColor} ref={loadingBarRef} />
             {children}
-            {(client.loading || modal.loading || pageLoading) && (
-                <Loader className="position-fixed top-50 start-50 translate-middle bg-white" style={{ zIndex: 2000 }} />
-            )}
+            {(client.loading || modal.loading || pageLoading) && (<div className="position-fixed top-50 start-50 translate-middle"></div>)}
         </>
     );
 };

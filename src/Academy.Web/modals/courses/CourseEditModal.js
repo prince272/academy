@@ -179,7 +179,7 @@ const CourseEditModal = withRemount((props) => {
                         </div>
                         <div className="col-5">
                             <label className="form-label">Price</label>
-                            <input type="text" class="form-control-plaintext" value={coursePrice} readOnly />
+                            <input type="text" className="form-control-plaintext" value={coursePrice} readOnly />
                         </div>
                         <div className="col-12">
                             <label className="form-label">Image</label>

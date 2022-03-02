@@ -502,7 +502,7 @@ const CoursePage = withRemount(({ remount }) => {
                                     </AspectRatio>
                                 </div>
                                 <div className="ms-3 text-white">
-                                    <div className="d-inline-block badge text-dark bg-white mb-2">{appSettings.courseSubjects.find(subject => course.subject == subject.value)?.name}</div>
+                                    <div className="hstack gap-2 flex-wrap mb-2"><div className="badge text-dark bg-white">{appSettings.courseSubjects.find(subject => course.subject == subject.value)?.name}</div>{course.purchased && <div className="badge text-white bg-primary">Purchased</div>}</div>
                                     <div className="d-flex align-items-center mb-1">
                                         <TruncateMarkup lines={1}><div className="h5 text-white mb-0">{course.title}</div></TruncateMarkup>
                                     </div>

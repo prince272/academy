@@ -175,6 +175,7 @@ namespace Academy.Server.Controllers
             payment.IPAddress = Request.GetIPAddress();
             payment.UAString = Request.GetUAString();
             payment.Issued = DateTimeOffset.UtcNow;
+            payment.UserId = user.Id;
             payment.PhoneNumber = user.PhoneNumber;
             payment.Email = user.Email;
             payment.FullName = user.FullName;

@@ -472,7 +472,7 @@ const LessonViewModal = withRemount((props) => {
             const lessons = course.sections.flatMap(section => section.lessons);
             const lessonComplete = lessons.slice(-1)[0]?.id == lesson.id && lessons.every(_lesson => _lesson.status == 'completed');
             if (lessonComplete && course.certificateTemplate) {
-                dialog.open({ course }, CertificateViewDialog);
+                await dialog.open({ course }, CertificateViewDialog);
             }
         }
     };
