@@ -67,17 +67,6 @@ namespace Academy.Server
                         new MediaRule(MediaType.Video, new [] { ".mp4", ".webm", ".swf", ".flv" }, 524288000L), // Video - 500MB
                         new MediaRule(MediaType.Audio, new [] { ".mp3", ".ogg", ".wav" }, 83886080L), // Audio - 80MB
                         new MediaRule(MediaType.Document, new[] { ".doc", ".docx", ".rtf", ".pdf", ".json" }, 83886080L), // Document - 80MB
-                    },
-                    GetPath = (string directoryName, MediaType mediaType, string mediaName) =>
-                    {
-                        var currentDateTime = DateTimeOffset.UtcNow;
-                        var mediaTypeShortName = AttributeHelper.GetEnumAttribute<MediaType, DisplayAttribute>(mediaType).ShortName;
-                        string path = $"/user-content" +
-                                      $"/{directoryName}" +
-                                      $"/{currentDateTime.Year}" +
-                                      $"/{mediaType.ToString().Pluralize().ToLowerInvariant()}" +
-                                      $"/{mediaTypeShortName.ToUpperInvariant()}-{currentDateTime.Year + Compute.GenerateString(8, Compute.WHOLE_NUMERIC_CHARS)}{System.IO.Path.GetExtension(mediaName).ToLowerInvariant()}";
-                        return path;
                     }
                 };
 
@@ -125,7 +114,7 @@ namespace Academy.Server
 
             services.Configure<EmailAccounts>(accounts =>
             {
-                accounts.Administrator = new EmailAccount
+                accounts.App = new EmailAccount
                 {
                     Username = "princeowusu15799@gmail.com",
                     Password = "xvnafwuypylzgsuj",

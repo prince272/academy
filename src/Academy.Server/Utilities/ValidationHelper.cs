@@ -7,7 +7,6 @@ namespace Academy.Server.Utilities
 {
     public static class ValidationHelper
     {
-
         public static bool PhoneOrEmail(string username)
         {
             if (string.IsNullOrWhiteSpace(username))
@@ -16,54 +15,46 @@ namespace Academy.Server.Utilities
             return Regex.IsMatch(username.ToLowerInvariant(), "^[-+0-9() ]+$");
         }
 
-        public static string FormatPhone(string value)
-        {
-
-            var phoneNumberUtil = PhoneNumbers.PhoneNumberUtil.GetInstance();
-            var phoneNumberObj = phoneNumberUtil.Parse(value, null);
-            if (!phoneNumberUtil.IsValidNumber(phoneNumberObj))
-            {
-                throw new InvalidOperationException("Phone number is not valid.");
-            }
-
-            var phoneNumber = $"+{phoneNumberObj.CountryCode}{phoneNumberObj.NationalNumber}";
-            return phoneNumber;
-        }
-
-        public static bool TryFormatPhone(string value, out string phoneNumber)
+        public static bool TryFormatPhone(string value, out string result)
         {
             try
             {
-                phoneNumber = FormatPhone(value);
+                var phoneNumberUtil = PhoneNumbers.PhoneNumberUtil.GetInstance();
+                var phoneNumberObj = phoneNumberUtil.Parse(value, null);
+
+                if (!phoneNumberUtil.IsValidNumber(phoneNumberObj) || value !=  $"+{phoneNumberObj.CountryCode}{phoneNumberObj.NationalNumber}")
+                {
+                    throw new ArgumentException("Phone number is not valid.", nameof(value));
+                }
+
+                result = value;
                 return true;
             }
             catch
             {
-                phoneNumber = null;
+                result = null;
                 return false;
             }
         }
 
-        // C# code to validate email address
         // source: https://stackoverflow.com/questions/1365407/c-sharp-code-to-validate-email-address
-
-        public static string FormatEmail(string value)
-        {
-            var mailAddress = new System.Net.Mail.MailAddress(value.ToLowerInvariant());
-            var email = mailAddress.Address;
-            return email;
-        }
-
-        public static bool TryFormatEmail(string value, out string email)
+        public static bool TryFormatEmail(string value, out string result)
         {
             try
             {
-                email = FormatEmail(value);
+                var emailUtil = new System.Net.Mail.MailAddress(value.ToLowerInvariant());
+
+                if (value != emailUtil.Address)
+                {
+                    throw new ArgumentException("Email is not valid.", nameof(value));
+                }
+
+                result = emailUtil.Address;
                 return true;
             }
             catch (Exception)
             {
-                email = null;
+                result = null;
                 return false;
             }
         }

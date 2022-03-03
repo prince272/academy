@@ -18,6 +18,8 @@ namespace Academy.Server.Data.Entities
 
         public string Description { get; set; }
 
+        public string Code { get; set; }
+
         public CourseSubject Subject { get; set; }
 
         public DateTimeOffset Created { get; set; }

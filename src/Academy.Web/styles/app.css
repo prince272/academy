@@ -58,6 +58,14 @@ div#__next > div {
   }
 }
 
+.text-small {
+  font-size: 75%;
+}
+
+.text-medium {
+  font-size: 112%;
+}
+
 .cursor-alias {
   cursor: alias;
 }

@@ -5,16 +5,11 @@ namespace Academy.Server.Models.Home
 {
     public class ContactModel
     {
-        public string Name { get; set; }
+        public string FullName { get; set; }
 
-        private string info;
-        public string Info
-        {
-            get => ValidationHelper.PhoneOrEmail(info) ?
-                (ValidationHelper.TryFormatPhone(info, out string phoneNumber) ? phoneNumber : info) :
-                (ValidationHelper.TryFormatEmail(info, out string email) ? email : info);
-            set => info = value;
-        }
+        public string Email { get; set; }
+
+        public string PhoneNumber { get; set; }
 
         public ContactSubject Subject { get; set; }
 
@@ -31,8 +26,9 @@ namespace Academy.Server.Models.Home
     {
         public ContactValidator()
         {
-            RuleFor(_ => _.Name).NotEmpty();
-            RuleFor(_ => _.Info).PhoneOrEmail();
+            RuleFor(_ => _.FullName).NotEmpty();
+            RuleFor(_ => _.Email).Email();
+            RuleFor(_ => _.PhoneNumber).Phone();
             RuleFor(_ => _.Message).NotEmpty();
         }
     }

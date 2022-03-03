@@ -5,6 +5,7 @@ using Academy.Server.Extensions.PaymentProcessor;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Extensions.ViewRenderer;
 using Academy.Server.Models.Accounts;
+using Academy.Server.Models.Payments;
 using Academy.Server.Utilities;
 using AutoMapper;
 using Humanizer;
@@ -33,6 +34,7 @@ namespace Academy.Server.Controllers
         private readonly IEmailSender emailSender;
         private readonly EmailAccounts emailAccounts;
         private readonly IViewRenderer viewRenderer;
+        private readonly IPaymentProcessor paymentProcessor;
 
         public AccountsController(IServiceProvider serviceProvider)
         {
@@ -43,6 +45,7 @@ namespace Academy.Server.Controllers
             emailSender = serviceProvider.GetRequiredService<IEmailSender>();
             emailAccounts = serviceProvider.GetRequiredService<IOptions<EmailAccounts>>().Value;
             viewRenderer = serviceProvider.GetRequiredService<IViewRenderer>();
+            paymentProcessor = serviceProvider.GetRequiredService<IPaymentProcessor>();
         }
 
         [HttpPost("signup")]
@@ -58,12 +61,13 @@ namespace Academy.Server.Controllers
             user.LastName = form.LastName;
             user.UserName = await Compute.GenerateSlugAsync($"{form.FirstName} {form.LastName}", slug => userManager.Users.AnyAsync(_ => _.UserName == slug));
             user.Registered = DateTimeOffset.UtcNow;
+            user.Code = Compute.GenerateCode("USER");
 
             (await userManager.CreateAsync(user, form.Password)).ThrowIfFailed();
 
             if (await userManager.Users.CountAsync() == 1)
             {
-                (await userManager.AddToRolesAsync(user, new string[] { RoleNames.Teacher, RoleNames.Manager })).ThrowIfFailed();
+                (await userManager.AddToRolesAsync(user, new string[] { RoleConstants.Teacher, RoleConstants.Manager })).ThrowIfFailed();
             }
 
             return Result.Succeed();
@@ -127,6 +131,44 @@ namespace Academy.Server.Controllers
             await unitOfWork.UpdateAsync(user);
 
             return Result.Succeed(data: mapper.Map<CurrentUserModel>(user));
+        }
+
+        [Authorize]
+        [HttpPost("mobile/withdraw")]
+        public async Task<IActionResult> Withdraw([FromBody] MobileTransferModel form)
+        {
+            var user = await HttpContext.GetCurrentUserAsync();
+
+            if (form.Amount <= 0)
+                return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Amount), "'Amount' must be greater then 0."));
+
+            if (user.Balance < form.Amount)
+                return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Amount), "Balance is insufficient."));
+
+            var payment = new Payment();
+            payment.Reason = PaymentReason.Withdrawal;
+            payment.Status = PaymentStatus.Pending;
+            payment.Title = $"Payment to {user.FullName}";
+            payment.ReferenceId = user.Code;
+            payment.Amount = form.Amount;
+            payment.IPAddress = Request.GetIPAddress();
+            payment.UAString = Request.GetUAString();
+            payment.Issued = DateTimeOffset.UtcNow;
+            payment.UserId = user.Id;
+            payment.PhoneNumber = user.PhoneNumber;
+            payment.Email = user.Email;
+            payment.FullName = user.FullName;
+
+            try
+            {
+                var mobileIssuers = (await paymentProcessor.GetIssuersAsync()).OfType<MobileIssuer>().ToArray();
+                payment.SetData(nameof(MobileDetails), new MobileDetails(mobileIssuers, form.MobileNumber));
+            }
+            catch (MobileDetailsException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.Name, ex.Message)); }
+
+            await unitOfWork.CreateAsync(payment);
+            await paymentProcessor.TransferAsync(payment);
+            return Result.Succeed();
         }
 
         [HttpPost("confirm/send")]

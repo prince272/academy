@@ -59,17 +59,22 @@ const ContactModal = (props) => {
                     <p>Please fill out the form and we'll get back to you shortly.</p>
                 </div>
                 <div className="row g-3">
-                    <div className="col-12 col-sm-5">
-                        <label className="form-label">Name</label>
-                        <input {...form.register("name")} className={`form-control  ${formState.errors.name ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{formState.errors.name?.message}</div>
+                    <div className="col-12">
+                        <label className="form-label">Full name</label>
+                        <input {...form.register("fullName")} className={`form-control  ${formState.errors.fullName ? 'is-invalid' : ''}`} />
+                        <div className="invalid-feedback">{formState.errors.fullName?.message}</div>
                     </div>
                     <div className="col-12 col-sm-7">
-                        <label className="form-label">Email or phone number</label>
-                        <FormController name="info" control={form.control} render={({ field }) => {
-                            return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.info ? 'is-invalid' : ''}`} defaultCountry={appSettings.company.countryCode} />);
+                        <label className="form-label">Email</label>
+                        <input {...form.register("email")} className={`form-control  ${formState.errors.email ? 'is-invalid' : ''}`} />
+                        <div className="invalid-feedback">{formState.errors.email?.message}</div>
+                    </div>
+                    <div className="col-12 col-sm-5">
+                        <label className="form-label">Phone number</label>
+                        <FormController name="phoneNumber" control={form.control} render={({ field }) => {
+                            return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.phoneNumber ? 'is-invalid' : ''}`} defaultCountry={appSettings.company.countryCode} />);
                         }} />
-                        <div className="invalid-feedback">{formState.errors.info?.message}</div>
+                        <div className="invalid-feedback">{formState.errors.phoneNumber?.message}</div>
                     </div>
                     <div className="col-12">
                         <label className="form-label">Message</label>

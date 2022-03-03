@@ -67,22 +67,11 @@ namespace Academy.Server
     public class MediaSettings
     {
         public List<MediaRule> Rules { get; set; }
-
-        public Func<string, MediaType, string, string> GetPath { get; set; }
-    }
-
-    public static class RoleNames
-    {
-        public const string Manager = "Manager";
-
-        public const string Teacher = "Teacher";
-
-        public static string[] All = new string[] { Manager, Teacher };
     }
 
     public class EmailAccounts
     {
-        public EmailAccount Administrator { get; set; }
+        public EmailAccount App { get; set; }
 
         public EmailAccount Support { get; set; }
 

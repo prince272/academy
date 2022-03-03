@@ -6,14 +6,7 @@ namespace Academy.Server.Models.Accounts
 {
     public class ResetPasswordModel
     {
-        private string username;
-        public string Username
-        {
-            get => ValidationHelper.PhoneOrEmail(username) ?
-                (ValidationHelper.TryFormatPhone(username, out string phoneNumber) ? phoneNumber : username) :
-                (ValidationHelper.TryFormatEmail(username, out string email) ? email : username);
-            set => username = value;
-        }
+        public string Username { get; set; }
 
         public string Password { get; set; }
 
@@ -24,7 +17,7 @@ namespace Academy.Server.Models.Accounts
     {
         public ResetPasswordValidator()
         {
-            RuleFor(_ => _.Username).NotEmpty();
+            RuleFor(_ => _.Username).PhoneOrEmail();
             RuleFor(_ => _.Password).NewPassword();
         }
     }

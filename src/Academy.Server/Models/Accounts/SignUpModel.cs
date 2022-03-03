@@ -14,14 +14,7 @@ namespace Academy.Server.Models.Accounts
 
         public string LastName { get; set; }
 
-        private string username;
-        public string Username
-        {
-            get => ValidationHelper.PhoneOrEmail(username) ?
-                (ValidationHelper.TryFormatPhone(username, out string phoneNumber) ? phoneNumber : username) :
-                (ValidationHelper.TryFormatEmail(username, out string email) ? email : username);
-            set => username = value;
-        }
+        public string Username { get; set; }
 
         public string Password { get; set; }
     }

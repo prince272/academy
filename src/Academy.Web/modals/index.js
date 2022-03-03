@@ -97,8 +97,18 @@ const useModalProvider = () => {
                     promise: import('./accounts/SignOutModal')
                 },
                 {
-                    pattern: `${ModalPathPrefix}/accounts/settings`,
-                    promise: import('./accounts/SettingsModal'),
+                    pattern: `${ModalPathPrefix}/accounts/profile/edit`,
+                    promise: import('./accounts/EditProfileModal'),
+                    authenticate: true
+                },
+                {
+                    pattern: `${ModalPathPrefix}/accounts/password/change`,
+                    promise: import('./accounts/ChangePasswordModal'),
+                    authenticate: true
+                },
+                {
+                    pattern: `${ModalPathPrefix}/accounts/account/change`,
+                    promise: import('./accounts/ChangeAccountModal'),
                     authenticate: true
                 },
                 {

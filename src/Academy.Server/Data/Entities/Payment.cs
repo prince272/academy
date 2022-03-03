@@ -24,7 +24,7 @@ namespace Academy.Server.Data.Entities
 
         public PaymentReason Reason { get; set; }
 
-        public int ReasonId { get; set; }
+        public string ReferenceId { get; set; }
 
         public PaymentStatus Status { get; set; }
 
@@ -67,7 +67,8 @@ namespace Academy.Server.Data.Entities
 
     public enum PaymentReason
     {
-        Sponsor,
-        Course
+        Sponsorship,
+        Course,
+        Withdrawal
     }
 }

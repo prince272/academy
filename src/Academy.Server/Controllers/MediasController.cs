@@ -37,7 +37,7 @@ namespace Academy.Server.Controllers
             appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize(Roles = RoleConstants.Teacher)]
         [HttpPost("upload")]
         public async Task<IActionResult> Upload()
         {
@@ -58,7 +58,7 @@ namespace Academy.Server.Controllers
                 return Result.Failed(StatusCodes.Status400BadRequest, message: "The file size is too large.");
 
             var mediaType = mediaRule.Type;
-            var mediaPath = appSettings.Media.GetPath("uploads", mediaType, mediaName);
+            var mediaPath = MediaConstants.GetPath("uploads", mediaType, mediaName);
         
             var media = new Media
             {
@@ -73,7 +73,7 @@ namespace Academy.Server.Controllers
             return Result.Succeed(media);
         }
 
-        [Authorize(Roles = RoleNames.Teacher)]
+        [Authorize(Roles = RoleConstants.Teacher)]
         [HttpPatch("upload/{mediaId}")]
         public async Task<IActionResult> Upload(int mediaId)
         {

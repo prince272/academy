@@ -177,7 +177,7 @@ namespace Academy.Server.Models.Courses
             var httpContext = serviceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext;
             var user = TaskHelper.RunSync(() => httpContext.GetCurrentUserAsync());
             CreateMap<Course, CourseModel>().ForMember(_ => _.Cost,
-                _ => _.MapFrom(course => (user != null && user.CanManageCourse(course)) ? course.Cost : (decimal?)null));
+                _ => _.MapFrom(course => (user != null && user.CanManage(course)) ? course.Cost : (decimal?)null));
         }
     }
 

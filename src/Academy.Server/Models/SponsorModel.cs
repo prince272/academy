@@ -10,28 +10,27 @@ namespace Academy.Server.Models
 {
     public class SponsorModel
     {
-        public string ContactName { get; set; }
+        public string FullName { get; set; }
 
-        private string contactInfo;
-        public string ContactInfo
-        {
-            get => ValidationHelper.PhoneOrEmail(contactInfo) ?
-                (ValidationHelper.TryFormatPhone(contactInfo, out string phoneNumber) ? phoneNumber : contactInfo) :
-                (ValidationHelper.TryFormatEmail(contactInfo, out string email) ? email : contactInfo);
-            set => contactInfo = value;
-        }
+        public string Email { get; set; }
+
+        public string PhoneNumber { get; set; }
+
+        public string Message { get; set; }
 
         public decimal Amount { get; set; }
-
-
     }
 
     public class SponsorValidator : AbstractValidator<SponsorModel>
     {
         public SponsorValidator(IServiceProvider serviceProvider)
         {
+            RuleFor(_ => _.FullName).NotEmpty();
+            RuleFor(_ => _.Email).Email();
+            RuleFor(_ => _.PhoneNumber).Phone();
+            RuleFor(_ => _.Message);
+
             var settings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
-            RuleFor(_ => _.ContactInfo).PhoneOrEmail();
             RuleFor(_ => _.Amount).LessThanOrEqualTo(settings.Currency.Limit).GreaterThan(0);
         }
     }

@@ -7,6 +7,8 @@ namespace Academy.Server.Data.Entities
 {
     public class User : IdentityUser<int>, IEntity, IExtendable
     {
+        public string Code { get; set; }
+
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
@@ -31,16 +33,16 @@ namespace Academy.Server.Data.Entities
 
         public string ExtensionData { get; set; }
 
-        public bool CanManageCourses()
+        public bool CanManage()
         {
-            var canManage = UserRoles.Any(_ => _.Role.Name == RoleNames.Manager) || UserRoles.Any(_ => _.Role.Name == RoleNames.Teacher);
+            var canManage = UserRoles.Any(_ => _.Role.Name == RoleConstants.Manager) || UserRoles.Any(_ => _.Role.Name == RoleConstants.Teacher);
             return canManage;
         }
 
-        public bool CanManageCourse(Course course)
+        public bool CanManage(Course course)
         {
-            var canManage = (UserRoles.Any(_ => _.Role.Name == RoleNames.Manager)) ||
-                           ((UserRoles.Any(_ => _.Role.Name == RoleNames.Teacher)) && Id == course.UserId);
+            var canManage = (UserRoles.Any(_ => _.Role.Name == RoleConstants.Manager)) ||
+                           ((UserRoles.Any(_ => _.Role.Name == RoleConstants.Teacher)) && Id == course.UserId);
             return canManage;
         }
     }

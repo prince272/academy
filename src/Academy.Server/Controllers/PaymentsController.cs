@@ -1,8 +1,10 @@
 ﻿using Academy.Server.Data;
 using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.PaymentProcessor;
+using Academy.Server.Models.Payments;
 using Academy.Server.Utilities;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -43,8 +45,8 @@ namespace Academy.Server.Controllers
             });
         }
 
-        [HttpPost("{paymentId}/mobile/process")]
-        public async Task<IActionResult> ProcessMobile(int paymentId, string returnUrl, [FromBody] MobileDetails mobileDetails)
+        [HttpPost("{paymentId}/mobile/charge")]
+        public async Task<IActionResult> ChargeMobile(int paymentId, string returnUrl, [FromBody] MobileChargeModel form)
         {
             if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
                 throw new ArgumentException("Url is not valid.", nameof(returnUrl));
@@ -56,21 +58,17 @@ namespace Academy.Server.Controllers
             try
             {
                 var mobileIssuers = (await paymentProcessor.GetIssuersAsync()).OfType<MobileIssuer>().ToArray();
-                mobileDetails.Resolve(mobileIssuers);
+                payment.SetData(nameof(MobileDetails), new MobileDetails(mobileIssuers, form.MobileNumber));
             }
-            catch (MobileDetailsException ex)
-            {
-                return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.Name, ex.Message));
-            }
+            catch (MobileDetailsException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.Name, ex.Message)); }
 
-            payment.RedirectUrl = Url.ActionLink(nameof(Callback), values: new { paymentId, returnUrl });
-            payment.SetData(nameof(MobileDetails), mobileDetails);
-            await paymentProcessor.ProcessAsync(payment);
+            payment.RedirectUrl = Url.ActionLink(nameof(Verify), values: new { paymentId, returnUrl });
+            await paymentProcessor.ChargeAsync(payment);
             return Result.Succeed();
         }
 
-        [HttpPost("{paymentId}/checkout")]
-        public async Task<IActionResult> Checkout(int paymentId, string returnUrl)
+        [HttpPost("{paymentId}/charge")]
+        public async Task<IActionResult> Charge(int paymentId, string returnUrl)
         {
             if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
                 throw new ArgumentException("Url is not in a valid format.", nameof(returnUrl));
@@ -79,19 +77,19 @@ namespace Academy.Server.Controllers
             var payment = await query.FirstOrDefaultAsync(_ => _.Id == paymentId);
             if (payment == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            payment.RedirectUrl = Url.ActionLink(nameof(Callback), values: new { paymentId, returnUrl });
-            await paymentProcessor.ProcessAsync(payment);
+            payment.RedirectUrl = Url.ActionLink(nameof(Verify), values: new { paymentId, returnUrl });
+            await paymentProcessor.ChargeAsync(payment);
             return Result.Succeed(data: new { payment.CheckoutUrl });
         }
 
-        [HttpGet("{paymentId}/callback")]
-        public async Task<IActionResult> Callback(int paymentId)
+        [HttpGet("{paymentId}/verify")]
+        public async Task<IActionResult> Verify(int paymentId)
         {
             var query = unitOfWork.Query<Payment>();
             var payment = await query.FirstOrDefaultAsync(_ => _.Id == paymentId);
             if (payment == null) return NotFound();
 
-            await paymentProcessor.VerityAsync(payment);
+            await paymentProcessor.VerifyAsync(payment);
 
             var returnUrl = HttpUtility.ParseQueryString(new Uri(payment.RedirectUrl).Query).Get("returnUrl");
 

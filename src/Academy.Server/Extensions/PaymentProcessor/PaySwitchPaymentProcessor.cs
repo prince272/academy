@@ -49,17 +49,29 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
         public string Name => "PaySwitch";
 
-        public async Task ProcessAsync(Payment payment, CancellationToken cancellationToken = default)
+        public async Task TransferAsync(Payment payment, CancellationToken cancellationToken = default)
         {
             if (payment == null) throw new ArgumentNullException(nameof(payment));
 
             if (payment.Status != PaymentStatus.Pending)
-            {
                 throw new InvalidOperationException($"The payment with the id of '{payment.Id}' cannot be processed because it is not in a pending state. Status: {payment.Status}");
-            }
 
             payment.Gateway = Name;
-            payment.TransactionId = DateTimeOffset.UtcNow.Year + Compute.GenerateString(8, Compute.WHOLE_NUMERIC_CHARS);
+            payment.TransactionId = GenerateTransactionId();
+            payment.Type = PaymentType.Credit;
+        }
+
+        public async Task ChargeAsync(Payment payment, CancellationToken cancellationToken = default)
+        {
+            if (payment == null) throw new ArgumentNullException(nameof(payment));
+
+            if (payment.Status != PaymentStatus.Pending)
+                throw new InvalidOperationException($"The payment with the id of '{payment.Id}' cannot be processed because it is not in a pending state. Status: {payment.Status}");
+            
+
+            payment.Gateway = Name;
+            payment.TransactionId = GenerateTransactionId();
+            payment.Type = PaymentType.Debit;
 
             if (payment.GetData<MobileDetails>(nameof(MobileDetails)) is MobileDetails mobileDetails)
             {
@@ -111,7 +123,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
             }
         }
 
-        public async Task VerityAsync(Payment payment, CancellationToken cancellationToken = default)
+        public async Task VerifyAsync(Payment payment, CancellationToken cancellationToken = default)
         {
             if (payment == null) throw new ArgumentNullException(nameof(payment));
 
@@ -135,6 +147,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
                 if (responseData.GetValueOrDefault("code") == "000")
                 {
                     payment.Status = PaymentStatus.Complete;
+                    payment.Completed = DateTimeOffset.UtcNow;
                     await unitOfWork.UpdateAsync(payment);
                     await mediator.Publish(new PaymentNotification(payment), cancellationToken);
                 }
@@ -161,16 +174,16 @@ namespace Academy.Server.Extensions.PaymentProcessor
             };
             return Task.FromResult(issuers.Select(_ => (object)_).ToArray());
         }
+
+        private string GenerateTransactionId() => Compute.GenerateNumber(12);
     }
 
     public class MobileDetails
     {
-        public string MobileNumber { get; set; }
-
-        public MobileIssuer MobileIssuer { get; set; }
-
-        public void Resolve(MobileIssuer[] issuers)
+        public MobileDetails(MobileIssuer[] issuers, string number)
         {
+            MobileNumber = number;
+
             if (string.IsNullOrWhiteSpace(MobileNumber))
                 throw new MobileDetailsException(nameof(MobileNumber), "'Mobile number' must not be empty.");
 
@@ -191,6 +204,10 @@ namespace Academy.Server.Extensions.PaymentProcessor
             if (mobileIssuer == null) throw new MobileDetailsException(nameof(MobileNumber), $"'Mobile number' is not supported by any of these mobile issuers. {issuers.Select(_ => _.Name).Humanize()}");
             MobileIssuer = mobileIssuer;
         }
+
+        public string MobileNumber { get; set; }
+
+        public MobileIssuer MobileIssuer { get; set; }
     }
 
     [Serializable]

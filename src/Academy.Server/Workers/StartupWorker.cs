@@ -27,7 +27,7 @@ namespace Academy.Server.Workers
 
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
 
-            foreach (var roleName in RoleNames.All)
+            foreach (var roleName in RoleConstants.All)
             {
                 if (!await roleManager.RoleExistsAsync(roleName))
                     (await roleManager.CreateAsync(new Role { Name = roleName })).ThrowIfFailed();

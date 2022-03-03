@@ -82,8 +82,8 @@ namespace Academy.Server.Controllers
         [HttpPost("/contact")]
         public async Task<IActionResult> Contact([FromBody] ContactModel form)
         {
-            var subject = $"[{form.Name} - {form.Info}] {form.Subject.ToString().Humanize()}";
-            await emailSender.SendAsync(emailAccounts.Support, emailAccounts.Support, subject, form.Message);
+            var subject = $"[{form.FullName} - {form.Subject.ToString().Humanize()}";
+            await emailSender.SendAsync(emailAccounts.App, emailAccounts.Support, subject, form.Message);
             return Result.Succeed();
         }
 
@@ -91,20 +91,18 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Sponsor([FromBody] SponsorModel form)
         {
             var payment = new Payment();
-            payment.Title = "Academy of Ours Sponsorship";
-            payment.Reason = PaymentReason.Sponsor;
-            payment.ReasonId = Compute.GenerateNumber(1, int.MaxValue);
+            payment.Reason = PaymentReason.Sponsorship;
             payment.Status = PaymentStatus.Pending;
+            payment.Title = "Sponsorship";
+            payment.ReferenceId = Compute.GenerateCode("SPON");
             payment.Amount = form.Amount;
-            payment.Type = PaymentType.Debit;
             payment.IPAddress = Request.GetIPAddress();
             payment.UAString = Request.GetUAString();
             payment.Issued = DateTimeOffset.UtcNow;
-            payment.FullName = form.ContactName;
-
-            if (ValidationHelper.PhoneOrEmail(form.ContactInfo))
-                payment.PhoneNumber = form.ContactInfo;
-            else payment.Email = form.ContactInfo;
+            payment.UserId = null;
+            payment.PhoneNumber = form.PhoneNumber;
+            payment.Email = form.Email;
+            payment.FullName = form.FullName;
 
             await unitOfWork.CreateAsync(payment);
             return Result.Succeed(data: new { PaymentId = payment.Id });

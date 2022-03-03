@@ -58,6 +58,8 @@ const Header = () => {
     const appSettings = useAppSettings();
     const dialog = useDialog();
 
+    const editable = (client.user && ((client.user.roles.some(role => role == 'teacher') || client.user.roles.some(role => role == 'manager'))));
+
     return (
 
         <Navbar id="header" collapseOnSelect bg="white" variant="light" expand="md" className="fixed-top shadow-sm">
@@ -104,13 +106,13 @@ const Header = () => {
                             </Dropdown>
                         </Nav.Item>
                         <Nav.Item>
-                            <Link href="/about"><a className="btn btn-outline-secondary border-0 p-2 mb-2 mb-lg-0">About</a></Link>
+                            <Link href="/about"><a className="btn btn-outline-secondary border-0 p-2 mb-2 mb-md-0">About</a></Link>
                         </Nav.Item>
                         {client.user ? (
                             <>
                                 <Nav.Item>
                                     <Dropdown>
-                                        <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">
+                                        <Dropdown.Toggle variant="outline-secondary" className="border-0 px-2 py-1">
                                             <div className="d-flex align-items-center justify-content-center">
 
                                                 {client.user.avatar ?
@@ -120,12 +122,17 @@ const Header = () => {
                                                             <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
                                                         </div>
                                                     )}
-                                                <div className="ms-2">{client.user.firstName}</div>
+                                                <div className="ms-2 text-start lh-1">
+                                                    <div className="lh-sm">{client.user.firstName}</div>
+                                                    {editable && (<div className="text-small text-primary"><span>{appSettings.currency.symbol}</span> <span>{client.user.balance}</span></div>)}
+                                                </div>
                                             </div>
                                         </Dropdown.Toggle>
 
                                         <Dropdown.Menu>
-                                            <Link href={`${ModalPathPrefix}/accounts/settings`} passHref><Dropdown.Item>Settings</Dropdown.Item></Link>
+                                            <Link href={`${ModalPathPrefix}/accounts/profile/edit`} passHref><Dropdown.Item>Edit profile</Dropdown.Item></Link>
+                                            <Link href={`${ModalPathPrefix}/accounts/account/change`} passHref><Dropdown.Item>Change account</Dropdown.Item></Link>
+                                            <Link href={`${ModalPathPrefix}/accounts/password/change`} passHref><Dropdown.Item>Change password</Dropdown.Item></Link>
                                             <Dropdown.Divider />
                                             <Link href={`${ModalPathPrefix}/accounts/signout`} passHref><Dropdown.Item>Sign out</Dropdown.Item></Link>
                                         </Dropdown.Menu>
@@ -135,7 +142,7 @@ const Header = () => {
                         ) : (
                             <>
                                 <Nav.Item>
-                                    <button type="button" className="btn btn-outline-secondary border-0 p-2 mb-2 mb-lg-0" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign in</button>
+                                    <button type="button" className="btn btn-outline-secondary border-0 p-2 mb-2 mb-md-0" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign in</button>
                                 </Nav.Item>
                                 <Nav.Item>
                                     <button type="button" className="btn btn-primary border-0 p-2" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign up</button>
@@ -249,7 +256,7 @@ const Body = ({ children }) => {
         <>
             <LoadingBar color={loadingBarColor} ref={loadingBarRef} />
             {children}
-            {(client.loading || modal.loading || pageLoading) && (<div className="position-fixed top-50 start-50 translate-middle"></div>)}
+            {(client.loading || modal.loading || pageLoading) && (<div className="position-fixed top-50 start-50 translate-middle bg-light w-100 h-100 zi-3"></div>)}
         </>
     );
 };

@@ -68,8 +68,8 @@ const PaymentDebitModal = withRemount((props) => {
             const paymentMode = form.watch('mode');
 
             let result = await ({
-                'mobile': () => client.post(`/payments/${paymentId}/mobile/process`, inputs, { params: { returnUrl: route.url } }),
-                'checkout': () => client.post(`/payments/${paymentId}/checkout`, null, { params: { returnUrl: route.url } }),
+                'mobile': () => client.post(`/payments/${paymentId}/mobile/charge`, inputs, { params: { returnUrl: route.url } }),
+                'checkout': () => client.post(`/payments/${paymentId}/charge`, null, { params: { returnUrl: route.url } }),
             })[paymentMode]();
 
             if (result.error) {

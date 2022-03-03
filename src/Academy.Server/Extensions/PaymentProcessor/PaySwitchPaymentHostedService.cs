@@ -59,7 +59,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
                         foreach (var payment in payments)
                         {
-                            await paymentProcessor.VerityAsync(payment, cancellationToken);
+                            await paymentProcessor.VerifyAsync(payment, cancellationToken);
                         }
 
                         errorLogged = false;
