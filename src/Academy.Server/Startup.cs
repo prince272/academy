@@ -99,7 +99,7 @@ namespace Academy.Server
                 {
                     Name = "Ghanaian cedi",
                     Code = "GHS",
-                    Symbol = "GH₵",
+                    Symbol = "₵",
                     Limit = 1000,
 
                     BitRules = new List<BitRule>
@@ -192,8 +192,6 @@ namespace Academy.Server
 
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-
-                    JsonConvert.DefaultSettings = () => options.SerializerSettings;
                 })
                 .ConfigureApiBehaviorOptions(options =>
             {

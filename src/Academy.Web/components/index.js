@@ -135,6 +135,7 @@ const Header = () => {
                                             <Link href={`${ModalPathPrefix}/accounts/profile/edit`} passHref><Dropdown.Item>Edit profile</Dropdown.Item></Link>
                                             <Link href={`${ModalPathPrefix}/accounts/account/change`} passHref><Dropdown.Item>Change account</Dropdown.Item></Link>
                                             <Link href={`${ModalPathPrefix}/accounts/password/change`} passHref><Dropdown.Item>Change password</Dropdown.Item></Link>
+                                            <Link href={`${ModalPathPrefix}/cashout`} passHref><Dropdown.Item>Cashout</Dropdown.Item></Link>
                                             <Dropdown.Divider />
                                             <Link href={`${ModalPathPrefix}/accounts/signout`} passHref><Dropdown.Item>Sign out</Dropdown.Item></Link>
                                         </Dropdown.Menu>

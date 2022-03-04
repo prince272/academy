@@ -145,8 +145,12 @@ const useModalProvider = () => {
                     authenticate: true,
                 },
                 {
-                    pattern: `${ModalPathPrefix}/payments/:paymentId/debit`,
-                    promise: import('./payments/PaymentDebitModal'),
+                    pattern: `${ModalPathPrefix}/cashin/:paymentId`,
+                    promise: import('./CashInModal'),
+                },
+                {
+                    pattern: `${ModalPathPrefix}/cashout`,
+                    promise: import('./CashOutModal'),
                 },
             ];
 

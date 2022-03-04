@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Academy.Server.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220223130016_Create_Database")]
-    partial class Create_Database
+    [Migration("20220304205258_Database_1")]
+    partial class Database_1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -37,8 +37,8 @@ namespace Academy.Server.Data.Migrations
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Number")
-                        .HasColumnType("int");
+                    b.Property<string>("Number")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -60,6 +60,9 @@ namespace Academy.Server.Data.Migrations
                     b.Property<string>("CertificateTemplate")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Code")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("Cost")
                         .HasPrecision(18, 6)
                         .HasColumnType("decimal(18,6)");
@@ -72,6 +75,10 @@ namespace Academy.Server.Data.Migrations
 
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
 
                     b.Property<DateTimeOffset?>("Published")
                         .HasColumnType("datetimeoffset");
@@ -174,40 +181,49 @@ namespace Academy.Server.Data.Migrations
                         .HasPrecision(18, 6)
                         .HasColumnType("decimal(18,6)");
 
-                    b.Property<int>("Attempts")
-                        .HasColumnType("int");
-
                     b.Property<string>("CheckoutUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("Completed")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("ContactInfo")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ContactName")
+                    b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ExtensionData")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Gateway")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("IpAddress")
+                    b.Property<string>("IPAddress")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Mode")
+                    b.Property<DateTimeOffset>("Issued")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Reason")
                         .HasColumnType("int");
 
                     b.Property<string>("RedirectUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReferenceId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TransactionId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Type")
@@ -265,9 +281,6 @@ namespace Academy.Server.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<long>("Duration")
-                        .HasColumnType("bigint");
 
                     b.Property<int>("Index")
                         .HasColumnType("int");
@@ -379,11 +392,18 @@ namespace Academy.Server.Data.Migrations
                     b.Property<string>("Avatar")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
                     b.Property<string>("Bio")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Bits")
                         .HasColumnType("int");
+
+                    b.Property<string>("Code")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -395,6 +415,9 @@ namespace Academy.Server.Data.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ExtensionData")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
@@ -691,47 +714,6 @@ namespace Academy.Server.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Section");
-                });
-
-            modelBuilder.Entity("Academy.Server.Data.Entities.Payment", b =>
-                {
-                    b.OwnsOne("Academy.Server.Data.Entities.PaymentDetails", "Details", b1 =>
-                        {
-                            b1.Property<int>("PaymentId")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int")
-                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                            b1.Property<string>("CardCvv")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("CardExpiry")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("CardNumber")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("IssuerCode")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("IssuerName")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<int>("IssuerType")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("MobileNumber")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("PaymentId");
-
-                            b1.ToTable("Payment");
-
-                            b1.WithOwner()
-                                .HasForeignKey("PaymentId");
-                        });
-
-                    b.Navigation("Details");
                 });
 
             modelBuilder.Entity("Academy.Server.Data.Entities.Post", b =>

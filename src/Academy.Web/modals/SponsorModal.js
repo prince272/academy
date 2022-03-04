@@ -45,7 +45,7 @@ const SponsorModal = (props) => {
             }
 
             const paymentId = result.data.paymentId;
-            router.replace({ pathname: `${ModalPathPrefix}/payments/${paymentId}/debit`, query: { returnUrl: route.url } });
+            router.replace({ pathname: `${ModalPathPrefix}/cashin/${paymentId}`, query: { returnUrl: route.url } });
         })();
     };
 

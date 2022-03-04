@@ -9,11 +9,11 @@ namespace Academy.Server.Extensions.PaymentProcessor
     {
         string Name { get; }
 
-        Task TransferAsync(Payment payment, CancellationToken cancellationToken = default);
+        Task CashoutAsync(Payment payment, CancellationToken cancellationToken = default);
 
-        Task ChargeAsync(Payment payment, CancellationToken cancellationToken = default);
+        Task CashinAsync(Payment payment, CancellationToken cancellationToken = default);
 
-        Task VerifyAsync(Payment payment, CancellationToken cancellationToken = default);
+        Task ConfirmAsync(Payment payment, CancellationToken cancellationToken = default);
 
         Task<PaymentIssuer[]> GetIssuersAsync(CancellationToken cancellationToken = default);
     }

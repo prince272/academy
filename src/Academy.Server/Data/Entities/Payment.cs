@@ -53,8 +53,8 @@ namespace Academy.Server.Data.Entities
 
     public enum PaymentType
     {
-        Credit,
-        Debit,
+        Cashout,
+        Cashin,
     }
 
     public enum PaymentStatus

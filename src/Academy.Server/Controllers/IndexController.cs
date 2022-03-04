@@ -5,8 +5,10 @@ using Academy.Server.Extensions.PaymentProcessor;
 using Academy.Server.Models;
 using Academy.Server.Models.Courses;
 using Academy.Server.Models.Home;
+using Academy.Server.Models.Payments;
 using Academy.Server.Utilities;
 using Humanizer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +18,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Academy.Server.Controllers
 {
@@ -106,6 +109,114 @@ namespace Academy.Server.Controllers
 
             await unitOfWork.CreateAsync(payment);
             return Result.Succeed(data: new { PaymentId = payment.Id });
+        }
+
+        [Authorize]
+        [HttpPost("cashout/mobile")]
+        public async Task<IActionResult> CashoutMobile([FromBody] MobileCashoutModel form)
+        {
+            var mobileDetails = (MobileDetails)null;
+
+            try
+            {
+                var mobileIssuers = (await paymentProcessor.GetIssuersAsync()).Where(_ => _.Type == PaymentIssuerType.Mobile).ToArray();
+                mobileDetails = new MobileDetails(mobileIssuers, form.MobileNumber);
+            }
+            catch (ArgumentException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.ParamName, ex.Message)); }
+
+            var user = await HttpContext.GetCurrentUserAsync();
+
+            if (user.Balance < form.Amount)
+                return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Amount), "Balance is insufficient."));
+
+            var payment = new Payment();
+            payment.Reason = PaymentReason.Withdrawal;
+            payment.Status = PaymentStatus.Pending;
+            payment.Title = $"Payment to {user.FullName}";
+            payment.ReferenceId = user.Code;
+            payment.Amount = form.Amount;
+            payment.IPAddress = Request.GetIPAddress();
+            payment.UAString = Request.GetUAString();
+            payment.Issued = DateTimeOffset.UtcNow;
+            payment.UserId = user.Id;
+            payment.PhoneNumber = user.PhoneNumber;
+            payment.Email = user.Email;
+            payment.FullName = user.FullName;
+            payment.SetData(nameof(MobileDetails), mobileDetails);
+
+            await paymentProcessor.CashoutAsync(payment);
+
+            return Result.Succeed();
+        }
+
+        [HttpPost("cashin/{paymentId}/mobile")]
+        public async Task<IActionResult> CashinMobile(int paymentId, string returnUrl, [FromBody] MobileCashinModel form)
+        {
+            if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
+                throw new ArgumentException("Url is not valid.", nameof(returnUrl));
+
+            var query = unitOfWork.Query<Payment>();
+            var payment = await query.FirstOrDefaultAsync(_ => _.Type == PaymentType.Cashin && _.Id == paymentId);
+            if (payment == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var mobileDetails = (MobileDetails)null;
+
+            try
+            {
+                var mobileIssuers = (await paymentProcessor.GetIssuersAsync()).Where(_ => _.Type == PaymentIssuerType.Mobile).ToArray();
+                mobileDetails = new MobileDetails(mobileIssuers, form.MobileNumber);
+            }
+            catch (ArgumentException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.ParamName, ex.Message)); }
+
+            payment.SetData(nameof(MobileDetails), mobileDetails);
+            payment.RedirectUrl = Url.ActionLink(nameof(CashinConfirm), values: new { paymentId, returnUrl });
+            await paymentProcessor.CashinAsync(payment);
+            return Result.Succeed();
+        }
+
+        [HttpPost("cashin/{paymentId}/checkout")]
+        public async Task<IActionResult> CashinCheckout(int paymentId, string returnUrl)
+        {
+            if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
+                throw new ArgumentException("Url is not valid.", nameof(returnUrl));
+
+            var query = unitOfWork.Query<Payment>();
+            var payment = await query.FirstOrDefaultAsync(_ => _.Type == PaymentType.Cashin && _.Id == paymentId);
+            if (payment == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            payment.RedirectUrl = Url.ActionLink(nameof(CashinConfirm), values: new { paymentId, returnUrl });
+            await paymentProcessor.CashinAsync(payment);
+            return Result.Succeed(data: new { payment.CheckoutUrl });
+        }
+
+        [HttpGet("cashin/{paymentId}/confirm")]
+        public async Task<IActionResult> CashinConfirm(int paymentId)
+        {
+            var query = unitOfWork.Query<Payment>();
+            var payment = await query.FirstOrDefaultAsync(_ => _.Type == PaymentType.Cashin && _.Id == paymentId);
+            if (payment == null) return NotFound();
+
+            await paymentProcessor.ConfirmAsync(payment);
+
+            var returnUrl = HttpUtility.ParseQueryString(new Uri(payment.RedirectUrl).Query).Get("returnUrl");
+
+            return Redirect(returnUrl);
+        }
+
+        [HttpGet("cashin/{paymentId}/details")]
+        public async Task<IActionResult> CashinDetails(int paymentId)
+        {
+            var query = unitOfWork.Query<Payment>();
+            var payment = await query.FirstOrDefaultAsync(_ => _.Type == PaymentType.Cashin && _.Id == paymentId);
+            if (payment == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            return Result.Succeed(data: new
+            {
+                payment.Title,
+                payment.Amount,
+                payment.Status,
+                payment.CheckoutUrl
+            });
         }
     }
 }

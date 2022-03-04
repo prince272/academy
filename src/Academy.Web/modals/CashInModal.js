@@ -5,20 +5,20 @@ import { Form, Modal, Accordion, useAccordionButton, AccordionContext, Collapse 
 import { useForm, Controller as FormController } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
-import { cleanObject, preventDefault, sleep } from '../../utils/helpers';
-import { useClient } from '../../utils/client';
+import { cleanObject, preventDefault, sleep } from '../utils/helpers';
+import { useClient } from '../utils/client';
 import { noCase } from 'change-case';
-import PhoneInput from '../../components/PhoneInput';
-import { useAppSettings } from '../../utils/appSettings';
+import PhoneInput from '../components/PhoneInput';
+import { useAppSettings } from '../utils/appSettings';
 import Cleave from 'cleave.js/react';
 import { AspectRatio } from 'react-aspect-ratio';
-import Loader from '../../components/Loader';
-import { withAsync, withRemount } from '../../utils/hooks';
+import Loader from '../components/Loader';
+import { withAsync, withRemount } from '../utils/hooks';
 import { BsCheckCircleFill, BsClockHistory, BsXCircleFill } from 'react-icons/bs';
-import { ModalPathPrefix } from '..';
+import { ModalPathPrefix } from '.';
 import TruncateMarkup from 'react-truncate-markup';
 
-const PaymentDebitModal = withRemount((props) => {
+const CashInModal = withRemount((props) => {
     const { route, modal, remount } = props;
     const router = useRouter();
     const form = useForm({ shouldUnregister: true });
@@ -38,7 +38,7 @@ const PaymentDebitModal = withRemount((props) => {
 
         form.setValue('mode', 'mobile');
 
-        let result = await client.get(`/payments/${paymentId}`);
+        let result = await client.get(`/cashin/${paymentId}/details`);
 
         if (result.error) {
             const error = result.error;
@@ -64,8 +64,8 @@ const PaymentDebitModal = withRemount((props) => {
             const paymentMode = form.watch('mode');
 
             let result = await ({
-                'mobile': () => client.post(`/payments/${paymentId}/mobile/charge`, inputs, { params: { returnUrl: route.url } }),
-                'checkout': () => client.post(`/payments/${paymentId}/charge`, null, { params: { returnUrl: route.url } }),
+                'mobile': () => client.post(`/cashin/${paymentId}/mobile`, inputs, { params: { returnUrl: route.url } }),
+                'checkout': () => client.post(`/cashin/${paymentId}/checkout`, null, { params: { returnUrl: route.url } }),
             })[paymentMode]();
 
             if (result.error) {
@@ -87,7 +87,7 @@ const PaymentDebitModal = withRemount((props) => {
 
     const checkPayment = async () => {
         for (let count = 0; count < 5; count++) {
-            const result = await client.get(`/payments/${paymentId}`);
+            const result = await client.get(`/cashin/${paymentId}/confirm`);
 
             if (!result.error) {
                 payment = await setPayment(result.data);
@@ -134,7 +134,6 @@ const PaymentDebitModal = withRemount((props) => {
                                                     <div className="invalid-feedback">{formState.errors.mobileNumber?.message}</div>
                                                 </div>
                                                 <div className="col-12">
-
                                                     <button className="btn btn-primary w-100" type="button" onClick={() => submit()} disabled={submitting}>
                                                         <div className="position-relative d-flex align-items-center justify-content-center">
                                                             <div className={`${submitting ? 'invisible' : ''}`}>Pay <span className="mb-0"><span>{appSettings.currency.symbol}{payment.amount}</span></span></div>
@@ -233,10 +232,10 @@ const PaymentDebitModal = withRemount((props) => {
     );
 });
 
-PaymentDebitModal.getModalProps = () => {
+CashInModal.getModalProps = () => {
     return {
         size: 'sm'
     };
 };
 
-export default PaymentDebitModal;
+export default CashInModal;

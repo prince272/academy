@@ -133,43 +133,6 @@ namespace Academy.Server.Controllers
             return Result.Succeed(data: mapper.Map<CurrentUserModel>(user));
         }
 
-        [Authorize]
-        [HttpPost("mobile/withdraw")]
-        public async Task<IActionResult> Withdraw([FromBody] MobileTransferModel form)
-        {
-            var user = await HttpContext.GetCurrentUserAsync();
-
-            if (form.Amount <= 0)
-                return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Amount), "'Amount' must be greater then 0."));
-
-            if (user.Balance < form.Amount)
-                return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Amount), "Balance is insufficient."));
-
-            var payment = new Payment();
-            payment.Reason = PaymentReason.Withdrawal;
-            payment.Status = PaymentStatus.Pending;
-            payment.Title = $"Payment to {user.FullName}";
-            payment.ReferenceId = user.Code;
-            payment.Amount = form.Amount;
-            payment.IPAddress = Request.GetIPAddress();
-            payment.UAString = Request.GetUAString();
-            payment.Issued = DateTimeOffset.UtcNow;
-            payment.UserId = user.Id;
-            payment.PhoneNumber = user.PhoneNumber;
-            payment.Email = user.Email;
-            payment.FullName = user.FullName;
-
-            try
-            {
-                var mobileIssuers = (await paymentProcessor.GetIssuersAsync()).Where(_ => _.Type == PaymentIssuerType.Mobile).ToArray();
-                payment.SetData(nameof(MobileDetails), new MobileDetails(mobileIssuers, form.MobileNumber));
-            }
-            catch (PaymentDetailsException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.Name, ex.Message)); }
-
-            await paymentProcessor.TransferAsync(payment);
-
-            return Result.Succeed();
-        }
 
         [HttpPost("confirm/send")]
         public async Task<IActionResult> SendConfirmAccount([FromBody] ConfirmAccountModel form)
@@ -230,7 +193,6 @@ namespace Academy.Server.Controllers
 
             return Result.Succeed();
         }
-
 
 
         [Authorize]

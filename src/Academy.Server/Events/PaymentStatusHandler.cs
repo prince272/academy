@@ -46,6 +46,7 @@ namespace Academy.Server.Events
                     if (user != null)
                     {
                         user.Balance -= payment.Amount;
+                        await unitOfWork.UpdateAsync(user);
                     }
                 }
 

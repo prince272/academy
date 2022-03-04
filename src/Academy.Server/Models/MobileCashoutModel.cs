@@ -7,18 +7,20 @@ using System;
 
 namespace Academy.Server.Models.Payments
 {
-    public class MobileTransferModel
+    public class MobileCashoutModel
     {
         public string MobileNumber { get; set; }
 
         public decimal Amount { get; set; }
     }
 
-    public class MobileTransferValidator : AbstractValidator<MobileTransferModel>
+    public class MobileCashoutValidator : AbstractValidator<MobileCashoutModel>
     {
-        public MobileTransferValidator()
+        public MobileCashoutValidator(IServiceProvider serviceProvider)
         {
             RuleFor(_ => _.MobileNumber).Phone();
+            var settings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
+            RuleFor(_ => _.Amount).LessThanOrEqualTo(settings.Currency.Limit).GreaterThan(0);
         }
     }
 }

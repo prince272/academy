@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Academy.Server.Data.Migrations
 {
-    public partial class Create_Database : Migration
+    public partial class Database_1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -31,13 +31,16 @@ namespace Academy.Server.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Registered = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     Bio = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Bits = table.Column<int>(type: "int", nullable: false),
+                    Balance = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: false),
                     Avatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Progresses = table.Column<string>(type: "nvarchar(max)", nullable: true, defaultValue: "[]"),
+                    ExtensionData = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -104,29 +107,25 @@ namespace Academy.Server.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ContactName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ContactInfo = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: true),
+                    TransactionId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Reason = table.Column<int>(type: "int", nullable: false),
+                    ReferenceId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false),
                     Gateway = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Mode = table.Column<int>(type: "int", nullable: false),
-                    Details_IssuerName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Details_IssuerCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Details_IssuerType = table.Column<int>(type: "int", nullable: true),
-                    Details_MobileNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Details_CardNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Details_CardExpiry = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Details_CardCvv = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Amount = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IpAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IPAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Issued = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     Completed = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     ExtensionData = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UAString = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CheckoutUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RedirectUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Attempts = table.Column<int>(type: "int", nullable: false)
+                    RedirectUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -268,7 +267,7 @@ namespace Academy.Server.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     CourseId = table.Column<int>(type: "int", nullable: false),
-                    Number = table.Column<int>(type: "int", nullable: false),
+                    Number = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Document = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -292,13 +291,15 @@ namespace Academy.Server.Data.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Subject = table.Column<int>(type: "int", nullable: false),
                     Created = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     Updated = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     Published = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CertificateTemplate = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Cost = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: false)
+                    Cost = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -390,8 +391,7 @@ namespace Academy.Server.Data.Migrations
                     LessonId = table.Column<int>(type: "int", nullable: false),
                     Index = table.Column<int>(type: "int", nullable: false),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    Duration = table.Column<long>(type: "bigint", nullable: false)
+                    Type = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -74,7 +74,6 @@ const CertificateViewDialog = () => {
                                         <div className="d-flex justify-content-center align-items-center mb-3"><BsAward style={{ width: "auto", height: "98px" }} /></div>
                                         <div className="h4 text-muted">Certificate</div>
                                     </div>
-
                                 )}
                         </AspectRatio>
                     </div>
@@ -115,7 +114,6 @@ const CertificateViewDialog = () => {
                                         <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Share on Twitter</Tooltip>}>
                                             <TwitterShareButton url={course.certificate.document.url}><TwitterIcon size={37} round /></TwitterShareButton>
                                         </OverlayTrigger>
-
                                     </div>
                                 </div>
                             )}

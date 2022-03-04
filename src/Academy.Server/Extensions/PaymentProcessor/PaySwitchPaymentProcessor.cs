@@ -49,7 +49,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
         public string Name => "PaySwitch";
 
-        public async Task TransferAsync(Payment payment, CancellationToken cancellationToken = default)
+        public async Task CashoutAsync(Payment payment, CancellationToken cancellationToken = default)
         {
             if (payment == null) throw new ArgumentNullException(nameof(payment));
 
@@ -58,12 +58,12 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
             payment.Gateway = Name;
             payment.TransactionId = GenerateTransactionId();
-            payment.Type = PaymentType.Credit;
-
-            await unitOfWork.CreateAsync(payment);
+            payment.Type = PaymentType.Cashout;
 
             if (payment.GetData<MobileDetails>(nameof(MobileDetails)) is MobileDetails mobileDetails)
             {
+                await unitOfWork.CreateAsync(payment);
+
                 var requestHeaders = new Dictionary<string, string>();
                 var requestData = new Dictionary<string, string>
                                     {
@@ -72,6 +72,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
                                         { "amount", (payment.Amount * 100).ToString("000000000000") },
                                         { "processing_code", "404000" },
                                         { "r-switch", "FLT" },
+                                        { "pass_code", paymentOptions.MerchantSecret },
                                         { "desc", $"Payment of {payment.Reason.Humanize()}" },
                                         { "account_number", mobileDetails.MobileNumber.TrimStart('+') },
                                         { "account_issuer", mobileDetails.MobileIssuer.Code },
@@ -84,10 +85,11 @@ namespace Academy.Server.Extensions.PaymentProcessor
                 {
                     payment.Status = PaymentStatus.Complete;
                     await unitOfWork.UpdateAsync(payment);
+                    await mediator.Publish(new PaymentNotification(payment), cancellationToken);
                 }
                 else
                 {
-                    throw new InvalidOperationException("Unable to transfer payment.");
+                    throw new InvalidOperationException("Unable to cashout.");
                 }
             }
             else
@@ -96,7 +98,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
             }
         }
 
-        public async Task ChargeAsync(Payment payment, CancellationToken cancellationToken = default)
+        public async Task CashinAsync(Payment payment, CancellationToken cancellationToken = default)
         {
             if (payment == null) throw new ArgumentNullException(nameof(payment));
 
@@ -105,7 +107,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
             payment.Gateway = Name;
             payment.TransactionId = GenerateTransactionId();
-            payment.Type = PaymentType.Debit;
+            payment.Type = PaymentType.Cashin;
 
             if (payment.GetData<MobileDetails>(nameof(MobileDetails)) is MobileDetails mobileDetails)
             {
@@ -152,12 +154,12 @@ namespace Academy.Server.Extensions.PaymentProcessor
                 }
                 else
                 {
-                    throw new InvalidOperationException("Unable to process payment.");
+                    throw new InvalidOperationException("Unable to cashin.");
                 }
             }
         }
 
-        public async Task VerifyAsync(Payment payment, CancellationToken cancellationToken = default)
+        public async Task ConfirmAsync(Payment payment, CancellationToken cancellationToken = default)
         {
             if (payment == null) throw new ArgumentNullException(nameof(payment));
 
@@ -214,45 +216,39 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
     public class MobileDetails
     {
-        public MobileDetails(PaymentIssuer[] issuers, string number)
+        public MobileDetails(PaymentIssuer[] issuers, string mobileNumber)
         {
-            MobileNumber = number;
-
-            if (string.IsNullOrWhiteSpace(MobileNumber))
-                throw new PaymentDetailsException(nameof(MobileNumber), "'Mobile number' must not be empty.");
+            if (string.IsNullOrWhiteSpace(mobileNumber))
+                throw new ArgumentException("'Mobile number' must not be empty.", nameof(mobileNumber));
 
             PhoneNumber mobileNumberInfo = null;
 
             try
             {
                 var mobileUtil = PhoneNumberUtil.GetInstance();
-                if (!mobileUtil.IsValidNumber(mobileNumberInfo = mobileUtil.Parse(MobileNumber, null)))
-                    throw new PaymentDetailsException(nameof(MobileNumber), "'Mobile number' is not valid.");
+                if (!mobileUtil.IsValidNumber(mobileNumberInfo = mobileUtil.Parse(mobileNumber, null)))
+                    throw new ArgumentException("'Mobile number' is not valid.", nameof(mobileNumber));
             }
             catch (NumberParseException)
             {
-                throw new PaymentDetailsException(nameof(MobileNumber), "'Mobile number' is not valid.");
+                throw new ArgumentException("'Mobile number' is not valid.", nameof(mobileNumber));
             }
 
             var mobileIssuer = issuers.FirstOrDefault(_ => Regex.IsMatch($"{mobileNumberInfo.CountryCode}{mobileNumberInfo.NationalNumber}", _.Pattern));
-            if (mobileIssuer == null) throw new PaymentDetailsException(nameof(MobileNumber), $"'Mobile number' is not supported by any of these mobile issuers. {issuers.Select(_ => _.Name).Humanize()}");
+            if (mobileIssuer == null) throw new ArgumentException($"'Mobile number' is not supported by any of these mobile issuers. {issuers.Select(_ => _.Name).Humanize()}", nameof(mobileNumber));
+           
             MobileIssuer = mobileIssuer;
+            MobileNumber = mobileNumber;
+        }
+
+        public MobileDetails()
+        {
+
         }
 
         public string MobileNumber { get; set; }
 
         public PaymentIssuer MobileIssuer { get; set; }
-    }
-
-    [Serializable]
-    public class PaymentDetailsException : Exception
-    {
-        public PaymentDetailsException(string name, string message) : base(message)
-        {
-            Name = name;
-        }
-
-        public string Name { get; set; }
     }
 
     public class PaymentIssuer
