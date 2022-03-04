@@ -15,6 +15,6 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
         Task VerifyAsync(Payment payment, CancellationToken cancellationToken = default);
 
-        Task<object[]> GetIssuersAsync(CancellationToken cancellationToken = default);
+        Task<PaymentIssuer[]> GetIssuersAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -20,7 +20,7 @@ namespace Academy.Server.Utilities
                 .Must((model, value) =>
                  ValidationHelper.TryFormatPhone(value, out string _) ||
                  ValidationHelper.TryFormatEmail(value, out string _))
-                .WithMessage((model, value) => $"'{(ValidationHelper.PhoneOrEmail(value) ? "Phone number" : "Email")}' is not in a valid format.")
+                .WithMessage((model, value) => $"'{(ValidationHelper.PhoneOrEmail(value) ? "Phone number" : "Email")}' is not valid.")
                 .MustAsync(async (value, cancellationToken) =>
                 {
                     var predicate = await userManager.Users.AnyAsync(user => user.Email == value, cancellationToken);
@@ -53,7 +53,7 @@ namespace Academy.Server.Utilities
                 .Must((model, value) =>
                  ValidationHelper.TryFormatPhone(value, out string _) ||
                  ValidationHelper.TryFormatEmail(value, out string _))
-                .WithMessage((model, value) => $"'{(ValidationHelper.PhoneOrEmail(value) ? "Phone number" : "Email")}' is not in a valid format.");
+                .WithMessage((model, value) => $"'{(ValidationHelper.PhoneOrEmail(value) ? "Phone number" : "Email")}' is not valid.");
             return options;
         }
 
@@ -63,7 +63,7 @@ namespace Academy.Server.Utilities
                 .NotEmpty()
                 .Must((model, value) =>
                  ValidationHelper.TryFormatPhone(value, out string _))
-                .WithMessage((model, value) => "'{PropertyName}' is not in a valid format.");
+                .WithMessage((model, value) => "'{PropertyName}' is not valid.");
             return options;
         }
 
@@ -73,7 +73,7 @@ namespace Academy.Server.Utilities
                 .NotEmpty()
                 .Must((model, value) =>
                  ValidationHelper.TryFormatEmail(value, out string _))
-                .WithMessage((model, value) => "'{PropertyName}' is not in a valid format.");
+                .WithMessage((model, value) => "'{PropertyName}' is not valid.");
             return options;
         }
 

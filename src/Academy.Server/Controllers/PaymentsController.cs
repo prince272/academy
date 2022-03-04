@@ -57,10 +57,10 @@ namespace Academy.Server.Controllers
 
             try
             {
-                var mobileIssuers = (await paymentProcessor.GetIssuersAsync()).OfType<MobileIssuer>().ToArray();
+                var mobileIssuers = (await paymentProcessor.GetIssuersAsync()).Where(_ => _.Type == PaymentIssuerType.Mobile).ToArray();
                 payment.SetData(nameof(MobileDetails), new MobileDetails(mobileIssuers, form.MobileNumber));
             }
-            catch (MobileDetailsException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.Name, ex.Message)); }
+            catch (PaymentDetailsException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.Name, ex.Message)); }
 
             payment.RedirectUrl = Url.ActionLink(nameof(Verify), values: new { paymentId, returnUrl });
             await paymentProcessor.ChargeAsync(payment);
@@ -71,7 +71,7 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Charge(int paymentId, string returnUrl)
         {
             if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
-                throw new ArgumentException("Url is not in a valid format.", nameof(returnUrl));
+                throw new ArgumentException("Url is not valid.", nameof(returnUrl));
 
             var query = unitOfWork.Query<Payment>();
             var payment = await query.FirstOrDefaultAsync(_ => _.Id == paymentId);

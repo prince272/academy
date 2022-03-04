@@ -30,14 +30,16 @@ const BitInfoDialog = () => {
         <Modal {...DefaultModalProps} size="sm" show={opended} onHide={() => close()}>
             <Modal.Header bsPrefix="modal-close" closeButton></Modal.Header>
             <Modal.Body>
+                <div className="text-center mb-5">
+                    <div className="h5 mb-0">Your bits</div>
+                </div>
                 <div className="text-center">
-                    <div className="h5 mb-0">Your Bits</div>
-                    <div className="d-inline-flex align-items-center my-3"><div className="svg-icon-sm"><SvgBitCubes /></div><div className="ms-2 h5 mb-0">{client.user.bits}</div></div>
-                    <div className="text-center text-muted small">Use them to unlock practice features. Keep learning every day to collect more!</div>
+                    <div className="d-inline-flex align-items-center my-3"><div className="svg-icon-sm"><SvgBitCubes /></div><div className="ms-2 h2 mb-0">{client.user.bits}</div></div>
+                    <div className="text-muted">Use them to unlock practice features. Keep learning every day to collect more!</div>
                 </div>
                 <hr />
                 <div className="h6 mb-3">How you may earn or lose bits:</div>
-                <div className="vstack gap-2 small">
+                <div className="vstack gap-2">
                     {appSettings.currency.bitRules.map((bitRule) => {
                         return (
                             <div key={bitRule.type} className="hstack gap-3 justify-content-between align-items-center text-nowrap">

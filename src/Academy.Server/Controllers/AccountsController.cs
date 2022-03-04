@@ -161,13 +161,13 @@ namespace Academy.Server.Controllers
 
             try
             {
-                var mobileIssuers = (await paymentProcessor.GetIssuersAsync()).OfType<MobileIssuer>().ToArray();
+                var mobileIssuers = (await paymentProcessor.GetIssuersAsync()).Where(_ => _.Type == PaymentIssuerType.Mobile).ToArray();
                 payment.SetData(nameof(MobileDetails), new MobileDetails(mobileIssuers, form.MobileNumber));
             }
-            catch (MobileDetailsException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.Name, ex.Message)); }
+            catch (PaymentDetailsException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.Name, ex.Message)); }
 
-            await unitOfWork.CreateAsync(payment);
             await paymentProcessor.TransferAsync(payment);
+
             return Result.Succeed();
         }
 

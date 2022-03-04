@@ -18,10 +18,6 @@ import { BsCheckCircleFill, BsClockHistory, BsXCircleFill } from 'react-icons/bs
 import { ModalPathPrefix } from '..';
 import TruncateMarkup from 'react-truncate-markup';
 
-function lowerCaseFirst(input) {
-    return input.charAt(0).toLowerCase() + input.substr(1);
-}
-
 const PaymentDebitModal = withRemount((props) => {
     const { route, modal, remount } = props;
     const router = useRouter();
