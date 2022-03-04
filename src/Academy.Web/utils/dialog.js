@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useRef, useState } from "react";
 import { Modal } from "react-bootstrap";
-
+import { DefaultModalProps } from "../modals"
 const ConfirmationDialog = () => {
     const dialog = useDialog();
     const { opended, close, params } = dialog;
 
     return (
-        <Modal show={opended} onHide={() => close()}>
+        <Modal {...DefaultModalProps} show={opended} onHide={() => close()}>
             <Modal.Header closeButton>
                 <Modal.Title>{params.title}</Modal.Title>
             </Modal.Header>
