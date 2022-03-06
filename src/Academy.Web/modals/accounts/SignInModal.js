@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useImperativeHandle } from 'react';
+import { useState, useCallback, useEffect, useImperativeHandle, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Form, Modal } from 'react-bootstrap';
@@ -9,6 +9,7 @@ import { cleanObject, preventDefault } from '../../utils/helpers';
 import { ModalPathPrefix } from '..';
 import PhoneInput from '../../components/PhoneInput';
 import { useAppSettings } from '../../utils/appSettings';
+import _ from 'lodash';
 
 const SignInModal = (props) => {
     const { route, modal } = props;
@@ -20,6 +21,7 @@ const SignInModal = (props) => {
     const returnUrl = route.query.returnUrl;
     const client = useClient();
 
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const appSettings = useAppSettings();
 
     useEffect(() => {

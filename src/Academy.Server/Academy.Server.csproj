@@ -8,7 +8,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
-		<PackageReference Include="FFMpegCore" Version="4.7.0" />
 		<PackageReference Include="FluentValidation.AspNetCore" Version="10.3.3" />
 		<PackageReference Include="HtmlSanitizer" Version="6.0.453" />
 		<PackageReference Include="Humanizer.Core" Version="2.13.14" />
@@ -35,12 +34,6 @@
 		<PackageReference Include="Syncfusion.DocIO.Net.Core" Version="19.4.0.40" />
 		<PackageReference Include="Syncfusion.DocIORenderer.Net.Core" Version="19.4.0.40" />
 		<PackageReference Include="Syncfusion.EJ2.PdfViewer.AspNet.Core.Windows" Version="19.4.0.42" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="ffbinaries\ffprobe.exe">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
 	</ItemGroup>
 
 	<ItemGroup>

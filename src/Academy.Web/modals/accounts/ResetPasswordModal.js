@@ -11,6 +11,7 @@ import { useClient } from '../../utils/client';
 import { ModalPathPrefix } from '../../modals';
 import PhoneInput from '../../components/PhoneInput';
 import { useAppSettings } from '../../utils/appSettings';
+import _ from 'lodash';
 
 const ResetPasswordModal = (props) => {
     const { route } = props;
@@ -25,6 +26,7 @@ const ResetPasswordModal = (props) => {
     const [codeSent, setCodeSent] = useState(0);
     const [codeSentDate, setCodeSentDate] = useState(null);
 
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const appSettings = useAppSettings();
 
     const sendCode = () => {

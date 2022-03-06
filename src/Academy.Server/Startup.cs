@@ -7,7 +7,6 @@ using Academy.Server.Services;
 using Academy.Server.Utilities;
 using Academy.Server.Workers;
 using AutoMapper;
-using FFMpegCore;
 using FluentValidation.AspNetCore;
 using Humanizer;
 using IdentityModel;
@@ -364,9 +363,6 @@ namespace Academy.Server
         {
             // Register Syncfusion license.
             SyncfusionLicenseProvider.RegisterLicense("NTY0NTk4QDMxMzkyZTM0MmUzMFE0Ni93eHhJNjcvQ29ySG1VTGlzb1JLaFdEakJaQkRDQWppSkhmenZxNFk9");
-
-            // Configure FFLibnaries.
-            GlobalFFOptions.Configure(options => options.BinaryFolder = $"{WebEnvironment.ContentRootPath}\\ffbinaries");
 
             app.UseExceptionHandler(_ => _.Run(async context =>
             {

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Form, Modal } from 'react-bootstrap';
 import { useForm, Controller as FormController } from 'react-hook-form';
@@ -22,6 +22,7 @@ const SectionEditModal = withRemount((props) => {
     const courseId = route.query.courseId;
     const sectionId = route.query.sectionId;
 
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const eventDispatcher = useEventDispatcher();
 
     const client = useClient();

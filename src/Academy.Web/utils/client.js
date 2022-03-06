@@ -35,26 +35,34 @@ const createHttpClient = (defaultConfig) => {
                 return (await http.request(requestConfig)).data;
             }
             catch (ex) {
-                console.warn(ex);
+                console.error(ex);
 
                 if (ex.response) {
                     // client received an error response (5xx, 4xx)
                     return ex.response.data;
                 }
                 else {
-                    // client never received a response, or request never left.
 
-                    const result = {
-                        error: {
-                            message: 'Oops! Something went wrong!',
-                            status: 503,
-                            details: {},
-                            reason: ex.request ? 'Client-side error' : 'Unknown error'
-                        }
-                    };
-
-                    return result;
-
+                    if (ex.message === "Network Error") {
+                        return {
+                            error: {
+                                message: 'Check your internet connection.',
+                                status: -1,
+                                details: {},
+                                reason: 'Network Error'
+                            }
+                        };
+                    }
+                    else {
+                        return {
+                            error: {
+                                message: 'Oops! Something went wrong!',
+                                status: 503,
+                                details: {},
+                                reason: ex.request ? 'ClientSide Error' : 'Unknown Error'
+                            }
+                        };
+                    }
                 }
             }
         }

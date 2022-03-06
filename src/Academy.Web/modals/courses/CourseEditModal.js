@@ -16,6 +16,7 @@ import MediaUploader, { MediaExtensions } from '../../components/MediaUploader';
 import { BsInfoCircle } from 'react-icons/bs';
 import { useAppSettings } from '../../utils/appSettings';
 import { useEventDispatcher } from '../../utils/eventDispatcher';
+import _ from 'lodash';
 
 const CourseEditModal = withRemount((props) => {
     const { route, modal, remount, updateModalProps } = props;
@@ -26,6 +27,8 @@ const CourseEditModal = withRemount((props) => {
     const [submitting, setSubmitting] = useState(false);
     const [action, setAction] = useState(route.query.action);
     const courseId = route.query.courseId;
+
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const eventDispatcher = useEventDispatcher();
     const appSettings = useAppSettings();
     const client = useClient();

@@ -295,6 +295,7 @@ const LessonViewModal = withRemount((props) => {
     const [views, setViews] = useState([]);
     const [currentView, setCurrentView] = useState(null);
 
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const eventDispatcher = useEventDispatcher();
 
     const confetti = useConfetti();

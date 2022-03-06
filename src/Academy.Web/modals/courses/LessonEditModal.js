@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Form, Modal } from 'react-bootstrap';
 import { useForm, Controller as FormController } from 'react-hook-form';
@@ -13,6 +13,7 @@ import DocumentEditor from '../../components/DocumentEditor';
 import Loader from '../../components/Loader';
 import { useEventDispatcher } from '../../utils/eventDispatcher';
 import { useClient } from '../../utils/client';
+import _ from 'lodash';
 
 const LessonEditModal = withRemount((props) => {
     const { route, modal, updateModalProps, remount } = props;
@@ -26,6 +27,7 @@ const LessonEditModal = withRemount((props) => {
     const sectionId = route.query.sectionId;
     const lessonId = route.query.lessonId;
 
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const eventDispatcher = useEventDispatcher();
 
     const client = useClient();

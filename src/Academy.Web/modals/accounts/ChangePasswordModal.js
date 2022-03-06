@@ -12,6 +12,7 @@ import { ModalPathPrefix } from '../../modals';
 import PhoneInput from '../../components/PhoneInput';
 import { useAppSettings } from '../../utils/appSettings';
 import MediaUploader, { MediaExtensions } from '../../components/MediaUploader';
+import _ from 'lodash';
 
 const ChangePasswordModal = (props) => {
     const client = useClient();
@@ -19,7 +20,8 @@ const ChangePasswordModal = (props) => {
     const formState = form.formState;
     const [submitting, setSubmitting] = useState(false);
     const [loading, setLoading] = useState({});
-
+    const componentId = useMemo(() => _.uniqueId('Component'));
+    
     const load = () => {
         form.reset(client.user);
         setLoading(null);

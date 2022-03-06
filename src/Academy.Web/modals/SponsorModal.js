@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useImperativeHandle, forwardRef, useMemo } from 'react';
 import Link from 'next/link';
 import { Form, Modal } from 'react-bootstrap';
 import { useForm, Controller as FormController } from 'react-hook-form';
@@ -12,6 +12,7 @@ import { useAppSettings } from '../utils/appSettings';
 import Cleave from 'cleave.js/react';
 import { ModalPathPrefix } from './';
 import { BsHeartFill } from 'react-icons/bs';
+import _ from 'lodash';
 
 const SponsorModal = (props) => {
     const { route, modal } = props;
@@ -19,6 +20,8 @@ const SponsorModal = (props) => {
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
     const [submitting, setSubmitting] = useState(false);
+
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const appSettings = useAppSettings();
 
     const client = useClient();

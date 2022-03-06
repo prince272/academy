@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Form, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useForm, Controller as FormController } from 'react-hook-form';
@@ -23,6 +23,7 @@ import {
 } from "react-share";
 import { useEventDispatcher } from '../../utils/eventDispatcher';
 import { useDialog } from '../../utils/dialog';
+import _ from 'lodash';
 
 
 const CertificateViewDialog = () => {
@@ -35,6 +36,7 @@ const CertificateViewDialog = () => {
     const confetti = useConfetti();
     const client = useClient();
 
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const eventDispatcher = useEventDispatcher();
 
     const submit = () => {

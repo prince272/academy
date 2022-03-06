@@ -4,7 +4,7 @@ import { useClient } from '../utils/client';
 import { cleanObject } from '../utils/helpers';
 import { useRouter } from 'next/router';
 
-import { useEffect, useRef, useState, } from 'react';
+import { useEffect, useMemo, useRef, useState, } from 'react';
 
 import _ from 'lodash';
 import { Toaster } from 'react-hot-toast';
@@ -160,7 +160,7 @@ const Header = () => {
 };
 
 const Body = ({ children }) => {
-
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const modal = useModal();
     const router = useRouter();
     const client = useClient();

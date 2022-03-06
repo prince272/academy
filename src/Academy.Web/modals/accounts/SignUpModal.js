@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useImperativeHandle, forwardRef, useMemo } from 'react';
 import Link from 'next/link';
 import { Form, Modal } from 'react-bootstrap';
 import { useForm, Controller as FormController } from 'react-hook-form';
@@ -22,6 +22,7 @@ const SignUpModal = (props) => {
     const returnUrl = route.query.returnUrl;
     const client = useClient();
 
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const appSettings = useAppSettings();
 
     const submit = () => {

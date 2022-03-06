@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Form, Modal, OverlayTrigger, Tooltip, Dropdown } from 'react-bootstrap';
 import { useForm, Controller as FormController, useFieldArray } from 'react-hook-form';
@@ -32,6 +32,7 @@ const QuestionEditModal = withRemount((props) => {
     const lessonId = route.query.lessonId;
     const questionId = route.query.questionId;
 
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const eventDispatcher = useEventDispatcher();
 
     const answersController = useFieldArray({

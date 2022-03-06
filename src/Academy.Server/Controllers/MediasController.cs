@@ -3,7 +3,6 @@ using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.CacheManager;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Utilities;
-using FFMpegCore;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -92,8 +91,7 @@ namespace Academy.Server.Controllers
                 {
                     if (media.Type == MediaType.Video || media.Type == MediaType.Audio)
                     {
-                        var mediaInfo = await FFProbe.AnalyseAsync(outputStream);
-                        media.Duration = mediaInfo.Duration.Ticks;
+                        media.Duration = -1;
                         await unitOfWork.UpdateAsync(media);
                     }
                 }

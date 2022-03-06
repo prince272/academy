@@ -13,6 +13,7 @@ import PhoneInput from '../../components/PhoneInput';
 import { useAppSettings } from '../../utils/appSettings';
 import MediaUploader, { MediaExtensions } from '../../components/MediaUploader';
 import { noCase, sentenceCase } from 'change-case';
+import _ from 'lodash';
 
 const ChangeAccountModal = (props) => {
 
@@ -24,6 +25,8 @@ const ChangeAccountModal = (props) => {
 
     const [codeSent, setCodeSent] = useState(0);
     const [codeSentDate, setCodeSentDate] = useState(null);
+
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const appSettings = useAppSettings();
 
     useEffect(() => {

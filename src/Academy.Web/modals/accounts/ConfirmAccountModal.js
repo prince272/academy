@@ -11,6 +11,7 @@ import { useClient } from '../../utils/client';
 import { ModalPathPrefix } from '../../modals';
 import PhoneInput from '../../components/PhoneInput';
 import { useAppSettings } from '../../utils/appSettings';
+import _ from 'lodash';
 
 const ConfirmAccountModal = (props) => {
     const { route } = props;
@@ -22,6 +23,7 @@ const ConfirmAccountModal = (props) => {
     const [submitting, setSubmitting] = useState(false);
     const client = useClient();
 
+    const componentId = useMemo(() => _.uniqueId('Component'));
     const appSettings = useAppSettings();
 
     const [codeSent, setCodeSent] = useState(0);
