@@ -21,7 +21,7 @@ const SponsorModal = (props) => {
     const formState = form.formState;
     const [submitting, setSubmitting] = useState(false);
 
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
     const appSettings = useAppSettings();
 
     const client = useClient();
@@ -42,13 +42,13 @@ const SponsorModal = (props) => {
             if (result.error) {               
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }
 
-            const paymentId = result.data.paymentId;
-            router.replace({ pathname: `${ModalPathPrefix}/cashin/${paymentId}`, query: { returnUrl: route.url } });
+            const payment = result.data;
+            router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { returnUrl: route.url, payment: JSON.stringify(payment) } });
         })();
     };
 

@@ -33,18 +33,9 @@ namespace Academy.Server.Data.Entities
 
         public string ExtensionData { get; set; }
 
-        public bool CanManage()
-        {
-            var canManage = UserRoles.Any(_ => _.Role.Name == RoleConstants.Manager) || UserRoles.Any(_ => _.Role.Name == RoleConstants.Teacher);
-            return canManage;
-        }
+        public bool IsAdmin => UserRoles.Any(_ => _.Role.Name == RoleConstants.Admin);
 
-        public bool CanManage(Course course)
-        {
-            var canManage = (UserRoles.Any(_ => _.Role.Name == RoleConstants.Manager)) ||
-                           ((UserRoles.Any(_ => _.Role.Name == RoleConstants.Teacher)) && Id == course.UserId);
-            return canManage;
-        }
+        public bool IsTeacher => UserRoles.Any(_ => _.Role.Name == RoleConstants.Teacher);
     }
 
     public class UserRole : IdentityUserRole<int>

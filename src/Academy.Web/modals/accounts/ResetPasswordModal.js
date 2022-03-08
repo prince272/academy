@@ -26,7 +26,7 @@ const ResetPasswordModal = (props) => {
     const [codeSent, setCodeSent] = useState(0);
     const [codeSentDate, setCodeSentDate] = useState(null);
 
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
     const appSettings = useAppSettings();
 
     const sendCode = () => {
@@ -65,7 +65,7 @@ const ResetPasswordModal = (props) => {
             if (result.error) {
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }

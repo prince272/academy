@@ -295,7 +295,7 @@ const LessonViewModal = withRemount((props) => {
     const [views, setViews] = useState([]);
     const [currentView, setCurrentView] = useState(null);
 
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
     const eventDispatcher = useEventDispatcher();
 
     const confetti = useConfetti();
@@ -324,8 +324,8 @@ const LessonViewModal = withRemount((props) => {
                 return;
             }
 
-            const paymentId = result.data.paymentId;
-            router.replace({ pathname: `${ModalPathPrefix}/payments/${paymentId}/debit`, query: { returnUrl: route.url } });
+            const payment = result.data;
+            router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { returnUrl: route.url, payment: JSON.stringify(payment) } });
             return;
         }
         else {
@@ -380,7 +380,7 @@ const LessonViewModal = withRemount((props) => {
 
             if (result.error) {
                 const error = result.error;
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }
@@ -397,7 +397,7 @@ const LessonViewModal = withRemount((props) => {
 
             if (result.error) {
                 const error = result.error;
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }
@@ -414,7 +414,7 @@ const LessonViewModal = withRemount((props) => {
 
             if (result.error) {
                 const error = result.error;
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }

@@ -20,7 +20,7 @@ const ChangePasswordModal = (props) => {
     const formState = form.formState;
     const [submitting, setSubmitting] = useState(false);
     const [loading, setLoading] = useState({});
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
     
     const load = () => {
         form.reset(client.user);
@@ -36,13 +36,13 @@ const ChangePasswordModal = (props) => {
             if (result.error) {
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }
 
             form.reset();
-            toast.success(`Password changed.`);
+            toast.success(`Password changed.`, { id: componentId });
             setSubmitting(false);
         })();
     };

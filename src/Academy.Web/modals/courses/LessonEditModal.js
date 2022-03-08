@@ -27,7 +27,7 @@ const LessonEditModal = withRemount((props) => {
     const sectionId = route.query.sectionId;
     const lessonId = route.query.lessonId;
 
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
     const eventDispatcher = useEventDispatcher();
 
     const client = useClient();
@@ -71,13 +71,13 @@ const LessonEditModal = withRemount((props) => {
             if (result.error) {
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }
 
             eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
-            toast.success(`Lesson ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
+            toast.success(`Lesson ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`, { id: componentId });
             modal.close();
         })();
     };

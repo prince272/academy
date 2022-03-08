@@ -113,7 +113,7 @@ namespace Academy.Server.Utilities
 
         public static string GenerateCode(string prefix)
         {
-            return $"{prefix}{DateTimeOffset.UtcNow:yyyyMM}{GenerateNumber(6)}";
+            return $"{prefix}-{DateTimeOffset.UtcNow:yyyyMM}{GenerateNumber(6)}";
         }
     }
 }

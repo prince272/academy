@@ -19,9 +19,10 @@ momentDurationFormatSetup(moment);
 import { DialogProvider } from '../utils/dialog';
 
 const CourseItem = ({ course }) => {
+    const courseId = course.id;
     const appSettings = useAppSettings();
     const client = useClient();
-    const editable = (client.user && ((client.user.roles.some(role => role == 'teacher') && client.user.id == course.user.id) || client.user.roles.some(role => role == 'manager')));
+    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id))); 
 
     return (
         <div className="card shadow-sm">
@@ -41,7 +42,7 @@ const CourseItem = ({ course }) => {
                     <div className="text-primary">{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
                     <div><span className="text-primary"><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
                 </div>
-                {editable && (
+                {permitted && (
                     <div className="position-absolute top-0 end-0 zi-2">
                         <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Options</Tooltip>}>
                             {({ ...triggerHandler }) => (
@@ -51,9 +52,9 @@ const CourseItem = ({ course }) => {
                                     </Dropdown.Toggle>
 
                                     <Dropdown.Menu style={{ margin: 0 }}>
-                                        <Link href={`/courses/${course.id}`} passHref><Dropdown.Item>View</Dropdown.Item></Link>
-                                        <Link href={`${ModalPathPrefix}/courses/${course.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
-                                        <Link href={`${ModalPathPrefix}/courses/${course.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
+                                        <Link href={`/courses/${courseId}`} passHref><Dropdown.Item>View</Dropdown.Item></Link>
+                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
+                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
 
                                     </Dropdown.Menu>
                                 </Dropdown>
@@ -62,7 +63,7 @@ const CourseItem = ({ course }) => {
                     </div>
                 )}
             </div>
-            <Link href={`/courses/${course.id}`}><a className="stretched-link" title={course.title}></a></Link>
+            <Link href={`/courses/${courseId}`}><a className="stretched-link" title={course.title}></a></Link>
         </div>
     );
 }

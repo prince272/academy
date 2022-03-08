@@ -28,7 +28,7 @@ const CourseEditModal = withRemount((props) => {
     const [action, setAction] = useState(route.query.action);
     const courseId = route.query.courseId;
 
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
     const eventDispatcher = useEventDispatcher();
     const appSettings = useAppSettings();
     const client = useClient();
@@ -75,7 +75,7 @@ const CourseEditModal = withRemount((props) => {
             if (result.error) {
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }
@@ -87,7 +87,7 @@ const CourseEditModal = withRemount((props) => {
                 eventDispatcher.emit(`${action}Course`, { id: courseId });
             }
 
-            toast.success(`Course ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`);
+            toast.success(`Course ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`, { id: componentId });
             modal.close();
         })();
     };

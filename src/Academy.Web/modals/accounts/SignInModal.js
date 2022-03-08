@@ -21,7 +21,7 @@ const SignInModal = (props) => {
     const returnUrl = route.query.returnUrl;
     const client = useClient();
 
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
     const appSettings = useAppSettings();
 
     useEffect(() => {
@@ -48,7 +48,7 @@ const SignInModal = (props) => {
                 }
                 else {
                     Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-                    toast.error(error.message);
+                    toast.error(error.message, { id: componentId });
                     setSubmitting(false);
                 }
 

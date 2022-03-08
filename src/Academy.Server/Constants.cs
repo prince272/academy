@@ -21,10 +21,10 @@ namespace Academy.Server
 
     public static class RoleConstants
     {
-        public const string Manager = "Manager";
+        public const string Admin = "Manager";
 
         public const string Teacher = "Teacher";
 
-        public static string[] All = new string[] { Manager, Teacher };
+        public static string[] All = new string[] { Admin, Teacher };
     }
 }

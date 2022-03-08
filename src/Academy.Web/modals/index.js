@@ -120,6 +120,11 @@ const useModalProvider = () => {
                     promise: import('./accounts/ResetPasswordModal')
                 },
                 {
+                    pattern: `${ModalPathPrefix}/accounts/withdraw`,
+                    promise: import('./accounts/WithdrawModal'),
+                    authenticate: true
+                },
+                {
                     pattern: [`${ModalPathPrefix}/courses/:action(add)`, `${ModalPathPrefix}/courses/:courseId/:action(edit|delete)`],
                     promise: import('./courses/CourseEditModal'),
                     authenticate: true,
@@ -145,12 +150,8 @@ const useModalProvider = () => {
                     authenticate: true,
                 },
                 {
-                    pattern: `${ModalPathPrefix}/cashin/:paymentId`,
-                    promise: import('./CashInModal'),
-                },
-                {
-                    pattern: `${ModalPathPrefix}/cashout`,
-                    promise: import('./CashOutModal'),
+                    pattern: `${ModalPathPrefix}/checkout`,
+                    promise: import('./CheckoutModal'),
                 },
             ];
 

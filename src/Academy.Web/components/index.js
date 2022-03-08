@@ -59,8 +59,7 @@ const Header = () => {
     const router = useRouter();
     const appSettings = useAppSettings();
     const dialog = useDialog();
-
-    const editable = (client.user && ((client.user.roles.some(role => role == 'teacher') || client.user.roles.some(role => role == 'manager'))));
+    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher')))); 
 
     return (
 
@@ -126,7 +125,7 @@ const Header = () => {
                                                     )}
                                                 <div className="ms-2 text-start lh-1">
                                                     <div className="lh-sm">{client.user.firstName}</div>
-                                                    {editable && (<div className="text-small text-primary"><span>{appSettings.currency.symbol}</span> <span>{client.user.balance}</span></div>)}
+                                                    {permitted && (<div className="text-small text-primary"><span>{appSettings.currency.symbol}</span> <span>{client.user.balance}</span></div>)}
                                                 </div>
                                             </div>
                                         </Dropdown.Toggle>
@@ -135,7 +134,7 @@ const Header = () => {
                                             <Link href={`${ModalPathPrefix}/accounts/profile/edit`} passHref><Dropdown.Item>Edit profile</Dropdown.Item></Link>
                                             <Link href={`${ModalPathPrefix}/accounts/account/change`} passHref><Dropdown.Item>Change account</Dropdown.Item></Link>
                                             <Link href={`${ModalPathPrefix}/accounts/password/change`} passHref><Dropdown.Item>Change password</Dropdown.Item></Link>
-                                            <Link href={`${ModalPathPrefix}/cashout`} passHref><Dropdown.Item>Cashout</Dropdown.Item></Link>
+                                            <Link href={`${ModalPathPrefix}/accounts/withdraw`} passHref><Dropdown.Item>Withdraw</Dropdown.Item></Link>
                                             <Dropdown.Divider />
                                             <Link href={`${ModalPathPrefix}/accounts/signout`} passHref><Dropdown.Item>Sign out</Dropdown.Item></Link>
                                         </Dropdown.Menu>
@@ -160,7 +159,7 @@ const Header = () => {
 };
 
 const Body = ({ children }) => {
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
     const modal = useModal();
     const router = useRouter();
     const client = useClient();
@@ -173,24 +172,24 @@ const Body = ({ children }) => {
     useEffect(() => {
 
         const handleSigninComplete = (state) => {
-            toast.success('Sign in successful.');
+            toast.success('Sign in successful.', { id: componentId });
 
             const returnUrl = state?.returnUrl || '/';
             router.replace(returnUrl);
         };
 
         const handleSigninError = () => {
-            toast.error('Unable to sign in to account.');
+            toast.error('Unable to sign in to account.', { id: componentId });
         };
 
         const handleSignoutComplete = (state) => {
-            toast.success('Sign out successful.');
+            toast.success('Sign out successful.', { id: componentId });
             const returnUrl = state?.returnUrl;
             if (returnUrl != null) router.replace(returnUrl);
         };
 
         const handleSignoutError = () => {
-            toast.error('Unable to sign out from account.');
+            toast.error('Unable to sign out from account.', { id: componentId });
         };
 
         eventDispatcher.on('signinComplete', handleSigninComplete);

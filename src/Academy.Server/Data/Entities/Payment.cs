@@ -26,6 +26,8 @@ namespace Academy.Server.Data.Entities
 
         public string ReferenceId { get; set; }
 
+        public PaymentMode Mode { get; set; }
+
         public PaymentStatus Status { get; set; }
 
         public PaymentType Type { get; set; }
@@ -46,15 +48,21 @@ namespace Academy.Server.Data.Entities
 
         public string UAString { get; set; }
 
-        public string CheckoutUrl { get; set; }
+        public string ExternalUrl { get; set; }
 
         public string RedirectUrl { get; set; }
     }
 
+    public enum PaymentMode
+    {
+        Mobile,
+        External
+    }
+
     public enum PaymentType
     {
-        Cashout,
-        Cashin,
+        Payout,
+        Payin,
     }
 
     public enum PaymentStatus

@@ -146,6 +146,8 @@ const CoursesPage = withRemount((props) => {
         return items;
     })();
 
+    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher')))); 
+
     return (
         <>
             <div className="container h-100 py-3">
@@ -225,8 +227,9 @@ const CoursesPage = withRemount((props) => {
                                 hasMore={(page.pageNumber + 1) <= page.totalPages}
                                 loader={<Loader {...loading} />}>
                                 {page.items.map((course) => {
+                                    const courseId = course.id;
                                     return (
-                                        <div key={course.id} className="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <div key={courseId} className="col-12 col-sm-6 col-md-4 col-lg-3">
                                             <CourseItem course={course} />
                                         </div>
                                     );
@@ -246,8 +249,7 @@ const CoursesPage = withRemount((props) => {
                     </div>
                 </div>
             </div>
-            {
-                client.user && client.user.roles.some(role => role == 'teacher') &&
+            {permitted &&
                 (<div className="position-fixed bottom-0 end-0 w-100 zi-3 pe-none">
                     <div className="container py-3">
                         <div className="row justify-content-center">

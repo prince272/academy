@@ -67,7 +67,7 @@ namespace Academy.Server.Controllers
 
             if (await userManager.Users.CountAsync() == 1)
             {
-                (await userManager.AddToRolesAsync(user, new string[] { RoleConstants.Teacher, RoleConstants.Manager })).ThrowIfFailed();
+                (await userManager.AddToRolesAsync(user, new string[] { RoleConstants.Teacher, RoleConstants.Admin })).ThrowIfFailed();
             }
 
             return Result.Succeed();
@@ -276,7 +276,6 @@ namespace Academy.Server.Controllers
         }
 
 
-
         [HttpPost("password/reset/send")]
         public async Task<IActionResult> SendResetPassword([FromBody] ResetPasswordModel form)
         {
@@ -325,6 +324,53 @@ namespace Academy.Server.Controllers
             }
 
             return Result.Succeed();
+        }
+
+        [Authorize]
+        [HttpPost("withdraw")]
+        public async Task<IActionResult> Withdraw([FromBody] PayoutDetailsModel form)
+        {
+            var paymentDetails = (PaymentDetails)null;
+            try
+            {
+                if (form.Mode == PaymentMode.Mobile)
+                {
+                    paymentDetails = new PaymentDetails((await paymentProcessor.GetIssuersAsync()).Where(_ => _.Type == PaymentIssuerType.Mobile).ToArray(), form.MobileNumber);
+                }
+                else throw new ArgumentNullException($"The payment mode is not valid.", nameof(form.Mode));
+            }
+            catch (ArgumentException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.ParamName, ex.Message)); }
+
+            var user = await HttpContext.GetCurrentUserAsync();
+
+            if (user.Balance < form.Amount)
+                return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Amount), "Balance is insufficient."));
+
+            var payment = new Payment();
+            payment.Reason = PaymentReason.Withdrawal;
+            payment.Status = PaymentStatus.Pending;
+            payment.Type = PaymentType.Payout;
+            payment.Title = $"Payment to {user.FullName}";
+            payment.ReferenceId = user.Code;
+            payment.Amount = form.Amount;
+            payment.IPAddress = Request.GetIPAddress();
+            payment.UAString = Request.GetUAString();
+            payment.Issued = DateTimeOffset.UtcNow;
+            payment.UserId = user.Id;
+            payment.PhoneNumber = user.PhoneNumber;
+            payment.Email = user.Email;
+            payment.FullName = user.FullName;
+
+            payment.Mode = form.Mode;
+            payment.SetData(nameof(PaymentDetails), paymentDetails);
+
+            await unitOfWork.CreateAsync(payment);
+            await paymentProcessor.ProcessAsync(payment);
+
+            return Result.Succeed(data: new
+            {
+                payment.Id,
+            });
         }
     }
 }

@@ -55,7 +55,7 @@ const MediaUploader = ({ value, onChange, extensions, length, layout }) => {
     const accessToken = client.accessToken;
 
     return (
-        <div className={`root border mx-auto ${layout == 'circle' ? "rounded-pill" : ""}`} style={{ ...(layout == 'circle' ? { width: "170px", height: "170px" } : {}) }}>
+        <div className={`border mx-auto ${layout == 'circle' ? "rounded-pill" : ""}`} style={{ ...(layout == 'circle' ? { width: "170px", height: "170px" } : {}) }}>
             <FilePond
                 ref={filePondRef}
                 allowImagePreview={true}
@@ -141,17 +141,18 @@ const MediaUploader = ({ value, onChange, extensions, length, layout }) => {
                     }
                 }} />
             <style jsx>{`
-            .root > :global(.filepond--root) {
+            div > :global(.filepond--wrapper .filepond--root) {
                 margin-bottom: 0;
             }
             
             /* use a hand cursor intead of arrow for the action buttons */
-            .root > :global(.filepond--file-action-button) {
+            div > :global(.filepond--wrapper .filepond--file-action-button) {
                 cursor: pointer;
             }
             
             /* the text color of the drop label*/
-            .root > :global(.filepond--drop-label) {
+            div > :global(.filepond--wrapper .filepond--drop-label) {
+                background-color: transparent !important;
                 font-size: .875em !important;
                 padding: 10px;
                 opacity: 1;
@@ -159,63 +160,63 @@ const MediaUploader = ({ value, onChange, extensions, length, layout }) => {
             }
             
             /* underline color for "Browse" button */
-            .root > :global(.filepond--label-action) {
+            div > :global(.filepond--wrapper .filepond--label-action) {
                 text-decoration-color: #aaa;
             }
 
             /* the background color of the filepond drop area */
-            .root > :global(.filepond--panel-root) {
+            div > :global(.filepond--wrapper .filepond--panel-root) {
                 background-color: transparent !important;
                 border: none;
             }
             
             /* the border radius of the file item */
-            .root > :global(.filepond--item-panel) {
+            div > :global(.filepond--wrapper .filepond--item-panel) {
                 border-radius: .3125rem;
             }
 
             /* the background color of the file and file panel (used when dropping an image) */
-            .root > :global(.filepond--item-panel) {
+            div > :global(.filepond--wrapper .filepond--item-panel) {
                 background-color: #555;
             }
 
             /* the background color of the drop circle */
-            .root > :global(.filepond--drip-blob) {
+            div > :global(.filepond--wrapper .filepond--drip-blob) {
                 background-color: #999;
             }
             
             /* the background color of the black action buttons */
-            .root > :global(.filepond--file-action-button) {
+            div > :global(.filepond--wrapper .filepond--file-action-button) {
                 background-color: rgba(0, 0, 0, 0.5);
             }
 
             /* the icon color of the black action buttons */
-            .root > :global(.filepond--file-action-button) {
+            div > :global(.filepond--wrapper .filepond--file-action-button) {
                 color: white;
             }
 
             /* the color of the focus ring */
-            .root > :global(.filepond--file-action-button:hover),
-            .root > :global(.filepond--file-action-button:focus) {
+            div > :global(.filepond--wrapper .filepond--file-action-button:hover),
+            div > :global(.filepond--wrapper .filepond--file-action-button:focus) {
                 box-shadow: 0 0 0 0.125em rgba(255, 255, 255, 0.9);
             }
             
             /* the text color of the file status and info labels */
-            .root > :global(.filepond--file) {
+            div > :global(.filepond--wrapper .filepond--file) {
                 color: white;
             }
             
             /* error state color */
-            .root > :global([data-filepond-item-state*='error'] .filepond--item-panel),
-            .root > :global([data-filepond-item-state*='invalid'] .filepond--item-panel) {
+            div > :global(.filepond--wrapper [data-filepond-item-state*='error'] .filepond--item-panel),
+            div > :global(.filepond--wrapper [data-filepond-item-state*='invalid'] .filepond--item-panel) {
                 background-color: var(--bs-danger) !important;
             }
 
-            .root > :global([data-filepond-item-state='processing-complete'] .filepond--item-panel) {
+            div > :global(.filepond--wrapper [data-filepond-item-state='processing-complete'] .filepond--item-panel) {
                 background-color: var(--bs-primary) !important;
             }
             
-            .root > :global(.filepond--credits) { 
+            div > :global(.filepond--wrapper .filepond--credits) { 
                 display: none;
             }`}</style>
         </div>

@@ -18,7 +18,7 @@ const ContactModal = (props) => {
     const formState = form.formState;
     const [submitting, setSubmitting] = useState(false);
 
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
     const appSettings = useAppSettings();
 
     const subject = route.query.subject;
@@ -39,12 +39,12 @@ const ContactModal = (props) => {
             if (result.error) {
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }
 
-            toast.success('We\'ll get back to you shortly. Thank you!');
+            toast.success('We\'ll get back to you shortly. Thank you!', { id: componentId });
             modal.close();
         })();
     };

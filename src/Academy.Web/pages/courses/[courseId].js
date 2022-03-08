@@ -27,7 +27,8 @@ import { useDialog } from '../../utils/dialog';
 import CertificateViewDialog from '../../modals/courses/CertificateViewDialog';
 import { useEventDispatcher } from '../../utils/eventDispatcher';
 
-const QuestionItem = ({ course, section, lesson, question, editable }) => {
+const QuestionItem = ({ course, section, lesson, question, permitted }) => {
+    const courseId = course.id;
     const client = useClient();
     const router = useRouter();
 
@@ -39,7 +40,7 @@ const QuestionItem = ({ course, section, lesson, question, editable }) => {
                         <div className="py-1 d-flex justify-content-between align-items-stretch border-bottom-0" style={{ height: "53px" }}>
                             <div className="px-2 py-1 d-flex align-items-center hstack gap-2">
 
-                                <div {...provided.dragHandleProps} className={`${!(editable) && 'd-none'}`}>
+                                <div {...provided.dragHandleProps} className={`${!(permitted) && 'd-none'}`}>
                                     <div className="btn btn-outline-secondary btn-sm btn-icon btn-no-focus border-0">
                                         <span className="svg-icon svg-icon-xs d-inline-block" ><BsGripVertical /></span>
                                     </div>
@@ -64,7 +65,7 @@ const QuestionItem = ({ course, section, lesson, question, editable }) => {
                                         )}
                                     </>
                                 )}
-                                {(editable) && (
+                                {(permitted) && (
                                     <div>
                                         <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Options</Tooltip>}>
                                             {({ ...triggerHandler }) => (
@@ -74,8 +75,8 @@ const QuestionItem = ({ course, section, lesson, question, editable }) => {
                                                     </Dropdown.Toggle>
 
                                                     <Dropdown.Menu style={{ margin: 0 }}>
-                                                        <Link href={`${ModalPathPrefix}/courses/${course.id}/sections/${section.id}/lessons/${lesson.id}/questions/${question.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
-                                                        <Link href={`${ModalPathPrefix}/courses/${course.id}/sections/${section.id}/lessons/${lesson.id}/questions/${question.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
+                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/questions/${question.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
+                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/questions/${question.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
                                                     </Dropdown.Menu>
                                                 </Dropdown>
                                             )}
@@ -91,7 +92,8 @@ const QuestionItem = ({ course, section, lesson, question, editable }) => {
     );
 };
 
-const QuestionList = ({ course, section, lesson, editable }) => {
+const QuestionList = ({ course, section, lesson, permitted }) => {
+    const courseId = course.id;
     const client = useClient();
 
     return (
@@ -100,15 +102,15 @@ const QuestionList = ({ course, section, lesson, editable }) => {
                 {(provided) => (
                     <div ref={provided.innerRef} {...provided.droppableProps}>
                         {lesson.questions.map((question, questionIndex) => {
-                            return (<QuestionItem key={question.id} {...{ course, section, lesson, question: { ...question, index: questionIndex }, editable }} />);
+                            return (<QuestionItem key={question.id} {...{ course, section, lesson, question: { ...question, index: questionIndex }, permitted }} />);
                         })}
                         {provided.placeholder}
                     </div>
                 )}
             </Droppable>
-            {(editable) && (
+            {(permitted) && (
                 <div className="d-flex flex-column text-center justify-content-center">
-                    <Link href={`${ModalPathPrefix}/courses/${course.id}/sections/${section.id}/lessons/${lesson.id}/questions/add`}>
+                    <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/questions/add`}>
                         <a className="btn btn-outline-secondary btn-no-focus border-0 w-100 border-top-0"><span className="svg-icon svg-icon-xs d-inline-block me-1" ><BsPlus /></span>Add question</a>
                     </Link>
                 </div>
@@ -117,10 +119,11 @@ const QuestionList = ({ course, section, lesson, editable }) => {
     );
 }
 
-const LessonItem = ({ course, section, lesson, toggler, editable }) => {
+const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
+    const courseId = course.id;
     const client = useClient();
+    const disabled = !permitted && lesson.status == 'locked';
 
-    const disabled = !editable && lesson.status == 'locked';
     return (
         <Draggable draggableId={`lesson_${lesson.id}`} index={lesson.index}>
             {(provided) => (
@@ -128,13 +131,13 @@ const LessonItem = ({ course, section, lesson, toggler, editable }) => {
                     <Scroll.Element name={`lesson_${lesson.id}`} className={`card text-body bg-light ${disabled ? 'opacity-75' : 'btn-outline-primary'}`}>
                         <div className="p-0 d-flex justify-content-between align-items-stretch border-bottom-0" style={{ height: "72px" }}>
                             <div className="p-2 d-flex align-items-center hstack gap-2">
-                                <div {...provided.dragHandleProps} className={`${!(editable) && 'd-none'}`}>
+                                <div {...provided.dragHandleProps} className={`${!(permitted) && 'd-none'}`}>
                                     <div className="btn btn-outline-secondary btn-sm btn-icon btn-no-focus border-0">
                                         <span className="svg-icon svg-icon-xs d-inline-block" ><BsGripVertical /></span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="d-flex align-items-center flex-grow-1 cursor-default" onClick={() => { if (!disabled) router.push(`${ModalPathPrefix}/courses/${course.id}/sections/${section.id}/lessons/${lesson.id}`); }}>
+                            <div className="d-flex align-items-center flex-grow-1 cursor-default" onClick={() => { if (!disabled) router.push(`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}`); }}>
                                 <div className="flex-grow-1">
                                     <div className="mb-1"><TruncateMarkup lines={1}><div className="fw-bold">{lesson.title}</div></TruncateMarkup></div>
                                     <div className="small text-body d-flex align-items-center">
@@ -153,7 +156,7 @@ const LessonItem = ({ course, section, lesson, toggler, editable }) => {
                                 </div>
                             </div>
                             <div className="p-2 d-flex align-items-center hstack gap-2">
-                                {(editable) && (
+                                {(permitted) && (
                                     <div>
                                         <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Options</Tooltip>}>
                                             {({ ...triggerHandler }) => (
@@ -163,9 +166,9 @@ const LessonItem = ({ course, section, lesson, toggler, editable }) => {
                                                     </Dropdown.Toggle>
 
                                                     <Dropdown.Menu style={{ margin: 0 }}>
-                                                        <Link href={`${ModalPathPrefix}/courses/${course.id}/sections/${section.id}/lessons/${lesson.id}`} passHref><Dropdown.Item>View</Dropdown.Item></Link>
-                                                        <Link href={`${ModalPathPrefix}/courses/${course.id}/sections/${section.id}/lessons/${lesson.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
-                                                        <Link href={`${ModalPathPrefix}/courses/${course.id}/sections/${section.id}/lessons/${lesson.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
+                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}`} passHref><Dropdown.Item>View</Dropdown.Item></Link>
+                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
+                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
                                                     </Dropdown.Menu>
                                                 </Dropdown>
                                             )}
@@ -186,7 +189,7 @@ const LessonItem = ({ course, section, lesson, toggler, editable }) => {
                         </div>
                         <Collapse in={toggler.in(`lesson_${lesson.id}`)}>
                             <div>
-                                <QuestionList {...{ course, section, lesson, editable }} />
+                                <QuestionList {...{ course, section, lesson, permitted }} />
                             </div>
                         </Collapse>
                     </Scroll.Element>
@@ -196,7 +199,8 @@ const LessonItem = ({ course, section, lesson, toggler, editable }) => {
     );
 };
 
-const LessonList = ({ course, section, editable, toggler }) => {
+const LessonList = ({ course, section, permitted, toggler }) => {
+    const courseId = course.id;
     const client = useClient();
 
     return (
@@ -205,15 +209,15 @@ const LessonList = ({ course, section, editable, toggler }) => {
                 {(provided) => (
                     <div ref={provided.innerRef} {...provided.droppableProps}>
                         {section.lessons.map((lesson, lessonIndex) => {
-                            return (<LessonItem key={lesson.id} {...{ course, section, lesson: { ...lesson, index: lessonIndex }, toggler, editable }} />);
+                            return (<LessonItem key={lesson.id} {...{ course, section, lesson: { ...lesson, index: lessonIndex }, toggler, permitted }} />);
                         })}
                         {provided.placeholder}
                     </div>
                 )}
             </Droppable>
-            {(editable) && (
+            {(permitted) && (
                 <div className="d-flex flex-column text-center justify-content-center">
-                    <Link href={`${ModalPathPrefix}/courses/${course.id}/sections/${section.id}/lessons/add`}>
+                    <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/add`}>
                         <a className="btn btn-outline-secondary btn-no-focus border-0 w-100 border-top-0"><span className="svg-icon svg-icon-xs d-inline-block me-1" ><BsPlus /></span>Add lesson</a>
                     </Link>
                 </div>
@@ -222,7 +226,8 @@ const LessonList = ({ course, section, editable, toggler }) => {
     );
 };
 
-const SectionItem = ({ course, section, toggler, editable }) => {
+const SectionItem = ({ course, section, toggler, permitted }) => {
+    const courseId = course.id;
     const client = useClient();
 
     return (
@@ -234,7 +239,7 @@ const SectionItem = ({ course, section, toggler, editable }) => {
 
                             <div className="p-2 d-flex align-items-center hstack gap-2">
 
-                                <div {...provided.dragHandleProps} className={`${!(editable) && 'd-none'}`}>
+                                <div {...provided.dragHandleProps} className={`${!(permitted) && 'd-none'}`}>
                                     <div className="btn btn-outline-secondary btn-sm btn-icon btn-no-focus border-0">
                                         <span className="svg-icon svg-icon-xs d-inline-block" ><BsGripVertical /></span>
                                     </div>
@@ -249,7 +254,7 @@ const SectionItem = ({ course, section, toggler, editable }) => {
                             </div>
 
                             <div className="p-2 d-flex align-items-center hstack gap-2">
-                                {(editable) && (
+                                {(permitted) && (
                                     <div>
                                         <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Options</Tooltip>}>
                                             {({ ...triggerHandler }) => (
@@ -259,8 +264,8 @@ const SectionItem = ({ course, section, toggler, editable }) => {
                                                     </Dropdown.Toggle>
 
                                                     <Dropdown.Menu style={{ margin: 0 }}>
-                                                        <Link href={`${ModalPathPrefix}/courses/${course.id}/sections/${section.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
-                                                        <Link href={`${ModalPathPrefix}/courses/${course.id}/sections/${section.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
+                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
+                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
                                                     </Dropdown.Menu>
                                                 </Dropdown>
                                             )}
@@ -280,7 +285,7 @@ const SectionItem = ({ course, section, toggler, editable }) => {
                         </div>
                         <Collapse in={toggler.in(`section_${section.id}`)}>
                             <div>
-                                <LessonList {...{ course, section, toggler, editable }} />
+                                <LessonList {...{ course, section, toggler, permitted }} />
                             </div>
                         </Collapse>
                     </div>
@@ -290,7 +295,8 @@ const SectionItem = ({ course, section, toggler, editable }) => {
     );
 };
 
-const SectionList = ({ course, setCourse, toggler, editable }) => {
+const SectionList = ({ course, setCourse, toggler, permitted }) => {
+    const courseId = course.id;
     const client = useClient();
 
     const handleDragEnd = (reorder) => {
@@ -382,16 +388,16 @@ const SectionList = ({ course, setCourse, toggler, editable }) => {
             });
         }
 
-        client.post(`/courses/${course.id}/reorder`, { source, destination, type });
+        client.post(`/courses/${courseId}/reorder`, { source, destination, type });
     };
 
     return (
         <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId={`section_${course.id}`} direction="vertical" type="section">
+            <Droppable droppableId={`section_${courseId}`} direction="vertical" type="section">
                 {(provided) => (
                     <div ref={provided.innerRef} {...provided.droppableProps}>
                         {course.sections.map((section, sectionIndex) => {
-                            return (<SectionItem key={section.id} {...{ course, section: { ...section, index: sectionIndex }, toggler, editable }} />);
+                            return (<SectionItem key={section.id} {...{ course, section: { ...section, index: sectionIndex }, toggler, permitted }} />);
                         })}
                         {provided.placeholder}
                     </div>
@@ -410,6 +416,7 @@ const CoursePage = withRemount(({ remount }) => {
 
     const appSettings = useAppSettings();
     const client = useClient();
+
     const eventDispatcher = useEventDispatcher();
 
     const dialog = useDialog();
@@ -483,7 +490,7 @@ const CoursePage = withRemount(({ remount }) => {
 
     if (loading) return (<Loader {...loading} />);
 
-    const editable = (client.user && ((client.user.roles.some(role => role == 'teacher') && client.user.id == course.user.id) || client.user.roles.some(role => role == 'manager')));
+    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id))); 
 
     return (
         <>
@@ -515,7 +522,7 @@ const CoursePage = withRemount(({ remount }) => {
                                 </div>
                             </div>
                         </div>
-                        <SectionList {...{ course, setCourse, toggler, editable }} />
+                        <SectionList {...{ course, setCourse, toggler, permitted }} />
                     </div>
 
                     {course.certificateTemplate && (
@@ -540,7 +547,7 @@ const CoursePage = withRemount(({ remount }) => {
                     )}
                 </div>
             </div>
-            {editable &&
+            {permitted &&
                 (<div className="position-fixed bottom-0 end-0 w-100 zi-3 pe-none">
                     <div className="container py-3">
                         <div className="row justify-content-center">
@@ -549,7 +556,7 @@ const CoursePage = withRemount(({ remount }) => {
                                     <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Add section</Tooltip>}>
                                         {({ ...triggerHandler }) => (
 
-                                            <Link href={`${ModalPathPrefix}/courses/${course.id}/sections/add`}>
+                                            <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/add`}>
                                                 <a className="btn btn-primary btn-icon rounded-pill pe-auto" {...triggerHandler}>
                                                     <span className="svg-icon svg-icon-sm d-inline-block" ><BsPlus /></span>
                                                 </a>

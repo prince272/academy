@@ -47,25 +47,26 @@ namespace Academy.Server.Extensions.PaymentProcessor
             appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
         }
 
-        public string Name => "PaySwitch";
+        public string Gateway => "PaySwitch";
 
-        public async Task CashoutAsync(Payment payment, CancellationToken cancellationToken = default)
+        public async Task ProcessAsync(Payment payment, CancellationToken cancellationToken = default)
         {
             if (payment == null) throw new ArgumentNullException(nameof(payment));
 
             if (payment.Status != PaymentStatus.Pending)
-                throw new InvalidOperationException($"The payment with the id of '{payment.Id}' cannot be processed because it is not in a pending state. Status: {payment.Status}");
+                throw new ArgumentException($"The payment with the status of '{payment.Status}' cannot be processed. Payment Id: '{payment.Id}'.", nameof(payment));
 
-            payment.Gateway = Name;
+            payment.Gateway = Gateway;
             payment.TransactionId = GenerateTransactionId();
-            payment.Type = PaymentType.Cashout;
 
-            if (payment.GetData<MobileDetails>(nameof(MobileDetails)) is MobileDetails mobileDetails)
+            if (payment.Type == PaymentType.Payout)
             {
-                await unitOfWork.CreateAsync(payment);
+                if (payment.Mode == PaymentMode.Mobile)
+                {
+                    var mobileDetails = payment.GetData<PaymentDetails>(nameof(PaymentDetails)) ?? throw new NullReferenceException();
 
-                var requestHeaders = new Dictionary<string, string>();
-                var requestData = new Dictionary<string, string>
+                    var requestHeaders = new Dictionary<string, string>();
+                    var requestData = new Dictionary<string, string>
                                     {
                                         { "merchant_id", paymentOptions.MerchantId },
                                         { "transaction_id", payment.TransactionId },
@@ -75,64 +76,51 @@ namespace Academy.Server.Extensions.PaymentProcessor
                                         { "pass_code", paymentOptions.MerchantSecret },
                                         { "desc", $"Payment of {payment.Reason.Humanize()}" },
                                         { "account_number", mobileDetails.MobileNumber.TrimStart('+') },
-                                        { "account_issuer", mobileDetails.MobileIssuer.Code },
+                                        { "account_issuer", mobileDetails.Issuer.Code },
                                     };
 
-                var response = await httpClient.SendAsJsonAsync(HttpMethod.Post, "/v1.1/transaction/process", requestData, requestHeaders, cancellationToken);
-                var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>();
+                    var response = await httpClient.SendAsJsonAsync(HttpMethod.Post, "/v1.1/transaction/process", requestData, requestHeaders, cancellationToken);
+                    var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>();
 
-                if (responseData["code"] == "000")
-                {
-                    payment.Status = PaymentStatus.Complete;
-                    await unitOfWork.UpdateAsync(payment);
-                    await mediator.Publish(new PaymentNotification(payment), cancellationToken);
+                    if (responseData["code"] == "000")
+                    {
+                        payment.Status = PaymentStatus.Complete;
+                        await unitOfWork.UpdateAsync(payment);
+                        await mediator.Publish(new PaymentNotification(payment), cancellationToken);
+                        return;
+                    }
                 }
-                else
+                else throw new ArgumentException($"The payment with the mode of '{payment.Mode}' cannot be processed. Payment Id: '{payment.Id}'.", nameof(payment));
+            }
+            else if (payment.Type == PaymentType.Payin)
+            {
+                if (payment.Mode == PaymentMode.Mobile)
                 {
-                    throw new InvalidOperationException("Unable to cashout.");
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        }
+                    var mobileDetails = payment.GetData<PaymentDetails>(nameof(PaymentDetails)) ?? throw new NullReferenceException();
 
-        public async Task CashinAsync(Payment payment, CancellationToken cancellationToken = default)
-        {
-            if (payment == null) throw new ArgumentNullException(nameof(payment));
-
-            if (payment.Status != PaymentStatus.Pending)
-                throw new InvalidOperationException($"The payment with the id of '{payment.Id}' cannot be processed because it is not in a pending state. Status: {payment.Status}");
-
-            payment.Gateway = Name;
-            payment.TransactionId = GenerateTransactionId();
-            payment.Type = PaymentType.Cashin;
-
-            if (payment.GetData<MobileDetails>(nameof(MobileDetails)) is MobileDetails mobileDetails)
-            {
-                var requestHeaders = new Dictionary<string, string>();
-                var requestData = new Dictionary<string, string>
+                    var requestHeaders = new Dictionary<string, string>();
+                    var requestData = new Dictionary<string, string>
                                     {
                                         { "merchant_id", paymentOptions.MerchantId },
                                         { "transaction_id", payment.TransactionId },
                                         { "amount", (payment.Amount * 100).ToString("000000000000") },
                                         { "processing_code", "000200" },
-                                        { "r-switch", mobileDetails.MobileIssuer.Code },
+                                        { "r-switch", mobileDetails.Issuer.Code },
                                         { "desc", $"Payment of {payment.Reason.Humanize()}" },
                                         { "subscriber_number", mobileDetails.MobileNumber.TrimStart('+') },
                                     };
 
-                httpClient.SendAsJsonAsync(HttpMethod.Post, "/v1.1/transaction/process", requestData, requestHeaders, cancellationToken).Forget();
+                    httpClient.SendAsJsonAsync(HttpMethod.Post, "/v1.1/transaction/process", requestData, requestHeaders, cancellationToken).Forget();
 
-                payment.SetData(nameof(MobileDetails), mobileDetails);
-                payment.Status = PaymentStatus.Processing;
-                await unitOfWork.UpdateAsync(payment);
-            }
-            else
-            {
-                var requestHeaders = new Dictionary<string, string>();
-                var requestData = new Dictionary<string, string>
+                    payment.SetData(nameof(PaymentDetails), mobileDetails);
+                    payment.Status = PaymentStatus.Processing;
+                    await unitOfWork.UpdateAsync(payment);
+                    return;
+                }
+                else if (payment.Mode == PaymentMode.External)
+                {
+                    var requestHeaders = new Dictionary<string, string>();
+                    var requestData = new Dictionary<string, string>
                     {
                         { "merchant_id", paymentOptions.MerchantId },
                         { "transaction_id", payment.TransactionId },
@@ -143,23 +131,24 @@ namespace Academy.Server.Extensions.PaymentProcessor
                     };
 
 
-                var response = await httpClient.SendAsJsonAsync(HttpMethod.Post, "https://checkout.theteller.net/initiate", requestData, requestHeaders, cancellationToken);
-                var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>();
+                    var response = await httpClient.SendAsJsonAsync(HttpMethod.Post, "https://checkout.theteller.net/initiate", requestData, requestHeaders, cancellationToken);
+                    var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>();
 
-                if (responseData["code"] == "200")
-                {
-                    payment.Status = PaymentStatus.Processing;
-                    payment.CheckoutUrl = responseData.GetValueOrDefault("checkout_url");
-                    await unitOfWork.UpdateAsync(payment);
+                    if (responseData["code"] == "200")
+                    {
+                        payment.Status = PaymentStatus.Processing;
+                        payment.ExternalUrl = responseData.GetValueOrDefault("checkout_url");
+                        await unitOfWork.UpdateAsync(payment);
+                        return;
+                    }
                 }
-                else
-                {
-                    throw new InvalidOperationException("Unable to cashin.");
-                }
+                else throw new ArgumentException($"The payment with the mode of '{payment.Mode}' cannot be processed. Payment Id: '{payment.Id}'.", nameof(payment));
             }
+
+            throw new InvalidOperationException("Unable to process payment.");
         }
 
-        public async Task ConfirmAsync(Payment payment, CancellationToken cancellationToken = default)
+        public async Task VerifyAsync(Payment payment, CancellationToken cancellationToken = default)
         {
             if (payment == null) throw new ArgumentNullException(nameof(payment));
 
@@ -214,9 +203,9 @@ namespace Academy.Server.Extensions.PaymentProcessor
         private string GenerateTransactionId() => Compute.GenerateNumber(12);
     }
 
-    public class MobileDetails
+    public class PaymentDetails
     {
-        public MobileDetails(PaymentIssuer[] issuers, string mobileNumber)
+        public PaymentDetails(PaymentIssuer[] mobileIssuers, string mobileNumber)
         {
             if (string.IsNullOrWhiteSpace(mobileNumber))
                 throw new ArgumentException("'Mobile number' must not be empty.", nameof(mobileNumber));
@@ -234,21 +223,21 @@ namespace Academy.Server.Extensions.PaymentProcessor
                 throw new ArgumentException("'Mobile number' is not valid.", nameof(mobileNumber));
             }
 
-            var mobileIssuer = issuers.FirstOrDefault(_ => Regex.IsMatch($"{mobileNumberInfo.CountryCode}{mobileNumberInfo.NationalNumber}", _.Pattern));
-            if (mobileIssuer == null) throw new ArgumentException($"'Mobile number' is not supported by any of these mobile issuers. {issuers.Select(_ => _.Name).Humanize()}", nameof(mobileNumber));
+            var mobileIssuer = mobileIssuers.FirstOrDefault(_ => Regex.IsMatch($"{mobileNumberInfo.CountryCode}{mobileNumberInfo.NationalNumber}", _.Pattern));
+            if (mobileIssuer == null) throw new ArgumentException($"'Mobile number' is not supported by any of these mobile issuers. {mobileIssuers.Select(_ => _.Name).Humanize()}", nameof(mobileNumber));
            
-            MobileIssuer = mobileIssuer;
+            Issuer = mobileIssuer;
             MobileNumber = mobileNumber;
         }
 
-        public MobileDetails()
+        public PaymentDetails()
         {
 
         }
 
         public string MobileNumber { get; set; }
 
-        public PaymentIssuer MobileIssuer { get; set; }
+        public PaymentIssuer Issuer { get; set; }
     }
 
     public class PaymentIssuer

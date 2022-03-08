@@ -1,8 +1,8 @@
 ﻿namespace Academy.Server.Models.Courses
 {
-    public class ReorderModel
+    public class CourseReorderModel
     {
-        public ReorderType Type { get; set; }
+        public CourseReorderType Type { get; set; }
 
         public Position Source { get; set; }
 
@@ -16,7 +16,7 @@
         }
     }
 
-    public enum ReorderType
+    public enum CourseReorderType
     {
         Section,
         Lesson,

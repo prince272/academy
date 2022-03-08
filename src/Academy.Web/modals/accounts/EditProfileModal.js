@@ -20,7 +20,7 @@ const EditProfileModal = (props) => {
     const formState = form.formState;
     const [submitting, setSubmitting] = useState(false);
     const [loading, setLoading] = useState({});
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
 
     const load = () => {
         form.reset({
@@ -38,13 +38,13 @@ const EditProfileModal = (props) => {
             if (result.error) {
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }
 
             await client.reloadUser();
-            toast.success(`Profile saved.`);
+            toast.success(`Profile saved.`, { id: componentId });
             setSubmitting(false);
         })();
     };

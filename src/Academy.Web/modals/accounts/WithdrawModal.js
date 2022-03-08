@@ -5,28 +5,28 @@ import { Form, Modal, Accordion, useAccordionButton, AccordionContext, Collapse 
 import { useForm, Controller as FormController } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
-import { cleanObject, preventDefault, sleep } from '../utils/helpers';
-import { useClient } from '../utils/client';
+import { cleanObject, preventDefault, sleep } from '../../utils/helpers';
+import { useClient } from '../../utils/client';
 import { noCase } from 'change-case';
-import PhoneInput from '../components/PhoneInput';
-import { useAppSettings } from '../utils/appSettings';
+import PhoneInput from '../../components/PhoneInput';
+import { useAppSettings } from '../../utils/appSettings';
 import Cleave from 'cleave.js/react';
 import { AspectRatio } from 'react-aspect-ratio';
-import Loader from '../components/Loader';
-import { withAsync, withRemount } from '../utils/hooks';
+import Loader from '../../components/Loader';
+import { withAsync, withRemount } from '../../utils/hooks';
 import { BsCheckCircleFill, BsClockHistory, BsXCircleFill } from 'react-icons/bs';
 import TruncateMarkup from 'react-truncate-markup';
-import { useDialog } from '../utils/dialog';
+import { useDialog } from '../../utils/dialog';
 import _ from 'lodash';
 
-const CashOutModal = withRemount((props) => {
+const WithdrawModal = withRemount((props) => {
     const { route, modal, remount } = props;
     const router = useRouter();
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
     const [loading, setLoading] = useState({});
     const [submitting, setSubmitting] = useState(false);
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
     const appSettings = useAppSettings();
 
     const dialog = useDialog();
@@ -48,24 +48,24 @@ const CashOutModal = withRemount((props) => {
             });
 
             if (!confirmed) {
-               return;
+                return;
             }
 
             setSubmitting(true);
 
             const paymentMode = form.watch('mode');
-            let result = await client.post(`/cashout/${paymentMode}`, inputs, { params: { returnUrl: route.url } });
+            let result = await client.post(`/accounts/withdraw`, { ...inputs, mode: paymentMode }, { params: { returnUrl: route.url } });
 
             if (result.error) {
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }
 
             await client.reloadUser();
-            toast.success(`Cashout successful.`);
+            toast.success(`Payment successful.`, { id: componentId });
             modal.close();
         })();
     };
@@ -137,10 +137,10 @@ const CashOutModal = withRemount((props) => {
     );
 });
 
-CashOutModal.getModalProps = () => {
+WithdrawModal.getModalProps = () => {
     return {
         size: 'sm'
     };
 };
 
-export default CashOutModal;
+export default WithdrawModal;

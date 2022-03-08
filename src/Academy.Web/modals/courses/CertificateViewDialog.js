@@ -29,6 +29,7 @@ import _ from 'lodash';
 const CertificateViewDialog = () => {
     const dialog = useDialog();
     let [course, setCourse] = withAsync(useState(dialog.params.course));
+    const courseId = course.id;
     const router = useRouter();
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
@@ -36,24 +37,24 @@ const CertificateViewDialog = () => {
     const confetti = useConfetti();
     const client = useClient();
 
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
     const eventDispatcher = useEventDispatcher();
 
     const submit = () => {
         form.handleSubmit(async (inputs) => {
 
             setSubmitting(true);
-            let result = await client.post(`/courses/${course.id}/certificate`);
+            let result = await client.post(`/courses/${courseId}/certificate`);
 
             if (result.error) {
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }
 
-            course = await setCourse((await client.get(`/courses/${course.id}`, { throwIfError: true })).data.data);
+            course = await setCourse((await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
             eventDispatcher.emit(`editCourse`, course);
             confetti.fire();
             setSubmitting(false);

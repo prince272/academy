@@ -15,21 +15,19 @@ import { AspectRatio } from 'react-aspect-ratio';
 import Loader from '../components/Loader';
 import { withAsync, withRemount } from '../utils/hooks';
 import { BsCheckCircleFill, BsClockHistory, BsXCircleFill } from 'react-icons/bs';
-import { ModalPathPrefix } from '.';
 import TruncateMarkup from 'react-truncate-markup';
 import _ from 'lodash';
 
-const CashInModal = withRemount((props) => {
+const CheckoutModal = withRemount((props) => {
     const { route, modal, remount } = props;
     const router = useRouter();
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
     const [loading, setLoading] = useState({});
     const [submitting, setSubmitting] = useState(false);
-    const componentId = useMemo(() => _.uniqueId('Component'));
+    const componentId = useMemo(() => _.uniqueId('Component'), []);
     const appSettings = useAppSettings();
-    const paymentId = route.query.paymentId;
-    let [payment, setPayment] = withAsync(useState(null));
+    let [payment, setPayment] = withAsync(useState(JSON.parse(route.query.payment)));
 
     if (!route.query.returnUrl) throw new Error(`The query parameter 'returnUrl' was not found. url: ${route.url}`);
 
@@ -40,19 +38,19 @@ const CashInModal = withRemount((props) => {
 
         form.setValue('mode', 'mobile');
 
-        let result = await client.get(`/cashin/${paymentId}/details`);
+        let result = await client.get(`/payments/${payment.id}/status`);
 
         if (result.error) {
             const error = result.error;
 
-            setLoading({ ...error, message: 'Unable to load payment.', fallback: modal.close, remount });
+            setLoading({ ...error, message: 'Unable to load payment info.', fallback: modal.close, remount });
             return;
         }
 
-        payment = await setPayment(result.data);
+        payment = await setPayment({ ...payment, ...result.data });
 
         if (payment.status == 'processing') {
-            checkPayment();
+            verifyPayment();
         }
 
         setLoading(null);
@@ -64,35 +62,32 @@ const CashInModal = withRemount((props) => {
             setSubmitting(true);
 
             const paymentMode = form.watch('mode');
-
-            let result = await ({
-                'mobile': () => client.post(`/cashin/${paymentId}/mobile`, inputs, { params: { returnUrl: route.url } }),
-                'checkout': () => client.post(`/cashin/${paymentId}/checkout`, null, { params: { returnUrl: route.url } }),
-            })[paymentMode]();
+            let result = await client.post(`/payments/${payment.id}/checkout`, { ...inputs, mode: paymentMode })
 
             if (result.error) {
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
-                toast.error(error.message);
+                toast.error(error.message, { id: componentId });
                 setSubmitting(false);
                 return;
             }
 
-            payment = await setPayment({ ...payment, status: 'processing' });
-            checkPayment();
+            verifyPayment();
 
-            if (paymentMode == 'checkout') {
-                window.location.assign(result.data.checkoutUrl);
+            if (paymentMode == 'external') {
+                window.location.assign(payment.externalUrl);
             }
         })();
     };
 
-    const checkPayment = async () => {
-        for (let count = 0; count < 5; count++) {
-            const result = await client.get(`/cashin/${paymentId}/confirm`);
+    const verifyPayment = async () => {
+        payment = await setPayment({ ...payment, status: 'processing' });
+
+        for (let count = 0; count < 12; count++) {
+            const result = await client.post(`/payments/${payment.id}/verify`);
 
             if (!result.error) {
-                payment = await setPayment(result.data);
+                payment = await setPayment({ ...payment, ...result.data });
                 if (payment.status != 'processing') break;
             }
 
@@ -148,14 +143,14 @@ const CashInModal = withRemount((props) => {
                                     </div>
                                 </Collapse>
                             </div>
-                            <div className="list-group-item p-0">
+                            {/* <div className="list-group-item p-0">
                                 <div className="px-4">
-                                    <div className="form-check mb-0 py-3" onClick={() => form.setValue('mode', 'checkout')}>
-                                        <input type="radio" className="form-check-input" name="formRadio" checked={form.watch('mode') == 'checkout'} />
+                                    <div className="form-check mb-0 py-3" onClick={() => form.setValue('mode', 'external')}>
+                                        <input type="radio" className="form-check-input" name="formRadio" checked={form.watch('mode') == 'external'} />
                                         <label className="form-check-label">Pay with <span className="fw-bold">PaySwitch</span></label>
                                     </div>
                                 </div>
-                                <Collapse in={form.watch('mode') == 'checkout'}>
+                                <Collapse in={form.watch('mode') == 'external'}>
                                     <div>
                                         <div className="px-4 py-3">
                                             <button className="btn btn-primary w-100" type="button" onClick={() => submit()} disabled={submitting}>
@@ -167,16 +162,17 @@ const CashInModal = withRemount((props) => {
                                         </div>
                                     </div>
                                 </Collapse>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 )}
                 {payment.status == 'processing' && (
                     <div>
-                        <Loader message={({
-                            'mobile': <span><span className="fw-bold">Heads-up!</span> We're waiting for approval from your phone to complete this payment. Please check your approvals list on your phone and approve this payment.</span>,
-                            'checkout': <span>You will be redirected to third party payment provider to continue the payment process. If not, retry the payment again!</span>
-                        })[form.watch('mode')]} />
+                        <Loader message={
+                            <div className="text-center">
+                                <div>Checking payment status...</div>
+                            </div>
+                        } />
                     </div>
                 )}
                 {payment.status == 'failed' && (
@@ -204,12 +200,11 @@ const CashInModal = withRemount((props) => {
                         <div className="d-flex flex-column text-center justify-content-center p-4">
                             <div className="mb-3 px-10"><span className="svg-icon svg-icon-lg text-info"><BsClockHistory /></span></div>
                             <div className="h3">Payment Timeout</div>
-                            <div className="mb-3">Well, It looks like we've waited long enough. Please tap the check button after you have approved this payment from your phone.</div>
+                            <div className="mb-3">Please tap the check button to continue checking the payment status.</div>
 
                             <div className="vstack gap-3">
-                                <button type="button" className="btn btn-primary" onClick={async () => {
-                                    payment = await setPayment({ ...payment, status: 'processing' });
-                                    checkPayment();
+                                <button type="button" className="btn btn-primary" onClick={() => {
+                                    verifyPayment();
                                 }}>Check</button>
                                 <Link href={route.query.returnUrl}><a className="btn btn-secondary">Cancel</a></Link>
                             </div>
@@ -234,10 +229,10 @@ const CashInModal = withRemount((props) => {
     );
 });
 
-CashInModal.getModalProps = () => {
+CheckoutModal.getModalProps = () => {
     return {
         size: 'sm'
     };
 };
 
-export default CashInModal;
+export default CheckoutModal;

@@ -172,12 +172,9 @@ namespace Academy.Server.Models.Courses
 
     public class CourseModelProfile : Profile
     {
-        public CourseModelProfile(IServiceProvider serviceProvider)
+        public CourseModelProfile()
         {
-            var httpContext = serviceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext;
-            var user = TaskHelper.RunSync(() => httpContext.GetCurrentUserAsync());
-            CreateMap<Course, CourseModel>().ForMember(_ => _.Cost,
-                _ => _.MapFrom(course => (user != null && user.CanManage(course)) ? course.Cost : (decimal?)null));
+            CreateMap<Course, CourseModel>();
         }
     }
 
