@@ -1,0 +1,6 @@
+﻿@model (User User, ConfirmAccountModel Form)
+@{
+    Layout = null;
+}
+
+Hello @(Model.User.FullName), The security code to confirm your account is @(Model.Form.Code). If you didn’t request to create an account, there’s nothing to worry about — you can safely ignore it.

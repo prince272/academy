@@ -15,7 +15,7 @@ namespace Academy.Server.Utilities
 {
     public static class HttpRequestExtentions
     {
-        public static string AbsoluteUrl(this HttpRequest request, string relativePath)
+        public static string AbsoluteUrl(this HttpRequest request, string relativePath = null)
         {
             relativePath ??= string.Concat(request.Path.ToUriComponent(), request.QueryString.ToUriComponent());
             var absoluteUri = string.Concat(request.Scheme, "://", request.Host.ToUriComponent(), request.PathBase.ToUriComponent(), relativePath);

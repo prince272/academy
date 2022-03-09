@@ -1,7 +1,7 @@
 ﻿using Academy.Server.Utilities;
 using FluentValidation;
 
-namespace Academy.Server.Models.Home
+namespace Academy.Server.Models
 {
     public class ContactModel
     {

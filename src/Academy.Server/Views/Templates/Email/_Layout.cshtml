@@ -1,0 +1,112 @@
+﻿@inject IOptions<AppSettings> AppSettingsAccessor
+@inject IWebHostEnvironment WebEnvironment
+@{
+    Layout = null;
+    var appSettings = AppSettingsAccessor.Value;
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    @RenderSection("head", required: false)
+
+     <style>
+         @(await this.ImportContentAsync(@"Email\_Layout.cshtml.css"))
+     </style>
+
+    <!-- endbuild -->
+    <!--[if mso]>
+    <style>
+      table { border-collapse: collapse; }
+      .o_col { float: left; }
+    </style>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
+</head>
+<body class="o_body o_bg-white">
+    <!-- header-white -->
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+      <tbody>
+        <tr>
+          <td class="o_bg-light o_px-xs o_pt-lg o_xs-pt-xs" align="center">
+            <!--[if mso]><table width="632" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+            <table class="o_block" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+              <tbody>
+                <tr>
+                  <td class="o_bg-white o_px o_py-md o_br-t o_sans o_text" align="center">
+                <p><a class="o_text-primary" href="@(Context.Request.AbsoluteUrl(string.Empty))"><img src="@(Context.Request.AbsoluteUrl("/img/app-wordmark.png"))" width="136" height="36" alt="Academy Of Ours" style="max-width: 136px;"></a></p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!--[if mso]></td></tr></table><![endif]-->
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    @RenderBody()
+    
+    <!-- footer-white-3cols -->
+    <table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+      <tbody>
+        <tr>
+          <td class="o_bg-light o_px-xs o_pb-lg o_xs-pb-xs" align="center">
+            <!--[if mso]><table width="632" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+            <table class="o_block" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+              <tbody>
+                <tr>
+                  <td class="o_re o_bg-white o_px o_pb-lg o_bt-light" align="center">
+@*                    <!--[if mso]><table cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td width="200" align="center" valign="top" style="padding:0px 8px;"><![endif]-->
+                    <div class="o_col o_col-2 o_col-full">
+                      <div style="font-size: 32px; line-height: 32px; height: 32px;">&nbsp; </div>
+                      <div class="o_px-xs o_sans o_text-xs o_center">
+                        <p><a class="o_text-light" href="https://example.com/"><strong>Help Center</strong></a></p>
+                      </div>
+                    </div>
+                    <!--[if mso]></td><td width="200" align="center" valign="top" style="padding:0px 8px;"><![endif]-->
+                    <div class="o_col o_col-2 o_col-full">
+                      <div style="font-size: 24px; line-height: 24px; height: 24px;">&nbsp; </div>
+                      <div class="o_px-xs o_sans o_text-xs o_center">
+                        <p>
+                          <a class="o_text-light" href="https://example.com/"><img src="images/facebook-light.png" width="36" height="36" alt="fb" style="max-width: 36px;"></a><span> &nbsp;</span>
+                          <a class="o_text-light" href="https://example.com/"><img src="images/twitter-light.png" width="36" height="36" alt="tw" style="max-width: 36px;"></a><span> &nbsp;</span>
+                          <a class="o_text-light" href="https://example.com/"><img src="images/instagram-light.png" width="36" height="36" alt="ig" style="max-width: 36px;"></a><span> &nbsp;</span>
+                          <a class="o_text-light" href="https://example.com/"><img src="images/snapchat-light.png" width="36" height="36" alt="sc" style="max-width: 36px;"></a>
+                        </p>
+                      </div>
+                    </div>
+                    <!--[if mso]></td><td width="200" align="center" valign="top" style="padding:0px 8px;"><![endif]-->
+                    <div class="o_col o_col-2 o_col-full">
+                      <div style="font-size: 32px; line-height: 32px; height: 32px;">&nbsp; </div>
+                      <div class="o_px-xs o_sans o_text-xs o_center">
+                        <p><a class="o_text-light" href="https://example.com/"><strong>Preferences</strong></a></p>
+                      </div>
+                    </div>
+                    <!--[if mso]></td></tr></table><![endif]-->*@
+                  </td>
+                </tr>
+                <tr>
+                  <td class="o_bg-white o_px-md o_pb-lg o_br-b o_sans o_text-xs o_text-light" align="center">
+                     <p class="o_mb-xs">©@(appSettings.Company.Established.Year) - @(DateTimeOffset.UtcNow.Year) @(appSettings.Company.Name)
+                         <br /></>@(appSettings.Company.Address)
+                         <br /><a href="mailto:@(appSettings.Emails.Support.Email)">@(appSettings.Emails.Support.Email)</a> | <a href="tel:@(appSettings.Company.PhoneNumber)">@(appSettings.Company.PhoneNumber)</a>
+                     </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!--[if mso]></td></tr></table><![endif]-->
+            <div class="o_hide-xs" style="font-size: 64px; line-height: 64px; height: 64px;">&nbsp; </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+</body>
+</html>

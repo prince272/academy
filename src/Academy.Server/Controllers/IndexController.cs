@@ -2,9 +2,9 @@
 using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.EmailSender;
 using Academy.Server.Extensions.PaymentProcessor;
+using Academy.Server.Extensions.ViewRenderer;
 using Academy.Server.Models;
 using Academy.Server.Models.Courses;
-using Academy.Server.Models.Home;
 using Academy.Server.Models.Payments;
 using Academy.Server.Utilities;
 using Humanizer;
@@ -27,17 +27,17 @@ namespace Academy.Server.Controllers
     {
         private readonly AppSettings appSettings;
         private readonly IEmailSender emailSender;
-        private readonly EmailAccounts emailAccounts;
         private readonly IPaymentProcessor paymentProcessor;
         private readonly IUnitOfWork unitOfWork;
+        private readonly IViewRenderer viewRenderer;
 
         public IndexController(IServiceProvider serviceProvider)
         {
             appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
             emailSender = serviceProvider.GetRequiredService<IEmailSender>();
-            emailAccounts = serviceProvider.GetRequiredService<IOptions<EmailAccounts>>().Value;
             paymentProcessor = serviceProvider.GetRequiredService<IPaymentProcessor>();
             unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
+            viewRenderer = serviceProvider.GetRequiredService<IViewRenderer>();
         }
 
         [HttpGet("/")]
@@ -85,8 +85,14 @@ namespace Academy.Server.Controllers
         [HttpPost("/contact")]
         public async Task<IActionResult> Contact([FromBody] ContactModel form)
         {
-            var subject = $"[{form.FullName} - {form.Subject.ToString().Humanize()}";
-            await emailSender.SendAsync(emailAccounts.App, emailAccounts.Support, subject, form.Message);
+            await emailSender.SendAsync(account: appSettings.Emails.App, address: appSettings.Emails.Support,
+                subject: $"{form.FullName} - {form.Subject.Humanize()}",
+                body: await viewRenderer.RenderToStringAsync("Email/ContactSent", form));
+
+            await emailSender.SendAsync(account: appSettings.Emails.Support, address: new EmailAddress { Email = form.Email },
+                subject: form.Subject.Humanize(),
+                body: await viewRenderer.RenderToStringAsync("Email/ContactReceived", form));
+
             return Result.Succeed();
         }
 

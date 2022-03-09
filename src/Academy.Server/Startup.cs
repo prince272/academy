@@ -58,7 +58,7 @@ namespace Academy.Server
         {
             services.Configure<AppSettings>(options =>
             {
-                options.Media = new MediaSettings
+                options.Media = new MediaInfo
                 {
                     Rules = new List<MediaRule>
                     {
@@ -109,32 +109,23 @@ namespace Academy.Server
                         new BitRule(BitRuleType.SkipQuestion, -5, "Skip question")
                     }
                 };
-            });
 
-            services.Configure<EmailAccounts>(accounts =>
-            {
-                accounts.App = new EmailAccount
+                options.Emails = new EmailsInfo
                 {
-                    Username = "princeowusu15799@gmail.com",
-                    Password = "xvnafwuypylzgsuj",
-                    DisplayName = "Prince Owusu",
-                    Email = "princeowusu15799@gmail.com"
-                };
-
-                accounts.Support = new EmailAccount
-                {
-                    Username = "princeowusu15799@gmail.com",
-                    Password = "xvnafwuypylzgsuj",
-                    DisplayName = "Prince Owusu",
-                    Email = "princeowusu15799@gmail.com"
-                };
-
-                accounts.Notification = new EmailAccount
-                {
-                    Username = "princeowusu15799@gmail.com",
-                    Password = "xvnafwuypylzgsuj",
-                    DisplayName = "Prince Owusu",
-                    Email = "princeowusu15799@gmail.com"
+                    App = new EmailAccount
+                    {
+                        Username = "princeowusu.272@gmail.com",
+                        Password = "dhouphrhpazvollb",
+                        DisplayName = "Academy Of Ours",
+                        Email = "princeowusu.272@gmail.com"
+                    },
+                    Support = new EmailAccount
+                    {
+                        Username = "princeowusu.272@gmail.com",
+                        Password = "dhouphrhpazvollb",
+                        DisplayName = "Prince from Academy Of Ours",
+                        Email = "princeowusu.272@gmail.com"
+                    }
                 };
             });
 
@@ -338,9 +329,11 @@ namespace Academy.Server
                 options.SecureSocketOptionsId = 1;
             });
 
+            services.AddSmsSender(options => { });
+
             services.AddRazorViewRenderer(options =>
             {
-                options.RootPathFormat = "/Templates/{0}";
+                options.RootPathFormat = "/Views/Templates/{0}";
             });
 
             services.AddPaySwitchPaymentProcessor(options =>

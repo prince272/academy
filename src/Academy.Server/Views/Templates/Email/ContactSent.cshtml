@@ -1,0 +1,53 @@
+﻿@model ContactModel
+@{
+    Layout = "Email/_Layout";
+}
+
+<!-- content-lg-left -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+      <tbody>
+        <tr>
+          <td class="o_bg-light o_px-xs" align="center">
+            <!--[if mso]><table width="632" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+            <table class="o_block" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+              <tbody>
+                <tr>
+                  <td class="o_bg-white o_px-md o_py o_sans o_text o_text-secondary" align="left">
+                    <p class="o_mb-xs">Below are the details concerning the subject to @(Model.Subject.Humanize(LetterCasing.LowerCase))</p>
+                    <h5 class="o_heading o_text-dark">Full name</h5>
+                    <p class="o_mb-xs">@(Model.FullName)</p>
+                    <h5 class="o_heading o_text-dark">Email</h5>
+                    <p class="o_mb-xs">@(Model.Email)</p>
+                    <h5 class="o_heading o_text-dark o_mb-xs">Phone number</h5>
+                    <p class="o_mb-xs">@(Model.PhoneNumber)</p>
+                    <h5 class="o_heading o_text-dark">Message</h5>
+                    <p class="o_mb-xs">@(Model.Message)</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!--[if mso]></td></tr></table><![endif]-->
+          </td>
+        </tr>
+      </tbody>
+</table>
+
+
+<!-- spacer -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+      <tbody>
+        <tr>
+          <td class="o_bg-light o_px-xs" align="center">
+            <!--[if mso]><table width="632" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+            <table class="o_block" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+              <tbody>
+                <tr>
+                  <td class="o_bg-white" style="font-size: 24px; line-height: 24px; height: 24px;">&nbsp; </td>
+                </tr>
+              </tbody>
+            </table>
+            <!--[if mso]></td></tr></table><![endif]-->
+          </td>
+        </tr>
+      </tbody>
+</table>

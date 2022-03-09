@@ -2,6 +2,7 @@
 using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.EmailSender;
 using Academy.Server.Extensions.PaymentProcessor;
+using Academy.Server.Extensions.SmsSender;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Extensions.ViewRenderer;
 using Academy.Server.Models.Accounts;
@@ -32,9 +33,10 @@ namespace Academy.Server.Controllers
         private readonly IMapper mapper;
         private readonly IUnitOfWork unitOfWork;
         private readonly IEmailSender emailSender;
-        private readonly EmailAccounts emailAccounts;
+        private readonly ISmsSender smsSender;
         private readonly IViewRenderer viewRenderer;
         private readonly IPaymentProcessor paymentProcessor;
+        private readonly AppSettings appSettings;
 
         public AccountsController(IServiceProvider serviceProvider)
         {
@@ -43,9 +45,10 @@ namespace Academy.Server.Controllers
             mapper = serviceProvider.GetRequiredService<IMapper>();
             unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
             emailSender = serviceProvider.GetRequiredService<IEmailSender>();
-            emailAccounts = serviceProvider.GetRequiredService<IOptions<EmailAccounts>>().Value;
+            smsSender = serviceProvider.GetRequiredService<ISmsSender>();
             viewRenderer = serviceProvider.GetRequiredService<IViewRenderer>();
             paymentProcessor = serviceProvider.GetRequiredService<IPaymentProcessor>();
+            appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
         }
 
         [HttpPost("signup")]
@@ -54,7 +57,10 @@ namespace Academy.Server.Controllers
             var user = new User();
 
             if (ValidationHelper.PhoneOrEmail(form.Username))
+            {
                 user.PhoneNumber = form.Username;
+                return Result.Failed(StatusCodes.Status400BadRequest, "Please use your email address instead.");
+            }
             else user.Email = form.Username;
 
             user.FirstName = form.FirstName;
@@ -145,19 +151,15 @@ namespace Academy.Server.Controllers
 
             if (ValidationHelper.PhoneOrEmail(form.Username))
             {
-                form.Code = await userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber);
+                form.Code = await userManager.GenerateChangePhoneNumberTokenAsync(user, form.Username);
+                await smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ConfirmAccount", (user, form)));
             }
             else
             {
-                form.Code = await userManager.GenerateChangeEmailTokenAsync(user, user.Email);
-
-                string subject = "Confirm your email address";
-                string body = await viewRenderer.RenderToStringAsync("EmailConfirmAccount", (subject, user, form));
-
-                await emailSender.SendAsync(
-                    account: emailAccounts.Notification,
-                    address: new EmailAddress { Email = user.Email, DisplayName = user.FullName },
-                    subject: subject, body: body);
+                form.Code = await userManager.GenerateChangeEmailTokenAsync(user, form.Username);
+                await emailSender.SendAsync(account: appSettings.Emails.App, address: new EmailAddress { Email = form.Username },
+                    subject: "Confirm Your Account",
+                    body: await viewRenderer.RenderToStringAsync("Email/ConfirmAccount", (user, form)));
             }
 
             return Result.Succeed();
@@ -201,25 +203,18 @@ namespace Academy.Server.Controllers
         {
             var user = await HttpContext.GetCurrentUserAsync();
 
+            string subject = "Change Your Account";
 
             if (ValidationHelper.PhoneOrEmail(form.Username))
             {
-                var newPhoneNumber = form.Username;
-                form.Code = await userManager.GenerateChangePhoneNumberTokenAsync(user, newPhoneNumber);
+                form.Code = await userManager.GenerateChangePhoneNumberTokenAsync(user, form.Username);
+                await smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("ChangeAccount_SMS", (subject, user, form)));
             }
             else
             {
-                var newEmail = form.Username;
-                form.Code = await userManager.GenerateChangeEmailTokenAsync(user, newEmail);
-
-                string subject = "Change your email address";
-                string body = await viewRenderer.RenderToStringAsync("EmailChangeAccount", (subject, user, form));
-
-                await emailSender.SendAsync(
-                    account: emailAccounts.Notification,
-                    address: new EmailAddress { Email = newEmail, DisplayName = user.FullName },
-                    subject: subject,
-                    body: body);
+                form.Code = await userManager.GenerateChangeEmailTokenAsync(user, form.Username);
+                await emailSender.SendAsync(account: appSettings.Emails.App, address: new EmailAddress { Email = form.Username },
+                    subject: subject, body: await viewRenderer.RenderToStringAsync("ChangeAccount_EMAIL", (subject, user, form)));
             }
 
             return Result.Succeed();
@@ -285,21 +280,18 @@ namespace Academy.Server.Controllers
                 return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Username), $"'{(ValidationHelper.PhoneOrEmail(form.Username) ? "Phone number" : "Email")}' does not exist."));
             }
 
+            string subject = "Reset Your Password";
             form.Code = await userManager.GeneratePasswordResetTokenAsync(user);
 
-            if (user.Email == form.Username)
+            if (ValidationHelper.PhoneOrEmail(form.Username))
             {
-                form.Code = await userManager.GeneratePasswordResetTokenAsync(user);
-
-                string subject = "Reset your password";
-                await emailSender.SendAsync(
-                    account: emailAccounts.Notification,
-                    address: new EmailAddress { Email = user.Email, DisplayName = user.FullName },
-                    subject: subject,
-                    body: await viewRenderer.RenderToStringAsync("EmailResetPassword", (subject, user, form)));
+                await smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("ResetPassword_SMS", (subject, user, form)));
             }
-            else if (user.PhoneNumber == form.Username)
-                form.Code = await userManager.GenerateChangePhoneNumberTokenAsync(user, form.Username);
+            else
+            {
+                await emailSender.SendAsync(account: appSettings.Emails.App, address: new EmailAddress { Email = form.Username },
+                    subject: subject, body: await viewRenderer.RenderToStringAsync("ResetPassword_EMAIL", (subject, user, form)));
+            }
 
             return Result.Succeed();
         }

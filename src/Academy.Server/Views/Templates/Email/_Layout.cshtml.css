@@ -1,4 +1,4 @@
-.o_sans,
+﻿.o_sans,
 .o_heading {
     font-family: Helvetica, Arial, sans-serif;
 }
@@ -246,7 +246,7 @@ img {
 }
 
 .o_bg-primary {
-    background-color: #166fe5;
+    background-color: #126de5;
 }
 
 .o_bg-secondary {
@@ -261,7 +261,7 @@ img {
 a.o_text-primary span,
 a.o_text-primary strong,
 .o_text-primary.o_link a {
-    color: #166fe5;
+    color: #126de5;
 }
 
 .o_text-secondary,
@@ -307,11 +307,11 @@ a.o_text-success strong,
 }
 
 .o_b-primary {
-    border: 2px solid #166fe5;
+    border: 2px solid #126de5;
 }
 
 .o_bb-primary {
-    border-bottom: 1px solid #166fe5;
+    border-bottom: 1px solid #126de5;
 }
 
 .o_b-secondary {

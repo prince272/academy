@@ -23,7 +23,7 @@ namespace Academy.Server.Extensions.EmailSender
 
             message.Subject = subject;
             message.From.Add(new MailboxAddress(account.DisplayName, account.Email));
-            message.To.Add(new MailboxAddress(address.DisplayName, address.Email));
+            message.To.Add(new MailboxAddress(string.Empty, address.Email));
 
             var builder = new BodyBuilder();
             builder.HtmlBody = body;
@@ -44,8 +44,6 @@ namespace Academy.Server.Extensions.EmailSender
     public class EmailAddress
     {
         public string Email { get; set; }
-
-        public string DisplayName { get; set; }
     }
 
     public class EmailAccount : EmailAddress
@@ -53,5 +51,7 @@ namespace Academy.Server.Extensions.EmailSender
         public string Username { get; set; }
 
         public string Password { get; set; }
+
+        public string DisplayName { get; set; }
     }
 }

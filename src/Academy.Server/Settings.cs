@@ -64,18 +64,16 @@ namespace Academy.Server
         }
     }
 
-    public class MediaSettings
+    public class MediaInfo
     {
         public List<MediaRule> Rules { get; set; }
     }
 
-    public class EmailAccounts
+    public class EmailsInfo
     {
         public EmailAccount App { get; set; }
 
         public EmailAccount Support { get; set; }
-
-        public EmailAccount Notification { get; set; }
     }
 
     public class AppSettings
@@ -84,7 +82,9 @@ namespace Academy.Server
 
         public CurrencyInfo Currency { get; set; }
 
-        public MediaSettings Media { get; set; }
+        public MediaInfo Media { get; set; }
+
+        public EmailsInfo Emails { get; set; }
     }
 
     public class MediaRule

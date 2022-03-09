@@ -2,6 +2,9 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Academy.Server.Utilities;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -85,6 +88,19 @@ namespace Academy.Server.Extensions.ViewRenderer
         private ActionContext GetActionContext()
         {
             return _serviceProvider.GetRequiredService<IActionContextAccessor>().ActionContext;
+        }
+    }
+
+    public static class Extensions
+    {
+        public static async Task<HtmlString> ImportContentAsync(this RazorPage razor, string path)
+        {
+            var services = razor.Context.RequestServices;
+            var webEnvironment = services.GetRequiredService<IWebHostEnvironment>();
+            var razorViewRendererOptions = services.GetRequiredService<IOptions<RazorViewRendererOptions>>();
+
+            var fileInfo = webEnvironment.ContentRootFileProvider.GetFileInfo(string.Format(razorViewRendererOptions.Value.RootPathFormat, path).Replace("/", "\\"));
+            return new HtmlString(await IOHelper.ConvertToStringAsync(fileInfo.CreateReadStream()));
         }
     }
 }

@@ -4,7 +4,6 @@ using Academy.Server.Extensions.EmailSender;
 using Academy.Server.Extensions.PaymentProcessor;
 using Academy.Server.Models;
 using Academy.Server.Models.Courses;
-using Academy.Server.Models.Home;
 using Academy.Server.Models.Payments;
 using Academy.Server.Utilities;
 using Humanizer;
@@ -28,7 +27,6 @@ namespace Academy.Server.Controllers
     {
         private readonly AppSettings appSettings;
         private readonly IEmailSender emailSender;
-        private readonly EmailAccounts emailAccounts;
         private readonly IPaymentProcessor paymentProcessor;
         private readonly IUnitOfWork unitOfWork;
 
@@ -36,7 +34,6 @@ namespace Academy.Server.Controllers
         {
             appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
             emailSender = serviceProvider.GetRequiredService<IEmailSender>();
-            emailAccounts = serviceProvider.GetRequiredService<IOptions<EmailAccounts>>().Value;
             paymentProcessor = serviceProvider.GetRequiredService<IPaymentProcessor>();
             unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
         }

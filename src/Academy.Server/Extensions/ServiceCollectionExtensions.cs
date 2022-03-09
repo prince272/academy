@@ -2,6 +2,7 @@
 using Academy.Server.Extensions.DocumentProcessor;
 using Academy.Server.Extensions.EmailSender;
 using Academy.Server.Extensions.PaymentProcessor;
+using Academy.Server.Extensions.SmsSender;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Extensions.ViewRenderer;
 using Academy.Server.Utilities;
@@ -34,6 +35,12 @@ namespace Academy.Server.Services
         {
             services.Configure(configure);
             services.AddScoped<IEmailSender, SmtpEmailSender>();
+        }
+
+        public static void AddSmsSender(this IServiceCollection services, Action<SmsSenderOptions> configure)
+        {
+            services.Configure(configure);
+            services.AddScoped<ISmsSender, SmsSender>();
         }
 
         public static void AddRazorViewRenderer(this IServiceCollection services, Action<RazorViewRendererOptions> configure)
