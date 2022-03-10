@@ -40,7 +40,7 @@ namespace Academy.Server.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> Upload()
         {
-            var user = await HttpContext.GetCurrentUserAsync();
+            var user = await HttpContext.Request.GetCurrentUserAsync();
 
             var mediaName = Request.Headers["Upload-Name"].ToString();
             var mediaSize = long.Parse(Request.Headers["Upload-Size"]);

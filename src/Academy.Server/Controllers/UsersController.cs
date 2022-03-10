@@ -31,7 +31,7 @@ namespace Academy.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(int pageNumber, int pageSize, [FromQuery] UserSearchModel search)
         {
-            var currentUser = await HttpContext.GetCurrentUserAsync();
+            var currentUser = await HttpContext.Request.GetCurrentUserAsync();
             if (!currentUser.HasRoles(RoleConstants.Admin))
                 return Result.Failed(StatusCodes.Status403Forbidden);
 

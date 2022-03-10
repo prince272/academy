@@ -123,7 +123,7 @@ namespace Academy.Server.Controllers
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
         {
-            var user = await HttpContext.GetCurrentUserAsync();
+            var user = await HttpContext.Request.GetCurrentUserAsync();
             return Result.Succeed(data: mapper.Map<CurrentUserModel>(user));
         }
 
@@ -131,7 +131,7 @@ namespace Academy.Server.Controllers
         [HttpPut("profile")]
         public async Task<IActionResult> EditProfile(CurrentUserEditModel form)
         {
-            var user = await HttpContext.GetCurrentUserAsync();
+            var user = await HttpContext.Request.GetCurrentUserAsync();
 
             user.FirstName = form.FirstName;
             user.LastName = form.LastName;
@@ -205,7 +205,7 @@ namespace Academy.Server.Controllers
         [HttpPost("change/send")]
         public async Task<IActionResult> SendChangeAccount([FromBody] ChangeAccountModel form)
         {
-            var user = await HttpContext.GetCurrentUserAsync();
+            var user = await HttpContext.Request.GetCurrentUserAsync();
 
             string subject = "Change Your Account";
 
@@ -228,7 +228,7 @@ namespace Academy.Server.Controllers
         [HttpPost("change")]
         public async Task<IActionResult> ChangeAccount([FromBody] ChangeAccountModel form)
         {
-            var user = await HttpContext.GetCurrentUserAsync();
+            var user = await HttpContext.Request.GetCurrentUserAsync();
             var result = default(IdentityResult);
 
 
@@ -259,7 +259,7 @@ namespace Academy.Server.Controllers
         [HttpPost("password/change")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel form)
         {
-            var user = await HttpContext.GetCurrentUserAsync();
+            var user = await HttpContext.Request.GetCurrentUserAsync();
 
             var result = await userManager.ChangePasswordAsync(user, form.CurrentPassword, form.NewPassword);
 
@@ -337,7 +337,7 @@ namespace Academy.Server.Controllers
             }
             catch (ArgumentException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.ParamName, ex.Message)); }
 
-            var user = await HttpContext.GetCurrentUserAsync();
+            var user = await HttpContext.Request.GetCurrentUserAsync();
 
             if (user.Balance < form.Amount)
                 return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Amount), "Balance is insufficient."));
