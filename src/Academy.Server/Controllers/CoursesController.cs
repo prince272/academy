@@ -50,7 +50,7 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Create([FromBody] CourseEditModel form)
         {
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user.IsAdmin || user.IsTeacher;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher);
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var course = new Course();
@@ -79,7 +79,7 @@ namespace Academy.Server.Controllers
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user.IsAdmin || user.IsTeacher && course.UserId == user.Id;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             course.Title = form.Title;
@@ -106,7 +106,7 @@ namespace Academy.Server.Controllers
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user.IsAdmin || user.IsTeacher && course.UserId == user.Id;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             await unitOfWork.DeleteAsync(course);
@@ -129,7 +129,7 @@ namespace Academy.Server.Controllers
             var query = unitOfWork.Query<Course>();
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user != null && (user.IsAdmin || user.IsTeacher);
+            var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
 
             if (!permitted)
             {
@@ -340,7 +340,7 @@ namespace Academy.Server.Controllers
 
             var user = await HttpContext.GetCurrentUserAsync();
 
-            var permitted = user.IsAdmin || user.IsTeacher;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher);
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var source = form.Source;
@@ -525,7 +525,7 @@ namespace Academy.Server.Controllers
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user.IsAdmin || user.IsTeacher && course.UserId == user.Id;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var section = new Section();
@@ -550,7 +550,7 @@ namespace Academy.Server.Controllers
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user.IsAdmin || user.IsTeacher && course.UserId == user.Id;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             section.Title = form.Title;
@@ -573,7 +573,7 @@ namespace Academy.Server.Controllers
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user.IsAdmin || user.IsTeacher && course.UserId == user.Id;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             await unitOfWork.DeleteAsync(section);
@@ -607,7 +607,7 @@ namespace Academy.Server.Controllers
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user.IsAdmin || user.IsTeacher && course.UserId == user.Id;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var lesson = new Lesson();
@@ -641,7 +641,7 @@ namespace Academy.Server.Controllers
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user.IsAdmin || user.IsTeacher && course.UserId == user.Id;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             lesson.Title = form.Title;
@@ -675,7 +675,7 @@ namespace Academy.Server.Controllers
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user.IsAdmin || user.IsTeacher && course.UserId == user.Id;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             await unitOfWork.DeleteAsync(lesson);
@@ -718,7 +718,7 @@ namespace Academy.Server.Controllers
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user.IsAdmin || user.IsTeacher && course.UserId == user.Id;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var question = new Question();
@@ -756,7 +756,7 @@ namespace Academy.Server.Controllers
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user.IsAdmin || user.IsTeacher && course.UserId == user.Id;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             question.Text = Sanitizer.SanitizeHtml(form.Text);
@@ -818,7 +818,7 @@ namespace Academy.Server.Controllers
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user.IsAdmin || user.IsTeacher && course.UserId == user.Id;
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             await unitOfWork.DeleteAsync(question);
@@ -856,7 +856,7 @@ namespace Academy.Server.Controllers
             if (course == null) return null;
 
             var user = await HttpContext.GetCurrentUserAsync();
-            var permitted = user != null && (user.IsAdmin || user.IsTeacher);
+            var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
 
             var courseCertificate = user?.Certificates.FirstOrDefault(_ => _.CourseId == course.Id);
             var coursePurchased = user != null ? await unitOfWork.Query<Payment>()
@@ -864,6 +864,8 @@ namespace Academy.Server.Controllers
                                _.Reason == PaymentReason.Course &&
                                _.ReferenceId == course.Code &&
                                _.Status == PaymentStatus.Complete) : false;
+
+            var courseLearners = await unitOfWork.Query<User>().CountAsync(_ => _.Id == course.UserId);
 
             course.Sections = await unitOfWork.Query<Section>().AsNoTrackingWithIdentityResolution()
                              .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
@@ -925,6 +927,7 @@ namespace Academy.Server.Controllers
             courseModel.Cost = permitted ? course.Cost : null;
             courseModel.Certificate = mapper.Map<CertificateModel>(courseCertificate);
             courseModel.Purchased = coursePurchased;
+            courseModel.Learners = courseLearners;
             courseModel.Duration = course.Sections.SelectMany(_ => _.Lessons).Select(_ => _.Duration).Sum();
             courseModel.Sections = course.Sections.Select(section =>
             {

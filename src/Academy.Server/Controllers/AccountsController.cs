@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
@@ -36,6 +37,7 @@ namespace Academy.Server.Controllers
         private readonly ISmsSender smsSender;
         private readonly IViewRenderer viewRenderer;
         private readonly IPaymentProcessor paymentProcessor;
+        private readonly IConfiguration configuration;
         private readonly AppSettings appSettings;
 
         public AccountsController(IServiceProvider serviceProvider)
@@ -48,8 +50,10 @@ namespace Academy.Server.Controllers
             smsSender = serviceProvider.GetRequiredService<ISmsSender>();
             viewRenderer = serviceProvider.GetRequiredService<IViewRenderer>();
             paymentProcessor = serviceProvider.GetRequiredService<IPaymentProcessor>();
+            configuration = serviceProvider.GetRequiredService<IConfiguration>();
             appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
         }
+
 
         [HttpPost("signup")]
         public async Task<IActionResult> Signup([FromBody] SignUpModel form)
@@ -157,7 +161,7 @@ namespace Academy.Server.Controllers
             else
             {
                 form.Code = await userManager.GenerateChangeEmailTokenAsync(user, form.Username);
-                await emailSender.SendAsync(account: appSettings.Emails.App, address: new EmailAddress { Email = form.Username },
+                await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = form.Username },
                     subject: "Confirm Your Account",
                     body: await viewRenderer.RenderToStringAsync("Email/ConfirmAccount", (user, form)));
             }
@@ -213,7 +217,7 @@ namespace Academy.Server.Controllers
             else
             {
                 form.Code = await userManager.GenerateChangeEmailTokenAsync(user, form.Username);
-                await emailSender.SendAsync(account: appSettings.Emails.App, address: new EmailAddress { Email = form.Username },
+                await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = form.Username },
                     subject: subject, body: await viewRenderer.RenderToStringAsync("ChangeAccount_EMAIL", (subject, user, form)));
             }
 
@@ -289,7 +293,7 @@ namespace Academy.Server.Controllers
             }
             else
             {
-                await emailSender.SendAsync(account: appSettings.Emails.App, address: new EmailAddress { Email = form.Username },
+                await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = form.Username },
                     subject: subject, body: await viewRenderer.RenderToStringAsync("ResetPassword_EMAIL", (subject, user, form)));
             }
 

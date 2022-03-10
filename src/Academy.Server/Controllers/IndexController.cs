@@ -10,6 +10,7 @@ using Academy.Server.Utilities;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,7 +70,7 @@ namespace Academy.Server.Controllers
                 };
             });
             var CourseSorts = GetEnumerations<CourseSort>();
-            var Company = appSettings.Company;
+            var Company = TypeMerger.Merge(new { Emails = new { Support = appSettings.Company.Emails.Support.Email } }, appSettings.Company);
             var Currency = appSettings.Currency;
 
             return Result.Succeed(new
@@ -85,11 +86,11 @@ namespace Academy.Server.Controllers
         [HttpPost("/contact")]
         public async Task<IActionResult> Contact([FromBody] ContactModel form)
         {
-            await emailSender.SendAsync(account: appSettings.Emails.App, address: appSettings.Emails.Support,
+            await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: appSettings.Company.Emails.Support,
                 subject: $"{form.FullName} - {form.Subject.Humanize()}",
                 body: await viewRenderer.RenderToStringAsync("Email/ContactSent", form));
 
-            await emailSender.SendAsync(account: appSettings.Emails.Support, address: new EmailAddress { Email = form.Email },
+            await emailSender.SendAsync(account: appSettings.Company.Emails.Support, address: new EmailAddress { Email = form.Email },
                 subject: form.Subject.Humanize(),
                 body: await viewRenderer.RenderToStringAsync("Email/ContactReceived", form));
 

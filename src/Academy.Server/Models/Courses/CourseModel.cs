@@ -1,6 +1,6 @@
 ﻿using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.StorageProvider;
-using Academy.Server.Models.Accounts;
+using Academy.Server.Models.Users;
 using Academy.Server.Utilities;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -55,6 +55,8 @@ namespace Academy.Server.Models.Courses
 
         [JsonIgnore]
         public Course Course { get; set; }
+
+        public int Learners { get; set; }
     }
 
     public class SectionModel

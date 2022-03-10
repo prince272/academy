@@ -15,7 +15,6 @@ namespace Academy.Server
 
         public DateTimeOffset Established { get; set; }
 
-        public string Email { get; set; }
 
         public string PhoneNumber { get; set; }
 
@@ -31,6 +30,8 @@ namespace Academy.Server
 
         public string CountryCode { get; set; }
 
+        public string WebLink { get; set; }
+
         public string MapLink { get; set; }
 
         public string FacebookLink { get; set; }
@@ -42,6 +43,8 @@ namespace Academy.Server
         public string TwitterLink { get; set; }
 
         public string YoutubeLink { get; set; }
+
+        public EmailsInfo Emails { get; set; }
 
         public decimal CourseRate { get; set; }
     }
@@ -76,6 +79,7 @@ namespace Academy.Server
         public EmailAccount Support { get; set; }
     }
 
+
     public class AppSettings
     {
         public CompanyInfo Company { get; set; }
@@ -83,8 +87,6 @@ namespace Academy.Server
         public CurrencyInfo Currency { get; set; }
 
         public MediaInfo Media { get; set; }
-
-        public EmailsInfo Emails { get; set; }
     }
 
     public class MediaRule

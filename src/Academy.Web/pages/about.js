@@ -1,7 +1,10 @@
 import Image from 'next/image';
 import { AspectRatio } from 'react-aspect-ratio';
+import { useAppSettings } from '../utils/appSettings';
+import parsePhoneNumber from 'libphonenumber-js';
 
 const AboutPage = () => {
+    const appSettings = useAppSettings();
 
     return (
         <>
@@ -51,13 +54,13 @@ const AboutPage = () => {
                             </div>
                             <ul>
                                 <li>
-                                    <p>By email: info@academyofours.com</p>
+                                    <p>By email: <a href={`mailto:${appSettings.company.emails.support}`}>{appSettings.company.emails.support}</a></p>
                                 </li>
                                 <li>
-                                    <p>By visiting this page on our website: <a href="https://www.academyofours.com" rel="external nofollow noopener noreferrer" target="_blank">https://www.academyofours.com</a></p>
+                                    <p>By visiting this page on our website: <a href={appSettings.company.webLink} rel="external nofollow noopener noreferrer" target="_blank">{appSettings.company.webLink}</a></p>
                                 </li>
                                 <li>
-                                    <p>By phone number: +233550362337</p>
+                                    <p>By phone number: {((phoneNumber) => (<a href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
                                 </li>
                             </ul>
                         </div>

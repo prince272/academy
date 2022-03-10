@@ -84,7 +84,7 @@ const useClientProvider = () => {
     const eventDispatcher = useEventDispatcher();
 
     const [loading, setLoading] = useState(true);
-    const [clientSettings, setClientSettings] = useSessionState(null, `client-${clientId}`);
+    let [clientSettings, setClientSettings] = withAsync(useSessionState(null, `client-${clientId}`));
 
     const userManagerLocker = useMemo(() => new AsyncLocker());
     const userManagerRef = useRef(null);
@@ -108,14 +108,13 @@ const useClientProvider = () => {
             await lock.promise;
 
             if (!userManagerRef.current) {
-                const _clientSettings = clientSettings || await (async () => {
-                    const _clientSettings = (await httpClient.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/clients/${clientId}`, { throwIfError: true })).data;
-                    setClientSettings(_clientSettings);
-                    return _clientSettings;
+                clientSettings = clientSettings || await (async () => {
+                    clientSettings = await setClientSettings((await httpClient.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/clients/${clientId}`, { throwIfError: true })).data);
+                    return clientSettings;
                 })();
 
                 const userManager = new UserManager({
-                    ..._clientSettings,
+                    ...clientSettings,
                     automaticSilentRenew: true,
                     includeIdTokenInSilentRenew: true,
                     loadUserInfo: false,
@@ -270,9 +269,12 @@ const useClientProvider = () => {
             eventDispatcher.emit('signoutStart', state);
 
             try {
-                await userManager.signoutPopup({ state });
-                unloadUserContext();
-                eventDispatcher.emit('signoutComplete', state);
+
+                throw new Error('Signout using Popup has been disabled.');
+
+                // await userManager.signoutPopup({ state });
+                // unloadUserContext();
+                // eventDispatcher.emit('signoutComplete', state);
             }
             catch (popupError) {
                 console.error("Popup authentication error: ", popupError);

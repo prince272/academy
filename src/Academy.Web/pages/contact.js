@@ -35,8 +35,8 @@ const Contact = () => {
                                 <p className="lead">To request a quote or want to meet up for coffee, contact us directly or fill out the form and we will get back to you promptly</p>
                                 <div className="">
                                     <p className="lead"><span className="svg-icon svg-icon-sm d-inline-block me-2"><BsGeoAlt /></span> {appSettings.company.address}</p>
-                                    <p className="lead"><span className="svg-icon svg-icon-sm d-inline-block me-2"><BsEnvelope /></span> <a href={`mailto:${appSettings.company.email}`}>{appSettings.company.email}</a></p>
-                                    <p className="lead"><span className="svg-icon svg-icon-sm d-inline-block me-2"><BsPhone /></span> {((phoneNumber) => (<Link href={phoneNumber.getURI()}><a>{phoneNumber.formatInternational()}</a></Link>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
+                                    <p className="lead"><span className="svg-icon svg-icon-sm d-inline-block me-2"><BsEnvelope /></span> <a href={`mailto:${appSettings.company.emails.support}`}>{appSettings.company.emails.support}</a></p>
+                                    <p className="lead"><span className="svg-icon svg-icon-sm d-inline-block me-2"><BsPhone /></span> {((phoneNumber) => (<a href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
                                     <div className="hstack gap-2 d-inline-flex mb-3">
                                         {appSettings.company.facebookLink && (
                                             <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Check out our facebook</Tooltip>}>

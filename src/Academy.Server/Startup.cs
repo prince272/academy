@@ -56,6 +56,8 @@ namespace Academy.Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var webLink = Configuration.GetSection("IdentityServer:Clients:Web").GetValue<string>("Origin");
+
             services.Configure<AppSettings>(options =>
             {
                 options.Media = new MediaInfo
@@ -76,9 +78,29 @@ namespace Academy.Server
                     PlatformDescription = "Academy of Ours is an e-learning platform that helps you to learn a variety of courses and concepts through interactive checkpoints, lessons, and videos with certificates awarded automatically after each course.",
                     Established = DateTimeOffset.Parse("2021-11-08"),
                     Address = "4 Agbaamo St, Accra, Ghana",
-                    Email = "info@academyofours.com",
+
+
+                    Emails = new EmailsInfo
+                    {
+                        App = new EmailAccount
+                        {
+                            Username = "princeowusu.272@gmail.com",
+                            Password = "dhouphrhpazvollb",
+                            DisplayName = "Academy Of Ours",
+                            Email = "princeowusu.272@gmail.com"
+                        },
+                        Support = new EmailAccount
+                        {
+                            Username = "princeowusu.272@gmail.com",
+                            Password = "dhouphrhpazvollb",
+                            DisplayName = "Prince from Academy Of Ours",
+                            Email = "princeowusu.272@gmail.com"
+                        }
+                    },
+
                     PhoneNumber = "+233550362337",
 
+                    WebLink = webLink,
                     MapLink = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d75551.8964035619!2d-0.19444572554201875!3d5.610157527892059!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf9b079dcc55cf%3A0x373d56b9a01d602d!2s4%20Agbaamo%20St%2C%20Accra!5e0!3m2!1sen!2sgh!4v1595846305553!5m2!1sen!2sgh",
                     FacebookLink = "https://www.facebook.com/princeowusu272/",
                     InstagramLink = "",
@@ -107,24 +129,6 @@ namespace Academy.Server
                         new BitRule(BitRuleType.AnswerCorrectly, 5, "Answer question correctly"),
                         new BitRule(BitRuleType.AnswerWrongly, -15, "Answer question wrongly"),
                         new BitRule(BitRuleType.SkipQuestion, -5, "Skip question")
-                    }
-                };
-
-                options.Emails = new EmailsInfo
-                {
-                    App = new EmailAccount
-                    {
-                        Username = "princeowusu.272@gmail.com",
-                        Password = "dhouphrhpazvollb",
-                        DisplayName = "Academy Of Ours",
-                        Email = "princeowusu.272@gmail.com"
-                    },
-                    Support = new EmailAccount
-                    {
-                        Username = "princeowusu.272@gmail.com",
-                        Password = "dhouphrhpazvollb",
-                        DisplayName = "Prince from Academy Of Ours",
-                        Email = "princeowusu.272@gmail.com"
                     }
                 };
             });
@@ -158,8 +162,14 @@ namespace Academy.Server
             {
                 options.AddDefaultPolicy(builder =>
                 {
+                    var allowedOrigins = Configuration
+                    .GetSection("IdentityServer:Clients")
+                    .GetChildren()
+                    .Select(_ => _.GetValue<string>("Origin"))
+                    .ToArray();
+
                     builder
-                    .WithOrigins(Configuration.GetSection("AllowedOrigins").Get<string[]>())
+                    .WithOrigins(allowedOrigins)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()
@@ -278,8 +288,7 @@ namespace Academy.Server
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
             })
-                .AddApiAuthorization<User, AppDbContext>()
-                .AddProfileService<AppProfileService>();
+                .AddApiAuthorization<User, AppDbContext>();
 
             services.AddAuthentication()
                 .AddIdentityServerJwt();
@@ -293,6 +302,9 @@ namespace Academy.Server
                 options.Cookie.SameSite = SameSiteMode.None;
                 options.ExpireTimeSpan = TimeSpan.FromDays(360);
                 options.SlidingExpiration = true;
+                options.LoginPath = "/accounts/signin";
+                options.LogoutPath = "/accounts/signout";
+
 
                 // Not creating a new object since ASP.NET Identity has created
                 // one already and hooked to the OnValidatePrincipal event.
@@ -362,13 +374,6 @@ namespace Academy.Server
                 var statusCode = StatusCodes.Status500InternalServerError;
                 var response = Result.Failed(statusCode);
                 context.Response.StatusCode = statusCode;
-                await context.Response.WriteAsJsonAsync(response.Value);
-            }));
-
-            app.UseStatusCodePages(_ => _.Run(async context =>
-            {
-                var response = Result.Failed(context.Response.StatusCode);
-                context.Response.StatusCode = response.StatusCode ?? throw new NullReferenceException();
                 await context.Response.WriteAsJsonAsync(response.Value);
             }));
 

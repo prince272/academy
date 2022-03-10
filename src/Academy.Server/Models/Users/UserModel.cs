@@ -4,7 +4,7 @@ using Academy.Server.Models.Courses;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Academy.Server.Models.Accounts
+namespace Academy.Server.Models.Users
 {
     public class UserModel
     {

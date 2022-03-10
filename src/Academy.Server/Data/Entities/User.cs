@@ -33,9 +33,7 @@ namespace Academy.Server.Data.Entities
 
         public string ExtensionData { get; set; }
 
-        public bool IsAdmin => UserRoles.Any(_ => _.Role.Name == RoleConstants.Admin);
-
-        public bool IsTeacher => UserRoles.Any(_ => _.Role.Name == RoleConstants.Teacher);
+        public bool HasRoles(params string[] roles) => UserRoles.Any(_ => roles.Contains(_.Role.Name));
     }
 
     public class UserRole : IdentityUserRole<int>

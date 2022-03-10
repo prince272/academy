@@ -127,7 +127,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
                         { "desc", $"Payment of {payment.Reason.Humanize()}" },
                         { "amount", (payment.Amount * 100).ToString("000000000000") },
                         { "redirect_url", payment.RedirectUrl },
-                        { "email", appSettings.Company.Email },
+                        { "email", appSettings.Company.Emails.App.Email },
                     };
 
 
