@@ -1,6 +1,5 @@
 ﻿using Academy.Server.Utilities;
 using FluentValidation;
-using System;
 
 namespace Academy.Server.Models.Accounts
 {

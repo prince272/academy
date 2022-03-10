@@ -1,14 +1,13 @@
 ﻿using Academy.Server.Data.Entities;
-using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Models.Courses;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Academy.Server.Models.Users
 {
     public class UserModel
     {
         public int Id { get; set; }
+
+        public string FullName { get; set; }
 
         public string FirstName { get; set; }
 

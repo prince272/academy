@@ -1,9 +1,6 @@
 ﻿using Ganss.XSS;
 using System;
-using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Academy.Server.Utilities
 {

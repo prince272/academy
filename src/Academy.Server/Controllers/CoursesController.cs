@@ -1,10 +1,9 @@
 ﻿using Academy.Server.Data;
 using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.DocumentProcessor;
-using Academy.Server.Extensions.PaymentProcessor;
 using Academy.Server.Extensions.StorageProvider;
-using Academy.Server.Models.Accounts;
 using Academy.Server.Models.Courses;
+using Academy.Server.Models.Users;
 using Academy.Server.Services;
 using Academy.Server.Utilities;
 using AutoMapper;
@@ -12,7 +11,6 @@ using AutoMapper.QueryableExtensions;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Academy.Server.Controllers
@@ -142,11 +141,23 @@ namespace Academy.Server.Controllers
             if (search?.Subject != null) query = query.Where(_ => _.Subject == search.Subject);
 
 
+            if (!string.IsNullOrWhiteSpace(search?.Query))
+            {
+                var predicates = new List<Expression<Func<Course, bool>>>();
+
+                predicates.Add(_ => EF.Functions.Like(_.Title, $"%{search.Query}%") ||
+                                    EF.Functions.Like(_.Subject.ToString(), $"%{search.Query}%"));
+
+                query = query.WhereAny(predicates.ToArray());
+            }
+
+
             var pageInfo = new PageInfo(await query.CountAsync(), pageNumber, pageSize);
 
             query = (pageInfo.SkipItems > 0 ? query.Skip(pageInfo.SkipItems) : query).Take(pageInfo.PageSize);
 
-            var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async courseId => {
+            var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async courseId =>
+            {
                 var courseModel = await GetCourseModel(courseId);
                 if (courseModel == null) throw new ArgumentException();
                 return courseModel;
@@ -472,6 +483,30 @@ namespace Academy.Server.Controllers
             await unitOfWork.CreateAsync(review);
 
             return Result.Succeed(data: review.Id);
+        }
+
+        [HttpGet("/courses/{courseId}/learners")]
+        public async Task<IActionResult> Learners(int courseId, int pageNumber, int pageSize, [FromQuery] UserSearchModel search)
+        {
+            var course = await unitOfWork.Query<Course>()
+                .FirstOrDefaultAsync(_ => _.Id == courseId);
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var query = unitOfWork.Query<User>();
+            query = query.Where(_ => _.Id == course.UserId);
+
+            var pageInfo = new PageInfo(await query.CountAsync(), pageNumber, pageSize);
+
+            query = (pageInfo.SkipItems > 0 ? query.Skip(pageInfo.SkipItems) : query).Take(pageInfo.PageSize);
+
+            var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async userId =>
+            {
+                var user = await query.FirstOrDefaultAsync(_ => _.Id == userId);
+                if (user == null) throw new ArgumentException();
+                return mapper.Map<UserModel>(user);
+            });
+
+            return Result.Succeed(data: TypeMerger.Merge(new { Items = pageItems }, pageInfo));
         }
 
         [Authorize]

@@ -79,7 +79,8 @@ namespace Academy.Server.Utilities
 
         public static IRuleBuilderOptions<T, string> UrlOrigins<T>(this IRuleBuilder<T, string> ruleBuilder, string[] origins)
         {
-            var options = ruleBuilder.NotEmpty().Must((model, value) => {
+            var options = ruleBuilder.NotEmpty().Must((model, value) =>
+            {
                 if (value == null) return false;
                 var allowed = origins.Any(origin => Uri.Compare(new Uri(origin), new Uri(value), UriComponents.SchemeAndServer, UriFormat.UriEscaped, StringComparison.InvariantCultureIgnoreCase) == 0);
                 return allowed;

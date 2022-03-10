@@ -1,6 +1,4 @@
-﻿using Academy.Server.Data.Entities;
-using FluentValidation;
-using System.Collections.Generic;
+﻿using FluentValidation;
 
 namespace Academy.Server.Models.Courses
 {

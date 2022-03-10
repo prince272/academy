@@ -59,7 +59,7 @@ const Header = () => {
     const router = useRouter();
     const appSettings = useAppSettings();
     const dialog = useDialog();
-    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher')))); 
+    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher'))));
 
     return (
 
@@ -99,15 +99,17 @@ const Header = () => {
                         </Nav.Item>
                         <Nav.Item>
                             <Dropdown>
-                                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Features</Dropdown.Toggle>
+                                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Resources</Dropdown.Toggle>
                                 <Dropdown.Menu>
+                                    <Dropdown.Header>How it works</Dropdown.Header>
                                     <Link href="/teach" passHref><Dropdown.Item>For teachers</Dropdown.Item></Link>
                                     <Link href="/" passHref><Dropdown.Item>For students</Dropdown.Item></Link>
+                                    <Dropdown.Header>Who we are</Dropdown.Header>
+                                    <Link href="/contact" passHref><Dropdown.Item>Contact Us</Dropdown.Item></Link>
+                                    <Link href="/about" passHref><Dropdown.Item>About Us</Dropdown.Item></Link>
+
                                 </Dropdown.Menu>
                             </Dropdown>
-                        </Nav.Item>
-                        <Nav.Item>
-                            <Link href="/about"><a className="btn btn-outline-secondary border-0 p-2 mb-2 mb-md-0">About</a></Link>
                         </Nav.Item>
                         {client.user ? (
                             <>
@@ -258,7 +260,7 @@ const Body = ({ children }) => {
         <>
             <LoadingBar color={loadingBarColor} ref={loadingBarRef} />
             {children}
-            {(client.loading || modal.loading || pageLoading) && (<div className="position-fixed top-50 start-50 translate-middle bg-light w-100 h-100 zi-3"></div>)}
+            {(client.loading || modal.loading || pageLoading) && (<div className="position-fixed top-50 start-50 translate-middle bg-light w-100 h-100 zi-3"><Loader /></div>)}
         </>
     );
 };

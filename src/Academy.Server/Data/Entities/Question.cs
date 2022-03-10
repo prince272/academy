@@ -1,6 +1,4 @@
-﻿using Academy.Server.Models.Courses;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Academy.Server.Data.Entities

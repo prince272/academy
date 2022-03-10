@@ -1,10 +1,4 @@
-﻿using Humanizer;
-using PhoneNumbers;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System;
 
 namespace Academy.Server.Data.Entities
 {

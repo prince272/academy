@@ -1,8 +1,6 @@
-﻿using Academy.Server.Data.Converters;
-using Academy.Server.Data.Entities;
+﻿using Academy.Server.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Collections.Generic;
 
 namespace Academy.Server.Data.Configurations
 {

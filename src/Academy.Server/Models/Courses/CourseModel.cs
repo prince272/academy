@@ -1,13 +1,10 @@
 ﻿using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Models.Users;
-using Academy.Server.Utilities;
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 
 namespace Academy.Server.Models.Courses
 {

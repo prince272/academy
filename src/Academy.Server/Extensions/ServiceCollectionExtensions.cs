@@ -6,7 +6,6 @@ using Academy.Server.Extensions.SmsSender;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Extensions.ViewRenderer;
 using Academy.Server.Utilities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;

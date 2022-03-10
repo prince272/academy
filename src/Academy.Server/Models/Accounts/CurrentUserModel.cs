@@ -2,10 +2,8 @@
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Models.Courses;
 using Humanizer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Academy.Server.Models.Accounts

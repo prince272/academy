@@ -1,20 +1,21 @@
 ﻿using Academy.Server.Data.Entities;
 using IdentityServer4.EntityFramework.Entities;
+using IdentityServer4.EntityFramework.Extensions;
 using IdentityServer4.EntityFramework.Interfaces;
 using IdentityServer4.EntityFramework.Options;
-using IdentityServer4.EntityFramework.Extensions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
 
 namespace Academy.Server.Data
 {
-    public class AppDbContext : IdentityDbContext<User, Role, int, 
+    public class AppDbContext : IdentityDbContext<User, Role, int,
         IdentityUserClaim<int>, UserRole, IdentityUserLogin<int>,
         IdentityRoleClaim<int>, IdentityUserToken<int>>, IPersistedGrantDbContext
     {
@@ -86,6 +87,40 @@ namespace Academy.Server.Data
                     property.SetPrecision(18);
                     property.SetScale(6);
                 });
+        }
+    }
+
+    // Query : does EF.Functions.Like support with array words ? #10834
+    // source: https://github.com/dotnet/efcore/issues/10834
+    public static class DbExtensions
+    {
+        public static IQueryable<T> WhereAny<T>(this IQueryable<T> queryable, params Expression<Func<T, bool>>[] predicates)
+        {
+            var parameter = Expression.Parameter(typeof(T));
+            return queryable.Where(Expression.Lambda<Func<T, bool>>(predicates.Aggregate<Expression<Func<T, bool>>, Expression>(null,
+                                                                                                                                (current, predicate) =>
+                                                                                                                                {
+                                                                                                                                    var visitor = new ParameterSubstitutionVisitor(predicate.Parameters[0], parameter);
+                                                                                                                                    return current != null ? Expression.OrElse(current, visitor.Visit(predicate.Body)) : visitor.Visit(predicate.Body);
+                                                                                                                                }),
+                                                                    parameter));
+        }
+
+        private class ParameterSubstitutionVisitor : ExpressionVisitor
+        {
+            private readonly ParameterExpression _destination;
+            private readonly ParameterExpression _source;
+
+            public ParameterSubstitutionVisitor(ParameterExpression source, ParameterExpression destination)
+            {
+                _source = source;
+                _destination = destination;
+            }
+
+            protected override Expression VisitParameter(ParameterExpression node)
+            {
+                return ReferenceEquals(node, _source) ? _destination : base.VisitParameter(node);
+            }
         }
     }
 }

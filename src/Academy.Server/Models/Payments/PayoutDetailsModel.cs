@@ -1,7 +1,6 @@
 ﻿using Academy.Server.Data.Entities;
 using Academy.Server.Utilities;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Academy.Server.Extensions.StorageProvider
+﻿namespace Academy.Server.Extensions.StorageProvider
 {
     public class LocalStorageOptions
     {

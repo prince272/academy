@@ -1,7 +1,6 @@
 ﻿using Academy.Server.Data.Entities;
 using Academy.Server.Utilities;
 using Humanizer;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Academy.Server

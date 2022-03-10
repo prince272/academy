@@ -3,7 +3,6 @@ using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.EmailSender;
 using Academy.Server.Extensions.PaymentProcessor;
 using Academy.Server.Extensions.SmsSender;
-using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Extensions.ViewRenderer;
 using Academy.Server.Models.Accounts;
 using Academy.Server.Models.Payments;
@@ -19,7 +18,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 

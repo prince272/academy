@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Academy.Server.Utilities
@@ -22,7 +20,7 @@ namespace Academy.Server.Utilities
                 var phoneNumberUtil = PhoneNumbers.PhoneNumberUtil.GetInstance();
                 var phoneNumberObj = phoneNumberUtil.Parse(value, null);
 
-                if (!phoneNumberUtil.IsValidNumber(phoneNumberObj) || value !=  $"+{phoneNumberObj.CountryCode}{phoneNumberObj.NationalNumber}")
+                if (!phoneNumberUtil.IsValidNumber(phoneNumberObj) || value != $"+{phoneNumberObj.CountryCode}{phoneNumberObj.NationalNumber}")
                 {
                     throw new ArgumentException("Phone number is not valid.", nameof(value));
                 }

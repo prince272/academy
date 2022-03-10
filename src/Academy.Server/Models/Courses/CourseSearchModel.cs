@@ -10,6 +10,8 @@ namespace Academy.Server.Models.Courses
         public CourseSubject? Subject { get; set; }
 
         public CourseSort Sort { get; set; }
+
+        public string Query { get; set; }
     }
 
 

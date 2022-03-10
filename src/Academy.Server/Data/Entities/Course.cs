@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 
 namespace Academy.Server.Data.Entities
 {
     public class Course : IEntity
     {
-        public virtual User User { get; set; }  
+        public virtual User User { get; set; }
 
         public int UserId { get; set; }
 

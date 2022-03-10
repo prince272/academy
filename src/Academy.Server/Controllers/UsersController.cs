@@ -41,7 +41,8 @@ namespace Academy.Server.Controllers
 
             query = (pageInfo.SkipItems > 0 ? query.Skip(pageInfo.SkipItems) : query).Take(pageInfo.PageSize);
 
-            var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async id => {
+            var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async id =>
+            {
                 var model = await GetUserModel(id);
                 if (model == null) throw new ArgumentException();
                 return model;

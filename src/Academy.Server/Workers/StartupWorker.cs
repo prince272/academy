@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,7 +30,7 @@ namespace Academy.Server.Workers
             {
                 if (!await roleManager.RoleExistsAsync(roleName))
                     (await roleManager.CreateAsync(new Role { Name = roleName })).ThrowIfFailed();
-            }         
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

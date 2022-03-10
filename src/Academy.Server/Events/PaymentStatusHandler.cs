@@ -4,7 +4,6 @@ using Academy.Server.Extensions.PaymentProcessor;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Threading;

@@ -1,5 +1,4 @@
 ﻿using Academy.Server.Data.Entities;
-using AutoMapper;
 using FluentValidation;
 using System.Collections.Generic;
 

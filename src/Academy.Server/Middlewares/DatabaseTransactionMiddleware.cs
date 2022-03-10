@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Academy.Server.Data;
+﻿using Academy.Server.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace Academy.Server.Middlewares
 {

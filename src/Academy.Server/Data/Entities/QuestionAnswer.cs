@@ -1,8 +1,4 @@
-﻿using Academy.Server.Models.Courses;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Academy.Server.Data.Entities
+﻿namespace Academy.Server.Data.Entities
 {
     public class QuestionAnswer : IEntity
     {

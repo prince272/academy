@@ -1,9 +1,5 @@
-﻿using Academy.Server.Data.Entities;
-using Academy.Server.Utilities;
+﻿using Academy.Server.Utilities;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 
 namespace Academy.Server.Models.Accounts

@@ -5,12 +5,8 @@ using Academy.Server.Extensions.PaymentProcessor;
 using Academy.Server.Extensions.ViewRenderer;
 using Academy.Server.Models;
 using Academy.Server.Models.Courses;
-using Academy.Server.Models.Payments;
 using Academy.Server.Utilities;
 using Humanizer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +15,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace Academy.Server.Controllers
 {

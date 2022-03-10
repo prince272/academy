@@ -1,7 +1,5 @@
-﻿using Academy.Server.Extensions.PaymentProcessor;
-using Academy.Server.Utilities;
+﻿using Academy.Server.Utilities;
 using FluentValidation;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;

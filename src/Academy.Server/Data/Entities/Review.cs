@@ -18,7 +18,7 @@ namespace Academy.Server.Data.Entities
 
         public DateTimeOffset? Updated { get; set; }
 
-        public virtual User User { get; set; } 
+        public virtual User User { get; set; }
 
         public int UserId { get; set; }
 

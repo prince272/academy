@@ -3,7 +3,6 @@ using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.CacheManager;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Utilities;
-using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,8 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -58,7 +55,7 @@ namespace Academy.Server.Controllers
 
             var mediaType = mediaRule.Type;
             var mediaPath = MediaConstants.GetPath("uploads", mediaType, mediaName);
-        
+
             var media = new Media
             {
                 Name = mediaName,

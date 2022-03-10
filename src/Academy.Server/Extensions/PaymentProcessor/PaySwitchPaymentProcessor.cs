@@ -3,16 +3,12 @@ using Academy.Server.Data.Entities;
 using Academy.Server.Utilities;
 using Humanizer;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PhoneNumbers;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -225,7 +221,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
             var mobileIssuer = mobileIssuers.FirstOrDefault(_ => Regex.IsMatch($"{mobileNumberInfo.CountryCode}{mobileNumberInfo.NationalNumber}", _.Pattern));
             if (mobileIssuer == null) throw new ArgumentException($"'Mobile number' is not supported by any of these mobile issuers. {mobileIssuers.Select(_ => _.Name).Humanize()}", nameof(mobileNumber));
-           
+
             Issuer = mobileIssuer;
             MobileNumber = mobileNumber;
         }
