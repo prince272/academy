@@ -128,7 +128,7 @@ const CourseEditModal = withRemount((props) => {
                         <div className="col-12 col-sm-6">
                             <label className="form-label">Subject</label>
                             <select {...form.register("subject")} className={`form-select  ${formState.errors.type ? 'is-invalid' : ''}`}>
-                                {appSettings.courseSubjects.map((subject) => (
+                                {appSettings.course.subjects.map((subject) => (
                                     <option key={subject.value} value={subject.value}>{subject.name}</option>
                                 ))}
                             </select>

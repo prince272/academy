@@ -34,7 +34,7 @@ const CourseItem = ({ course }) => {
                 </AspectRatio>
             </div>
             <div className="card-body p-2 position-relative">
-                <div className="d-inline-block badge text-dark bg-soft-primary mb-2">{appSettings.courseSubjects.find(subject => course.subject == subject.value)?.name}</div>
+                <div className="d-inline-block badge text-dark bg-soft-primary mb-2">{appSettings.course.subjects.find(subject => course.subject == subject.value)?.name}</div>
                 <div className="fs-6 mb-2" style={{ height: "48px" }}>
                     <TruncateMarkup lines={2}><div>{course.title}</div></TruncateMarkup>
                 </div>

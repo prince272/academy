@@ -124,9 +124,9 @@ const CoursesPage = withRemount((props) => {
 
         items.push(() => (
             <Dropdown className="mx-2 pe-auto">
-                <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Subject`))(appSettings.courseSubjects.find(item => item.value == search.watch('subject')))}</Dropdown.Toggle>
+                <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Subject`))(appSettings.course.subjects.find(item => item.value == search.watch('subject')))}</Dropdown.Toggle>
                 <Dropdown.Menu style={{ margin: 0 }}>
-                    {[{ name: 'Any', value: null }, ...appSettings.courseSubjects].map(item => (
+                    {[{ name: 'Any', value: null }, ...appSettings.course.subjects].map(item => (
                         <Link key={item.value || 'null'} href={{ pathname: router.basePath, query: cleanObject({ ...search.watch(), subject: item.value }) }} passHref><Dropdown.Item className={`cursor-pointer ${item.value == search.watch('subject') ? 'bg-soft-primary' : ''}`}>{item.name}</Dropdown.Item></Link>
                     ))}
                 </Dropdown.Menu>
@@ -135,9 +135,9 @@ const CoursesPage = withRemount((props) => {
 
         items.push(() => (
             <Dropdown className="mx-2 pe-auto">
-                <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Sort`))(appSettings.courseSorts.find(item => item.value == search.watch('sort')))}</Dropdown.Toggle>
+                <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Sort`))(appSettings.course.sorts.find(item => item.value == search.watch('sort')))}</Dropdown.Toggle>
                 <Dropdown.Menu style={{ margin: 0 }}>
-                    {[{ name: 'Any', value: null }, ...appSettings.courseSorts].map(item => (
+                    {[{ name: 'Any', value: null }, ...appSettings.course.sorts].map(item => (
                         <Link key={item.value || 'null'} href={{ pathname: router.basePath, query: cleanObject({ ...search.watch(), sort: item.value }) }} passHref><Dropdown.Item className={`cursor-pointer ${item.value == search.watch('sort') ? 'bg-soft-primary' : ''}`}>{item.name}</Dropdown.Item></Link>
                     ))}
                 </Dropdown.Menu>

@@ -88,7 +88,7 @@ const HomePage = () => {
 
               wrapperClassName=""
               scrollContainerClassName="">
-              {appSettings.courseSubjects.map((subject, index) => {
+              {appSettings.course.subjects.map((subject, index) => {
                 const colors = ["#d1102b", "#101620", "#135ec3", "#653c20", "#009843", "#056647", "#071f5d", "#783dbe"];
 
                 return (

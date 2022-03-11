@@ -51,30 +51,30 @@ namespace Academy.Server.Controllers
                 };
             }).ToArray();
 
-            var CourseSubjects = await Enum.GetValues<CourseSubject>().SelectAsync(async subject =>
-            {
-                var count = await unitOfWork.Query<Course>().CountAsync(_ => _.Subject == subject && _.Published != null);
-                var display = AttributeHelper.GetMemberAttribute<DisplayAttribute>(subject.GetType().GetMember(subject.ToString())[0]);
-
-                return new
-                {
-                    Name = display?.Name ?? subject.ToString().Humanize(),
-                    Description = display?.Description,
-                    Value = subject,
-                    Count = count
-                };
-            });
-            var CourseSorts = GetEnumerations<CourseSort>();
             var Company = TypeMerger.Merge(new { Emails = new { Support = appSettings.Company.Emails.Info.Email } }, appSettings.Company);
             var Currency = appSettings.Currency;
-            var Course = appSettings.Course;
+            var Course = TypeMerger.Merge(new
+            {
+                Sorts = GetEnumerations<CourseSort>(),
+                Subjects = await Enum.GetValues<CourseSubject>().SelectAsync(async subject =>
+                {
+                    var count = await unitOfWork.Query<Course>().CountAsync(_ => _.Subject == subject && _.Published != null);
+                    var display = AttributeHelper.GetMemberAttribute<DisplayAttribute>(subject.GetType().GetMember(subject.ToString())[0]);
+
+                    return new
+                    {
+                        Name = display?.Name ?? subject.ToString().Humanize(),
+                        Description = display?.Description,
+                        Value = subject,
+                        Count = count
+                    };
+                })
+            }, appSettings.Course);
 
             return Result.Succeed(new
             {
                 Company,
                 Currency,
-                CourseSorts,
-                CourseSubjects,
                 Course
             });
         }

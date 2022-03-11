@@ -91,7 +91,7 @@ const Header = () => {
                                 <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Courses</Dropdown.Toggle>
                                 <Dropdown.Menu>
                                     <Link href={{ pathname: "/courses" }} passHref><Dropdown.Item>All</Dropdown.Item></Link>
-                                    {appSettings.courseSubjects.map((subject => (
+                                    {appSettings.course.subjects.map((subject => (
                                         <Link key={subject.value} href={{ pathname: "/courses", query: { subject: subject.value } }} passHref><Dropdown.Item>{subject.name}</Dropdown.Item></Link>
                                     )))}
                                 </Dropdown.Menu>
