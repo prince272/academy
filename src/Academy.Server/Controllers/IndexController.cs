@@ -67,6 +67,7 @@ namespace Academy.Server.Controllers
             var CourseSorts = GetEnumerations<CourseSort>();
             var Company = TypeMerger.Merge(new { Emails = new { Support = appSettings.Company.Emails.Info.Email } }, appSettings.Company);
             var Currency = appSettings.Currency;
+            var Course = appSettings.Course;
 
             return Result.Succeed(new
             {
@@ -74,6 +75,7 @@ namespace Academy.Server.Controllers
                 Currency,
                 CourseSorts,
                 CourseSubjects,
+                Course
             });
         }
 

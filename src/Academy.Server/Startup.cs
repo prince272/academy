@@ -78,14 +78,14 @@ namespace Academy.Server
                         App = new EmailAccount
                         {
                             Username = "app@academyofours.com",
-                            Password = "dwh#crDi18OXv7ZEy",
+                            Password = "0AzwWks5#onLx",
                             DisplayName = "Academy Of Ours",
                             Email = "app@academyofours.com"
                         },
                         Info = new EmailAccount
                         {
                             Username = "info@academyofours.com",
-                            Password = "EBReNM4#29h2mC3r3",
+                            Password = "wT#358BDHz0AD",
                             DisplayName = "Prince from Academy Of Ours",
                             Email = "info@academyofours.com"
                         }
