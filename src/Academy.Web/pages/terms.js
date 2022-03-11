@@ -1,12 +1,14 @@
+import { NextSeo } from 'next-seo';
 
 const TermsPage = () => {
 
     return (
         <>
+            <NextSeo title="Terms of Service" />
             <div className="bg-primary">
                 <div className="container py-10 d-flex justify-content-center text-center">
                     <div>
-                        <h1 className="text-white">Terms &#38; Conditions</h1>
+                        <h1 className="text-white">Terms of Service</h1>
                         <p className="text-white mb-0">Last updated: 2nd January, 2022</p>
                     </div>
                 </div>
@@ -14,7 +16,7 @@ const TermsPage = () => {
             <div className="container py-5">
                 <div className="card shadow-sm border-0">
 
-                    <div className="card-body">
+                    <div className="card-body p-lg-10">
                         <div>
                             <p>These terms and conditions outline the rules and regulations for the use of Academy of Ours's Website, located at https://www.academyofours.com/.</p>
 

@@ -45,8 +45,13 @@ namespace Academy.Server
         public string YoutubeLink { get; set; }
 
         public EmailsInfo Emails { get; set; }
+    }
 
-        public decimal CourseRate { get; set; }
+    public class CourseInfo
+    {
+        public decimal Rate { get; set; }
+
+        public List<CourseBitRule> BitRules { get; set; }
     }
 
     public class CurrencyInfo
@@ -59,8 +64,7 @@ namespace Academy.Server
 
         public decimal Limit { get; set; }
 
-        public List<BitRule> BitRules { get; set; }
-
+     
         public decimal ConvertBitsToCurrencyValue(int bits)
         {
             return Math.Round(bits * 0.062m, 2, MidpointRounding.AwayFromZero);
@@ -76,7 +80,7 @@ namespace Academy.Server
     {
         public EmailAccount App { get; set; }
 
-        public EmailAccount Support { get; set; }
+        public EmailAccount Info { get; set; }
     }
 
 
@@ -87,6 +91,8 @@ namespace Academy.Server
         public CurrencyInfo Currency { get; set; }
 
         public MediaInfo Media { get; set; }
+
+        public CourseInfo Course { get; set; }  
     }
 
     public class MediaRule
@@ -105,23 +111,23 @@ namespace Academy.Server
         public MediaType Type { get; set; }
     }
 
-    public class BitRule
+    public class CourseBitRule
     {
-        public BitRule(BitRuleType type, int value, string description)
+        public CourseBitRule(CourseBitRuleType type, int value, string description)
         {
             Type = type;
             Value = value;
             Description = description;
         }
 
-        public BitRuleType Type { get; set; }
+        public CourseBitRuleType Type { get; set; }
 
         public int Value { get; set; }
 
         public string Description { get; set; }
     }
 
-    public enum BitRuleType
+    public enum CourseBitRuleType
     {
         CompleteLesson,
         AnswerCorrectly,

@@ -122,12 +122,12 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> GetProfile()
         {
             var user = await HttpContext.Request.GetCurrentUserAsync();
-            return Result.Succeed(data: mapper.Map<CurrentUserModel>(user));
+            return Result.Succeed(data: mapper.Map<ProfileModel>(user));
         }
 
         [Authorize]
         [HttpPut("profile")]
-        public async Task<IActionResult> EditProfile(CurrentUserEditModel form)
+        public async Task<IActionResult> EditProfile(ProfileEditModel form)
         {
             var user = await HttpContext.Request.GetCurrentUserAsync();
 
@@ -138,7 +138,7 @@ namespace Academy.Server.Controllers
 
             await unitOfWork.UpdateAsync(user);
 
-            return Result.Succeed(data: mapper.Map<CurrentUserModel>(user));
+            return Result.Succeed(data: mapper.Map<ProfileModel>(user));
         }
 
 

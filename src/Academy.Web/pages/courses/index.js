@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import Link from 'next/link';
+import { NextSeo } from 'next-seo';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { useContext, useEffect, useState } from 'react';
@@ -146,10 +147,11 @@ const CoursesPage = withRemount((props) => {
         return items;
     })();
 
-    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher')))); 
+    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher'))));
 
     return (
         <>
+            <NextSeo title="Courses" />
             <div className="container h-100 py-3">
                 <div className="position-relative h-100 pe-none">
                     <div className="d-flex align-items-center py-2">

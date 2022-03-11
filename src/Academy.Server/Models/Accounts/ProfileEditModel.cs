@@ -1,6 +1,6 @@
 ﻿namespace Academy.Server.Models.Accounts
 {
-    public class CurrentUserEditModel
+    public class ProfileEditModel
     {
         public string FirstName { get; set; }
 

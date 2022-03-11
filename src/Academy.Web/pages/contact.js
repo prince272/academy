@@ -1,3 +1,4 @@
+import { NextSeo } from 'next-seo';
 import Link from 'next/link';
 import { AspectRatio } from 'react-aspect-ratio';
 import { BsArrowRight, BsEnvelope, BsGeoAlt, BsPhone } from 'react-icons/bs';
@@ -14,6 +15,7 @@ const Contact = () => {
 
     return (
         <>
+            <NextSeo title="Contact Us" />
             <div className="bg-primary">
                 <div className="container py-10 d-flex justify-content-center text-center">
                     <div className="zi-1">

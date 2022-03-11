@@ -77,17 +77,17 @@ namespace Academy.Server
                     {
                         App = new EmailAccount
                         {
-                            Username = "princeowusu.272@gmail.com",
-                            Password = "dhouphrhpazvollb",
+                            Username = "app@academyofours.com",
+                            Password = "dwh#crDi18OXv7ZEy",
                             DisplayName = "Academy Of Ours",
-                            Email = "princeowusu.272@gmail.com"
+                            Email = "app@academyofours.com"
                         },
-                        Support = new EmailAccount
+                        Info = new EmailAccount
                         {
-                            Username = "princeowusu.272@gmail.com",
-                            Password = "dhouphrhpazvollb",
+                            Username = "info@academyofours.com",
+                            Password = "EBReNM4#29h2mC3r3",
                             DisplayName = "Prince from Academy Of Ours",
-                            Email = "princeowusu.272@gmail.com"
+                            Email = "info@academyofours.com"
                         }
                     },
 
@@ -104,9 +104,19 @@ namespace Academy.Server
                     Country = "Ghana",
                     CountryCode = "GH",
                     Province = "Greater Accra",
-                    ProvinceCode = "GA",
+                    ProvinceCode = "GA"
+                };
 
-                    CourseRate = 0.15m
+                options.Course = new CourseInfo
+                {
+                    Rate = 0.15m,
+                    BitRules = new List<CourseBitRule>
+                    {
+                        new CourseBitRule(CourseBitRuleType.CompleteLesson, 10, "Complete a lesson"),
+                        new CourseBitRule(CourseBitRuleType.AnswerCorrectly, 5, "Answer question correctly"),
+                        new CourseBitRule(CourseBitRuleType.AnswerWrongly, -15, "Answer question wrongly"),
+                        new CourseBitRule(CourseBitRuleType.SkipQuestion, -5, "Skip question")
+                    }
                 };
 
                 options.Currency = new CurrencyInfo
@@ -114,15 +124,7 @@ namespace Academy.Server
                     Name = "Ghanaian cedi",
                     Code = "GHS",
                     Symbol = "₵",
-                    Limit = 1000,
-
-                    BitRules = new List<BitRule>
-                    {
-                        new BitRule(BitRuleType.CompleteLesson, 10, "Complete a lesson"),
-                        new BitRule(BitRuleType.AnswerCorrectly, 5, "Answer question correctly"),
-                        new BitRule(BitRuleType.AnswerWrongly, -15, "Answer question wrongly"),
-                        new BitRule(BitRuleType.SkipQuestion, -5, "Skip question")
-                    }
+                    Limit = 1000
                 };
             });
 
@@ -328,8 +330,8 @@ namespace Academy.Server
 
             services.AddSmtpEmailSender(options =>
             {
-                options.Hostname = "smtp.gmail.com";
-                options.Port = 587;
+                options.Hostname = "mail5017.site4now.net";
+                options.Port = 8889;
                 options.UseServerCertificateValidation = true;
                 options.SecureSocketOptionsId = 1;
             });

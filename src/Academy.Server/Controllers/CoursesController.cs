@@ -3,7 +3,7 @@ using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.DocumentProcessor;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Models.Courses;
-using Academy.Server.Models.Users;
+using Academy.Server.Models.Students;
 using Academy.Server.Services;
 using Academy.Server.Utilities;
 using AutoMapper;
@@ -59,7 +59,7 @@ namespace Academy.Server.Controllers
             course.Created = DateTimeOffset.UtcNow;
             course.Published = form.Published ? course.Published ?? DateTimeOffset.UtcNow : null;
             course.Cost = Math.Round(form.Cost, 2, MidpointRounding.AwayFromZero);
-            course.Price = form.Cost > 0 ? Math.Round((appSettings.Company.CourseRate * form.Cost) + form.Cost, 2, MidpointRounding.AwayFromZero) : 0;
+            course.Price = form.Cost > 0 ? Math.Round((appSettings.Course.Rate * form.Cost) + form.Cost, 2, MidpointRounding.AwayFromZero) : 0;
             course.Image = (await unitOfWork.FindAsync<Media>(form.ImageId));
             course.CertificateTemplate = (await unitOfWork.FindAsync<Media>(form.CertificateTemplateId));
             course.UserId = user.Id; // Set the owner of the course.
@@ -87,7 +87,7 @@ namespace Academy.Server.Controllers
             course.Updated = DateTimeOffset.UtcNow;
             course.Published = form.Published ? course.Published ?? DateTimeOffset.UtcNow : null;
             course.Cost = Math.Round(form.Cost, 2, MidpointRounding.AwayFromZero);
-            course.Price = form.Cost > 0 ? Math.Round((appSettings.Company.CourseRate * form.Cost) + form.Cost, 2, MidpointRounding.AwayFromZero) : 0;
+            course.Price = form.Cost > 0 ? Math.Round((appSettings.Course.Rate * form.Cost) + form.Cost, 2, MidpointRounding.AwayFromZero) : 0;
             course.Image = (await unitOfWork.FindAsync<Media>(form.ImageId));
             course.CertificateTemplate = (await unitOfWork.FindAsync<Media>(form.CertificateTemplateId));
 
@@ -135,13 +135,12 @@ namespace Academy.Server.Controllers
                 query = query.Where(course => course.Published != null);
             }
 
+            if (search.UserId != null) query = query.Where(_ => _.Id == search.UserId);
 
-            if (search?.UserId != null) query = query.Where(_ => _.Id == search.UserId);
-
-            if (search?.Subject != null) query = query.Where(_ => _.Subject == search.Subject);
+            if (search.Subject != null) query = query.Where(_ => _.Subject == search.Subject);
 
 
-            if (!string.IsNullOrWhiteSpace(search?.Query))
+            if (!string.IsNullOrWhiteSpace(search.Query))
             {
                 var predicates = new List<Expression<Func<Course, bool>>>();
 
@@ -212,7 +211,7 @@ namespace Academy.Server.Controllers
             {
                 if (form.Skip)
                 {
-                    var remainingBits = user.Bits + appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.SkipQuestion).Value;
+                    var remainingBits = user.Bits + appSettings.Course.BitRules.First(_ => _.Type == CourseBitRuleType.SkipQuestion).Value;
                     if (remainingBits < 0)
                     {
                         var requiredBits = Math.Abs(remainingBits);
@@ -250,8 +249,8 @@ namespace Academy.Server.Controllers
                     if (!questionProgress.Choices.Any(_ => _.Skip))
                     {
                         user.Bits += (questionModel.Choices.FirstOrDefault() ?
-                            appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerCorrectly).Value :
-                            appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.AnswerWrongly).Value);
+                            appSettings.Course.BitRules.First(_ => _.Type == CourseBitRuleType.AnswerCorrectly).Value :
+                            appSettings.Course.BitRules.First(_ => _.Type == CourseBitRuleType.AnswerWrongly).Value);
                     }
 
                     questionProgress.Completed = DateTimeOffset.UtcNow;
@@ -263,7 +262,7 @@ namespace Academy.Server.Controllers
             {
                 if (lessonProgress.Completed == null)
                 {
-                    user.Bits += appSettings.Currency.BitRules.First(_ => _.Type == BitRuleType.CompleteLesson).Value;
+                    user.Bits += appSettings.Course.BitRules.First(_ => _.Type == CourseBitRuleType.CompleteLesson).Value;
                     lessonProgress.Completed = DateTimeOffset.UtcNow;
                 }
             }
@@ -485,8 +484,8 @@ namespace Academy.Server.Controllers
             return Result.Succeed(data: review.Id);
         }
 
-        [HttpGet("/courses/{courseId}/learners")]
-        public async Task<IActionResult> Learners(int courseId, int pageNumber, int pageSize, [FromQuery] UserSearchModel search)
+        [HttpGet("/courses/{courseId}/students")]
+        public async Task<IActionResult> Students(int courseId, int pageNumber, int pageSize, [FromQuery] StudentSearchModel search)
         {
             var course = await unitOfWork.Query<Course>()
                 .FirstOrDefaultAsync(_ => _.Id == courseId);
@@ -503,7 +502,7 @@ namespace Academy.Server.Controllers
             {
                 var user = await query.FirstOrDefaultAsync(_ => _.Id == userId);
                 if (user == null) throw new ArgumentException();
-                return mapper.Map<UserModel>(user);
+                return mapper.Map<StudentSearchModel>(user);
             });
 
             return Result.Succeed(data: TypeMerger.Merge(new { Items = pageItems }, pageInfo));
@@ -900,7 +899,7 @@ namespace Academy.Server.Controllers
                                _.ReferenceId == course.Code &&
                                _.Status == PaymentStatus.Complete) : false;
 
-            var courseLearners = await unitOfWork.Query<User>().CountAsync(_ => _.Id == course.UserId);
+            var courseStudents = await unitOfWork.Query<User>().CountAsync(_ => _.Id == course.UserId);
 
             course.Sections = await unitOfWork.Query<Section>().AsNoTrackingWithIdentityResolution()
                              .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
@@ -962,7 +961,7 @@ namespace Academy.Server.Controllers
             courseModel.Cost = permitted ? course.Cost : null;
             courseModel.Certificate = mapper.Map<CertificateModel>(courseCertificate);
             courseModel.Purchased = coursePurchased;
-            courseModel.Learners = courseLearners;
+            courseModel.Students = courseStudents;
             courseModel.Duration = course.Sections.SelectMany(_ => _.Lessons).Select(_ => _.Duration).Sum();
             courseModel.Sections = course.Sections.Select(section =>
             {

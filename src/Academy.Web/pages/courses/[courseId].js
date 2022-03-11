@@ -3,7 +3,7 @@ import { AspectRatio } from 'react-aspect-ratio';
 import Image from 'next/image';
 import { forwardRef, useEffect, useState } from 'react';
 import Loader from '../../components/Loader';
-
+import { NextSeo } from 'next-seo';
 import TruncateMarkup from 'react-truncate-markup';
 import { BsGripVertical, BsCardImage, BsChevronDown, BsChevronRight, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsFilm, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill, BsCart, BsCart2, BsBasket2, BsCart4, BsCart3 } from 'react-icons/bs';
 import { Collapse, Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
@@ -490,7 +490,7 @@ const CoursePage = withRemount(({ remount }) => {
 
     if (loading) return (<Loader {...loading} />);
 
-    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id))); 
+    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id)));
 
     return (
         <>

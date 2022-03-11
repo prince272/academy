@@ -1,9 +1,9 @@
 ﻿using Academy.Server.Data.Entities;
 using Academy.Server.Models.Courses;
 
-namespace Academy.Server.Models.Users
+namespace Academy.Server.Models.Students
 {
-    public class UserModel
+    public class StudentModel
     {
         public int Id { get; set; }
 
@@ -18,11 +18,11 @@ namespace Academy.Server.Models.Users
         public MediaModel Avatar { get; set; }
     }
 
-    public class UserProfile : AutoMapper.Profile
+    public class StudentProfile : AutoMapper.Profile
     {
-        public UserProfile()
+        public StudentProfile()
         {
-            CreateMap<User, UserModel>();
+            CreateMap<User, StudentModel>();
         }
     }
 }

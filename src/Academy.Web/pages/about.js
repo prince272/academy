@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { NextSeo } from 'next-seo';
 import { AspectRatio } from 'react-aspect-ratio';
 import { useAppSettings } from '../utils/appSettings';
 import parsePhoneNumber from 'libphonenumber-js';
@@ -8,6 +9,7 @@ const AboutPage = () => {
 
     return (
         <>
+            <NextSeo title="About Us" />
             <div className="bg-primary">
                 <div className="container py-10 d-flex justify-content-center text-center">
                     <div>
@@ -17,7 +19,7 @@ const AboutPage = () => {
             </div>
             <div className="container py-5">
                 <div className="card shadow-sm border-0">
-                    <div className="card-body">
+                    <div className="card-body p-lg-10">
                         <div>
                             <h3>What is Academy of Ours?</h3>
                             <p>

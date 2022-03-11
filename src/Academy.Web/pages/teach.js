@@ -1,3 +1,4 @@
+import { NextSeo } from 'next-seo';
 import Link from 'next/link';
 import { SvgTeachingIllus, SvgInspirationIllus, SvgSuperThankYouIllus, SvgCareerProgressIllus, SvgSaveToBookmarksIllus, SvgTeacherIllus, SvgWalletIllus } from '../resources/images/illustrations';
 import { BsArrowRight } from 'react-icons/bs';
@@ -8,6 +9,7 @@ const TeachingPage = () => {
 
     return (
         <>
+            <NextSeo title="Become a teacher" />
             <section className="bg-white">
                 <div className="container content-space-1">
                     <div className="row align-items-center text-center">

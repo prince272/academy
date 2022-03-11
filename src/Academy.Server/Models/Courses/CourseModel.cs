@@ -1,6 +1,6 @@
 ﻿using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.StorageProvider;
-using Academy.Server.Models.Users;
+using Academy.Server.Models.Students;
 using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -10,7 +10,7 @@ namespace Academy.Server.Models.Courses
 {
     public class CourseModel
     {
-        public UserModel User { get; set; }
+        public StudentModel User { get; set; }
 
         public int Id { get; set; }
 
@@ -53,7 +53,7 @@ namespace Academy.Server.Models.Courses
         [JsonIgnore]
         public Course Course { get; set; }
 
-        public int Learners { get; set; }
+        public int Students { get; set; }
     }
 
     public class SectionModel

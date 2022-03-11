@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Academy.Server.Models.Accounts
 {
-    public class CurrentUserModel
+    public class ProfileModel
     {
         public int Id { get; set; }
 
@@ -42,7 +42,7 @@ namespace Academy.Server.Models.Accounts
         public CurrentUserProfile(IServiceProvider serviceProvider)
         {
             var storageProvider = serviceProvider.GetRequiredService<IStorageProvider>();
-            CreateMap<User, CurrentUserModel>()
+            CreateMap<User, ProfileModel>()
                 .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => src.UserRoles.Select(ur => ur.Role.Name.Camelize())));
         }
     }

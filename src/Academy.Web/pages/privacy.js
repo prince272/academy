@@ -1,8 +1,10 @@
+import { NextSeo } from 'next-seo';
 
 const PrivacyPage = () => {
 
     return (
         <>
+            <NextSeo title="Privacy Policy" />
             <div className="bg-primary">
                 <div className="container py-10 d-flex justify-content-center text-center">
                     <div>
@@ -13,7 +15,7 @@ const PrivacyPage = () => {
             </div>
             <div className="container py-5">
                 <div className="card shadow-sm border-0">
-                    <div className="card-body">
+                    <div className="card-body p-lg-10">
                         <div>
                             <p>This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You.</p>
                             <p>We use Your Personal data to provide and improve the Service. By using the Service, You agree to the collection and use of information in accordance with this Privacy Policy. This Privacy Policy has been created with the help of the <a href="https://www.privacypolicies.com/blog/privacy-policy-template/" target="_blank" rel="noreferrer">Privacy Policy Template</a>.</p>

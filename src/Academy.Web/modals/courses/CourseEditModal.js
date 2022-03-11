@@ -110,7 +110,7 @@ const CourseEditModal = withRemount((props) => {
     if (loading) return (<Loader {...loading} />);
 
     const courseCost = parseFloat(`${form.watch("cost")}`.replace(/,/g, '')) || 0;
-    const coursePrice = ((appSettings.company.courseRate * courseCost) + courseCost).toFixed(2) * 1;
+    const coursePrice = ((appSettings.course.rate * courseCost) + courseCost).toFixed(2) * 1;
     
     return (
         <>

@@ -65,7 +65,7 @@ namespace Academy.Server.Controllers
                 };
             });
             var CourseSorts = GetEnumerations<CourseSort>();
-            var Company = TypeMerger.Merge(new { Emails = new { Support = appSettings.Company.Emails.Support.Email } }, appSettings.Company);
+            var Company = TypeMerger.Merge(new { Emails = new { Support = appSettings.Company.Emails.Info.Email } }, appSettings.Company);
             var Currency = appSettings.Currency;
 
             return Result.Succeed(new
@@ -81,11 +81,11 @@ namespace Academy.Server.Controllers
         [HttpPost("/contact")]
         public async Task<IActionResult> Contact([FromBody] ContactModel form)
         {
-            await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: appSettings.Company.Emails.Support,
+            await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: appSettings.Company.Emails.Info,
                 subject: $"{form.FullName} - {form.Subject.Humanize()}",
                 body: await viewRenderer.RenderToStringAsync("Email/ContactSent", form));
 
-            await emailSender.SendAsync(account: appSettings.Company.Emails.Support, address: new EmailAddress { Email = form.Email },
+            await emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = form.Email },
                 subject: form.Subject.Humanize(),
                 body: await viewRenderer.RenderToStringAsync("Email/ContactReceived", form));
 

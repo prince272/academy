@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
+import { NextSeo } from 'next-seo';
 import { useRouter } from 'next/router';
 import { BsHeartFill, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { SvgBookLoverIllus, SvgOptionsIllus, SvgTeachingIllus, SvgCertificateIllus, SvgTeacherIllus, SvgExamsIllus, SvgQuizIllus, SvgFaqIllus } from '../resources/images/illustrations';
@@ -60,6 +61,7 @@ const HomePage = () => {
 
   return (
     <>
+      <NextSeo title="Home" />
       <div className="bg-white">
         <div className="container py-7">
           <div className="row align-items-center text-center">
