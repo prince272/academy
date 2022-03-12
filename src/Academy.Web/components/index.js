@@ -61,9 +61,10 @@ const Header = () => {
     const dialog = useDialog();
     const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher'))));
 
+    const [expanded, setExpanded] = useState(false);
     return (
 
-        <Navbar id="header" collapseOnSelect bg="white" variant="light" expand="md" className="fixed-top shadow-sm">
+        <Navbar id="header" collapseOnSelect expanded={expanded} onToggle={(toggle) => setExpanded(toggle)} bg="white" variant="light" expand="md" className="fixed-top shadow-sm">
             <div className="container">
                 <Link href="/" passHref>
                     <Navbar.Brand className="me-auto">
@@ -75,6 +76,7 @@ const Header = () => {
                     <>
                         <Nav.Item className=" me-2 order-md-3">
                             <button className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
+                                setExpanded(false);
                                 dialog.open({}, BitInfoDialog);
                             }}>
                                 <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{client.user.bits}</div></div>
@@ -146,10 +148,16 @@ const Header = () => {
                         ) : (
                             <>
                                 <Nav.Item>
-                                    <button type="button" className="btn btn-outline-secondary border-0 p-2 mb-2 mb-md-0" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign in</button>
+                                    <button type="button" className="btn btn-outline-secondary border-0 p-2 mb-2 mb-md-0" onClick={() => {
+                                        setExpanded(false);
+                                        router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: router.asPath }) })
+                                    }}>Sign in</button>
                                 </Nav.Item>
                                 <Nav.Item>
-                                    <button type="button" className="btn btn-primary border-0 p-2" onClick={() => router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl: router.asPath }) })}>Sign up</button>
+                                    <button type="button" className="btn btn-primary border-0 p-2" onClick={() => {
+                                        setExpanded(false);
+                                        router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl: router.asPath }) })
+                                    }}>Sign up</button>
                                 </Nav.Item>
                             </>
                         )}

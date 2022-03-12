@@ -535,7 +535,10 @@ const LessonViewModal = withRemount((props) => {
                                 </OverlayTrigger>
                             )}
                             <button className={`btn btn-primary  px-5 w-100 w-sm-auto`} type="button" disabled={submitting} onClick={() => moveForward()}>
-                                <div>{currentView._type == 'question' ? (currentView._submitted ? 'Continue' : 'Check answer') : ('Continue')}</div>
+                                <div className="position-relative d-flex align-items-center justify-content-center">
+                                    <div className={`${submitting ? 'invisible' : ''}`}><div>{currentView._type == 'question' ? (currentView._submitted ? 'Continue' : 'Check answer') : ('Continue')}</div></div>
+                                    {submitting && <div className="position-absolute top-50 start-50 translate-middle"><div className="spinner-border spinner-border-sm"></div></div>}
+                                </div>
                             </button>
                         </div>
                     </div>
