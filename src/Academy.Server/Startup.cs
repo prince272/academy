@@ -197,6 +197,8 @@ namespace Academy.Server
                 };
             });
 
+            services.AddResponseCaching();
+
             services.AddDistributedMemoryCache();
             services.AddSession();
 
@@ -387,6 +389,7 @@ namespace Academy.Server
 
             app.UseRouting();
             app.UseCors();
+            app.UseResponseCaching();
 
             app.UseAuthentication();
             app.UseIdentityServer();
