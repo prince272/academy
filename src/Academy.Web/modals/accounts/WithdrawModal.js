@@ -15,7 +15,10 @@ import { AspectRatio } from 'react-aspect-ratio';
 import Loader from '../../components/Loader';
 import { withAsync, withRemount } from '../../utils/hooks';
 import { BsCheckCircleFill, BsClockHistory, BsXCircleFill } from 'react-icons/bs';
-import TruncateMarkup from 'react-truncate-markup';
+import LinesEllipsis from 'react-lines-ellipsis';
+import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
+const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
+
 import { useDialog } from '../../utils/dialog';
 import _ from 'lodash';
 

@@ -15,7 +15,7 @@ import { AppSettingsProvider } from '../utils/appSettings';
 
 import { SSRProvider } from 'react-bootstrap';
 import { EventDispatcherProvider } from '../utils/eventDispatcher';
-import ErrorPage from '../components/ErrorPage';
+import ErrorView from '../components/ErrorView';
 
 export default function MyApp({ Component, pageProps, appSettings, error }) {
 
@@ -63,7 +63,7 @@ export default function MyApp({ Component, pageProps, appSettings, error }) {
             </AppSettingsProvider>
           </EventDispatcherProvider>
         </SSRProvider>
-      ) : (<ErrorPage {...{ error }} />)}
+      ) : (<ErrorView {...{ error, asPage: true }} />)}
     </>
   );
 }

@@ -166,8 +166,8 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/pay")]
-        public async Task<IActionResult> Pay(int courseId)
+        [HttpPost("/courses/{courseId}/purchase")]
+        public async Task<IActionResult> Purchase(int courseId)
         {
             var course = await unitOfWork.Query<Course>()
                 .FirstOrDefaultAsync(_ => _.Id == courseId);
@@ -179,7 +179,7 @@ namespace Academy.Server.Controllers
             payment.Reason = PaymentReason.Course;
             payment.Status = PaymentStatus.Pending;
             payment.Type = PaymentType.Payin;
-            payment.Title = course.Title;
+            payment.Title = $"Purchase {course.Title}";
             payment.ReferenceId = course.Code;
             payment.Amount = course.Price;
             payment.IPAddress = Request.GetIPAddress();
@@ -201,13 +201,17 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/progress")]
-        public async Task<IActionResult> Progresss(int courseId, [FromBody] CourseProgressModel form)
+        [HttpPost("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/progress")]
+        public async Task<IActionResult> Progresss(int courseId, int sectionId, int lessonId, [FromBody] QuestionProgressModel form)
         {
             var user = await HttpContext.Request.GetCurrentUserAsync();
-            var questionProgress = user.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Question && _.Id == form.QuestionId);
+            var lessonProgress = user.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Lesson && _.Id == lessonId);
+            if (lessonProgress == null) user.Progresses.Add(lessonProgress = new CourseProgress() { CourseId = courseId, Type = CourseProgressType.Lesson, Id = lessonId, Started = DateTimeOffset.UtcNow });
+            user.Progresses.Move(user.Progresses.IndexOf(lessonProgress), 0);
 
-            if (form.QuestionId != null)
+            var questionProgress = user.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Question && _.Id == form.Id);
+
+            if (form.Id != null)
             {
                 if (form.Skip)
                 {
@@ -223,52 +227,57 @@ namespace Academy.Server.Controllers
                     }
                 }
 
-                if (questionProgress == null) user.Progresses.Add(questionProgress = new CourseProgress() { CourseId = courseId, Type = CourseProgressType.Question, Id = form.QuestionId.Value, Started = DateTimeOffset.UtcNow });
+                if (questionProgress == null) user.Progresses.Add(questionProgress = new CourseProgress() { CourseId = courseId, Type = CourseProgressType.Question, Id = form.Id.Value, Started = DateTimeOffset.UtcNow });
+
                 questionProgress.Choices.Add((form.Skip, form.Answers));
                 user.Progresses.Move(user.Progresses.IndexOf(questionProgress), 0);
             }
 
-            var lessonProgress = user.Progresses.FirstOrDefault(_ => _.Type == CourseProgressType.Lesson && _.Id == form.LessonId);
-            if (lessonProgress == null)
-            {
-                user.Progresses.Add(lessonProgress = new CourseProgress() { CourseId = courseId, Type = CourseProgressType.Lesson, Id = form.LessonId, Started = DateTimeOffset.UtcNow });
-                user.Progresses.Move(user.Progresses.IndexOf(lessonProgress), 0);
-            }
-
             var courseModel = await GetCourseModel(courseId);
+            if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
+
             if (courseModel.Price > 0 && !courseModel.Purchased)
             {
                 return Result.Failed(StatusCodes.Status400BadRequest, "Payment is required to take this course.");
             }
 
-            var questionModel = courseModel.Sections.SelectMany(_ => _.Lessons).SelectMany(_ => _.Questions).FirstOrDefault(_ => _.Id == form.QuestionId);
-            if (questionModel != null && questionModel.Status == CourseStatus.Completed)
+            var sectionModel = courseModel.Sections.FirstOrDefault(_ => _.Id == sectionId);
+            if (sectionModel == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var lessonModel = sectionModel.Lessons.FirstOrDefault(_ => _.Id == lessonId);
+            if (lessonModel == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            if (lessonModel.Status == CourseStatus.Completed && lessonProgress.Completed == null)
             {
-                if (questionProgress.Completed == null)
+                user.Bits += appSettings.Course.BitRules.First(_ => _.Type == CourseBitRuleType.CompleteLesson).Value;
+                lessonProgress.Completed = DateTimeOffset.UtcNow;
+            }
+
+            if (form.Id != null)
+            {
+                var questionModel = lessonModel.Questions.FirstOrDefault(_ => _.Id == form.Id);
+                if (questionModel == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+                if (questionModel.Status == CourseStatus.Completed && questionProgress.Completed == null)
                 {
-                    if (!questionProgress.Choices.Any(_ => _.Skip))
+                    if (questionProgress.Completed == null)
                     {
-                        user.Bits += (questionModel.Choices.FirstOrDefault() ?
-                            appSettings.Course.BitRules.First(_ => _.Type == CourseBitRuleType.AnswerCorrectly).Value :
-                            appSettings.Course.BitRules.First(_ => _.Type == CourseBitRuleType.AnswerWrongly).Value);
+                        user.Bits += (questionModel.Choices.First() ?
+                                                   appSettings.Course.BitRules.First(_ => _.Type == CourseBitRuleType.AnswerCorrectly).Value :
+                                                   appSettings.Course.BitRules.First(_ => _.Type == CourseBitRuleType.AnswerWrongly).Value);
+
+                        questionProgress.Completed = DateTimeOffset.UtcNow;
                     }
-
-                    questionProgress.Completed = DateTimeOffset.UtcNow;
                 }
-            }
 
-            var lessonModel = courseModel.Sections.SelectMany(_ => _.Lessons).FirstOrDefault(_ => _.Id == form.LessonId);
-            if (lessonModel.Status == CourseStatus.Completed)
+                await unitOfWork.UpdateAsync(user);
+                return Result.Succeed(new { user.Bits, Correct = questionModel.Choices.Last(), questionModel.Answers });
+            }
+            else
             {
-                if (lessonProgress.Completed == null)
-                {
-                    user.Bits += appSettings.Course.BitRules.First(_ => _.Type == CourseBitRuleType.CompleteLesson).Value;
-                    lessonProgress.Completed = DateTimeOffset.UtcNow;
-                }
+                await unitOfWork.UpdateAsync(user);
+                return Result.Succeed(new { user.Bits, });
             }
-
-            await unitOfWork.UpdateAsync(user);
-            return Result.Succeed();
         }
 
 
@@ -1013,7 +1022,6 @@ namespace Academy.Server.Controllers
                         });
                         started = false;
                     }
-
 
                     lessonModel.Document = (permitted || (lessonModel.Status != CourseStatus.Locked)) ? lessonModel.Document : null;
                     lessonModel.Media = (permitted || (lessonModel.Status != CourseStatus.Locked)) ? lessonModel.Media : null;

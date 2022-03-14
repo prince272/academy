@@ -197,7 +197,9 @@ const useClientProvider = () => {
             const currentUser = (await httpClient.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/accounts/profile`, { throwIfError: true })).data.data;
             await setUser(currentUser);
         },
-
+        updateUser: (state) => {
+            setUser(_user => ({ ..._user, ...state }));
+        },
         signin: async (state) => {
             let userManager = null
             try { userManager = await loadUserManager(); }

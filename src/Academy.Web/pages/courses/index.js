@@ -9,7 +9,6 @@ import { useAlternativePrevious, withRemount } from '../../utils/hooks';
 import Loader from '../../components/Loader';
 import { AspectRatio } from 'react-aspect-ratio';
 import { BsCardImage, BsThreeDots, BsPlus, BsBookHalf, BsCaretDownFill, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
-import TruncateMarkup from 'react-truncate-markup';
 import { Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import { ModalPathPrefix, useModal } from '../../modals';
 import { CourseItem } from '../../components/courses';

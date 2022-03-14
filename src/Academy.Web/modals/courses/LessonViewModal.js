@@ -15,7 +15,10 @@ import { pascalCase } from 'change-case';
 import Loader from '../../components/Loader';
 
 import { BsArrowLeft, BsCheckCircleFill, BsFilm, BsGripVertical, BsJournalRichtext, BsLightbulb, BsLightbulbFill, BsMusicNoteBeamed, BsXCircle, BsXCircleFill, BsXLg } from 'react-icons/bs';
-import TruncateMarkup from 'react-truncate-markup';
+import LinesEllipsis from 'react-lines-ellipsis';
+import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
+const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
+
 import { SvgBitCube, SvgBitCubes } from '../../resources/images/icons';
 
 import Plyr from 'plyr-react';
@@ -33,7 +36,7 @@ const LessonView = (props) => {
     const { lesson, setCurrentView } = props;
 
     useEffect(() => {
-        const newLesson = { ...lesson, _submitted: false, _data: { lessonId: lesson.id } };
+        const newLesson = { ...lesson, _submitted: false, _data: {} };
         setCurrentView(newLesson);
     }, []);
 
@@ -151,8 +154,7 @@ const QuestionView = (props) => {
             ...question, answers,
             _submitted: false,
             _data: {
-                lessonId: lesson.id,
-                questionId: question.id,
+                id: question.id,
                 answers: question.type == 'reorder' ? answers.map(answer => answer.id) : []
             }
         };
@@ -174,8 +176,7 @@ const QuestionView = (props) => {
                 ...question, answers,
                 _submitted: false,
                 _data: {
-                    lessonId: lesson.id,
-                    questionId: question.id,
+                    id: question.id,
                     answers: answers.filter(answer => answer.checked).map(answer => answer.id)
                 }
             };
@@ -206,8 +207,7 @@ const QuestionView = (props) => {
 
         const newQuestion = {
             ...question, answers, _submitted: false, _data: {
-                lessonId: lesson.id,
-                questionId: question.id,
+                id: question.id,
                 answers: answers.map(answer => answer.id)
             }
         };
@@ -303,7 +303,6 @@ const LessonViewModal = withRemount((props) => {
     const load = async () => {
         setLoading({});
 
-        await sleep(1000);
         let result = await client.get(`/courses/${courseId}`);
 
         if (result.error) {
@@ -316,7 +315,7 @@ const LessonViewModal = withRemount((props) => {
 
         if (course.price > 0 && !course.purchased) {
 
-            result = await client.post(`/courses/${courseId}/pay`);
+            result = await client.post(`/courses/${courseId}/purchase`);
 
             if (result.error) {
                 const error = result.error;
@@ -357,6 +356,11 @@ const LessonViewModal = withRemount((props) => {
 
     useEffect(() => {
         load();
+
+        return async () => {
+            course = await setCourse((await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
+            eventDispatcher.emit(`editCourse`, course);
+        };
     }, []);
 
     const moveBackward = () => {
@@ -373,10 +377,10 @@ const LessonViewModal = withRemount((props) => {
 
     const moveForward = async (skip) => {
 
-        if (course.price > 0 && !course.purchased) {
-            setSubmitting(true);
+        if (currentView._type == 'lesson') {
 
-            let result = await client.post(`/courses/${courseId}/pay`);
+            setSubmitting(true);
+            let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/progress`, currentView._data);
 
             if (result.error) {
                 const error = result.error;
@@ -385,32 +389,13 @@ const LessonViewModal = withRemount((props) => {
                 return;
             }
 
-            const paymentId = result.data.paymentId;
-            router.replace({ pathname: `${ModalPathPrefix}/cashin/${paymentId}`, query: { returnUrl: route.url } });
-            return;
-        }
-
-        if (currentView._type != 'question') {
-
-            setSubmitting(true);
-            let result = await client.post(`/courses/${courseId}/progress`, currentView._data);
-
-            if (result.error) {
-                const error = result.error;
-                toast.error(error.message, { id: componentId });
-                setSubmitting(false);
-                return;
-            }
-
-            course = await setCourse((await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
-            eventDispatcher.emit(`editCourse`, course);
-            await client.reloadUser();
+            client.updateUser({ bits: result.data.bits });
             setSubmitting(false);
         }
         else if (currentView._type == 'question' && (!currentView._submitted || (skip && !currentView._correctAnswer))) {
 
             setSubmitting(true);
-            let result = await client.post(`/courses/${courseId}/progress`, { ...currentView._data, skip });
+            let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/progress`, { ...currentView._data, skip });
 
             if (result.error) {
                 const error = result.error;
@@ -419,17 +404,10 @@ const LessonViewModal = withRemount((props) => {
                 return;
             }
 
-            course = await setCourse((await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
-            eventDispatcher.emit(`editCourse`, course);
-            await client.reloadUser();
+            client.updateUser({ bits: result.data.bits });
             setSubmitting(false);
 
-            const question = course.sections
-                .flatMap(section => section.lessons)
-                .flatMap(lesson => lesson.questions)
-                .find(_question => _question.id == currentView.id);
-
-            const _correctAnswer = question.choices.slice(-1)[0];
+            const _correctAnswer = result.data.correct;
 
             let _alert = _correctAnswer ?
                 { type: 'success', message: 'Correct answer, Continue!' } :
@@ -442,8 +420,8 @@ const LessonViewModal = withRemount((props) => {
             if (currentView.type == 'singleAnswer' || currentView.type == 'multipleAnswer') {
                 answers = currentView.answers.map(answer => ({
                     ...answer,
-                    [skip ? 'checked' : undefined]: question.answers.find(_answer => _answer.id == answer.id).checked,
-                    correct: question.answers.find(_answer => _answer.id == answer.id).checked,
+                    [skip ? 'checked' : undefined]: result.data.answers.find(_answer => _answer.id == answer.id).checked,
+                    correct: result.data.answers.find(_answer => _answer.id == answer.id).checked,
                 }));
             }
             else if (currentView.type == 'reorder') {
@@ -452,7 +430,7 @@ const LessonViewModal = withRemount((props) => {
 
                 if (skip) {
                     answers = currentView.answers.sort(function (a, b) {
-                        return question.answers.findIndex(answer => answer.id == a.id) - question.answers.findIndex(answer => answer.id == b.id);
+                        return result.data.answers.findIndex(answer => answer.id == a.id) - result.data.answers.findIndex(answer => answer.id == b.id);
                     });
                 }
             }
@@ -493,7 +471,15 @@ const LessonViewModal = withRemount((props) => {
                             </OverlayTrigger>
 
                             <div className="mb-0 mx-2">
-                                <div className="h6 text-center mb-0"><TruncateMarkup lines={1}><div>{lesson.title}</div></TruncateMarkup></div>
+                                <div className="h6 text-center mb-0">
+                                    <ResponsiveEllipsis
+                                        text={lesson.title || ''}
+                                        maxLine='1'
+                                        ellipsis='...'
+                                        trimRight
+                                        basedOn='letters'
+                                    />
+                                </div>
                                 <div className="pt-1 small">
 
                                     <div className="hstack gap-2 justify-content-center">

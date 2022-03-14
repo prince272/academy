@@ -1,5 +1,6 @@
 ﻿using Academy.Server.Data;
 using Academy.Server.Data.Entities;
+using Academy.Server.Events;
 using Academy.Server.Utilities;
 using Humanizer;
 using MediatR;
@@ -82,7 +83,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
                     {
                         payment.Status = PaymentStatus.Complete;
                         await unitOfWork.UpdateAsync(payment);
-                        await mediator.Publish(new PaymentNotification(payment), cancellationToken);
+                        await mediator.Publish(new PaymentStatusNotification(payment), cancellationToken);
                         return;
                     }
                 }
@@ -156,7 +157,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
                 {
                     payment.Status = PaymentStatus.Failed;
                     await unitOfWork.UpdateAsync(payment);
-                    await mediator.Publish(new PaymentNotification(payment), cancellationToken);
+                    await mediator.Publish(new PaymentStatusNotification(payment), cancellationToken);
                     return;
                 }
 
@@ -170,7 +171,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
                     payment.Status = PaymentStatus.Complete;
                     payment.Completed = DateTimeOffset.UtcNow;
                     await unitOfWork.UpdateAsync(payment);
-                    await mediator.Publish(new PaymentNotification(payment), cancellationToken);
+                    await mediator.Publish(new PaymentStatusNotification(payment), cancellationToken);
                 }
             }
             else if (payment.Status == PaymentStatus.Pending)
@@ -179,7 +180,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
                 {
                     payment.Status = PaymentStatus.Failed;
                     await unitOfWork.UpdateAsync(payment);
-                    await mediator.Publish(new PaymentNotification(payment), cancellationToken);
+                    await mediator.Publish(new PaymentStatusNotification(payment), cancellationToken);
                     return;
                 }
             }

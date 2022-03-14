@@ -7,7 +7,12 @@ import { withRemount } from '../utils/hooks';
 import Loader from '../components/Loader';
 import { AspectRatio } from 'react-aspect-ratio';
 import { BsCardImage, BsThreeDots, BsPlus, BsBookHalf, BsClockFill } from 'react-icons/bs';
-import TruncateMarkup from 'react-truncate-markup';
+
+
+import LinesEllipsis from 'react-lines-ellipsis';
+import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
+const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
+
 import { Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import { ModalPathPrefix, useModal } from '../modals';
 import { useAppSettings } from '../utils/appSettings';
@@ -22,7 +27,7 @@ const CourseItem = ({ course }) => {
     const courseId = course.id;
     const appSettings = useAppSettings();
     const client = useClient();
-    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id))); 
+    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id)));
 
     return (
         <div className="card shadow-sm">
@@ -36,7 +41,13 @@ const CourseItem = ({ course }) => {
             <div className="card-body p-2 position-relative">
                 <div className="d-inline-block badge text-dark bg-soft-primary mb-2">{appSettings.course.subjects.find(subject => course.subject == subject.value)?.name}</div>
                 <div className="fs-6 mb-2" style={{ height: "48px" }}>
-                    <TruncateMarkup lines={2}><div>{course.title}</div></TruncateMarkup>
+                    <ResponsiveEllipsis
+                        text={course.title || ''}
+                        maxLine='2'
+                        ellipsis='...'
+                        trimRight
+                        basedOn='letters'
+                    />
                 </div>
                 <div className="hstack gap-3 justify-content-between">
                     <div className="text-primary">{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>

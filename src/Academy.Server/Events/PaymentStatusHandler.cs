@@ -11,7 +11,17 @@ using System.Threading.Tasks;
 
 namespace Academy.Server.Events
 {
-    public class PaymentStatusHandler : INotificationHandler<PaymentNotification>
+    public class PaymentStatusNotification : INotification
+    {
+        public PaymentStatusNotification(Payment payment)
+        {
+            Payment = payment;
+        }
+
+        public Payment Payment { get; set; }
+    }
+
+    public class PaymentStatusHandler : INotificationHandler<PaymentStatusNotification>
     {
         private readonly IUnitOfWork unitOfWork;
 
@@ -20,7 +30,7 @@ namespace Academy.Server.Events
             unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
         }
 
-        public async Task Handle(PaymentNotification notification, CancellationToken cancellationToken)
+        public async Task Handle(PaymentStatusNotification notification, CancellationToken cancellationToken)
         {
             var payment = notification.Payment;
 

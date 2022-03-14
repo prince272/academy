@@ -15,7 +15,11 @@ import { AspectRatio } from 'react-aspect-ratio';
 import Loader from '../components/Loader';
 import { withAsync, withRemount } from '../utils/hooks';
 import { BsCheckCircleFill, BsClockHistory, BsXCircleFill } from 'react-icons/bs';
-import TruncateMarkup from 'react-truncate-markup';
+
+import LinesEllipsis from 'react-lines-ellipsis';
+import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
+const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
+
 import _ from 'lodash';
 
 const CheckoutModal = withRemount((props) => {
@@ -107,7 +111,15 @@ const CheckoutModal = withRemount((props) => {
             <Modal.Header bsPrefix="modal-close" closeButton></Modal.Header>
             <Modal.Body className="p-0" as={Form} onSubmit={preventDefault(() => submit())}>
                 <div className="mt-3 px-4">
-                    <TruncateMarkup lines={2}><h4>{payment.status == 'pending' ? payment.title : <>Payment {noCase(payment.status)}</>}</h4></TruncateMarkup>
+                    <div className="h4">
+                        <ResponsiveEllipsis
+                            text={payment.status == 'pending' ? (payment.title || '') : `Payment ${noCase(payment.status)}`}
+                            maxLine='1'
+                            ellipsis='...'
+                            trimRight
+                            basedOn='letters'
+                        />
+                    </div>
                 </div>
                 {payment.status == 'pending' && (
                     <div>

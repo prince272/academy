@@ -1,15 +1,11 @@
+import ErrorView from "../components/ErrorView";
+
 const ErrorPage = ({ statusCode }) => {
-    return (
-        <p>
-            {statusCode
-                ? `An error ${statusCode} occurred on server`
-                : 'An error occurred on client'}
-        </p>
-    )
+    return (<ErrorView error={{ status: statusCode || 404 }} />)
 };
 
 ErrorPage.getInitialProps = ({ res, err }) => {
-    const statusCode = res ? res.statusCode : err ? err.statusCode : 404;
+    const statusCode = res ? res.statusCode : err.statusCode;
     return { statusCode }
 };
 

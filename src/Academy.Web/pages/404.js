@@ -1,6 +1,7 @@
+import ErrorPage from "./_error"
 
 const NotFoundPage = () => {
-    return (<>Page not found.</>);
+    return <ErrorPage error={{ status: 404, message: "The page you're looking for does not exist." }} />;
 };
 
 export default NotFoundPage;

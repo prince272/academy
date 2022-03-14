@@ -4,7 +4,11 @@ import Image from 'next/image';
 import { forwardRef, useEffect, useState } from 'react';
 import Loader from '../../components/Loader';
 import { NextSeo } from 'next-seo';
-import TruncateMarkup from 'react-truncate-markup';
+
+import LinesEllipsis from 'react-lines-ellipsis';
+import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
+const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
+
 import { BsGripVertical, BsCardImage, BsChevronDown, BsChevronRight, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsFilm, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill, BsCart, BsCart2, BsBasket2, BsCart4, BsCart3 } from 'react-icons/bs';
 import { Collapse, Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import Link from 'next/link';
@@ -50,7 +54,13 @@ const QuestionItem = ({ course, section, lesson, question, permitted }) => {
 
                             <div className="d-flex align-items-center flex-grow-1 cursor-default">
                                 <div className="flex-grow-1">
-                                    <TruncateMarkup lines={1}><div>{`${question.index + 1}. ${stripHtml(question.text)}`}</div></TruncateMarkup>
+                                    <ResponsiveEllipsis
+                                        text={`${question.index + 1}. ${stripHtml(question.text)}`}
+                                        maxLine="1"
+                                        ellipsis="..."
+                                        trimRight
+                                        basedOn="letters"
+                                    />
                                 </div>
                             </div>
                             <div className="px-2 py-1 d-flex align-items-center hstack gap-2" style={{ minHeight: "37px" }}>
@@ -139,7 +149,17 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                             </div>
                             <div className="d-flex align-items-center flex-grow-1 cursor-default" onClick={() => { if (!disabled) router.push(`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}`); }}>
                                 <div className="flex-grow-1">
-                                    <div className="mb-1"><TruncateMarkup lines={1}><div className="fw-bold">{lesson.title}</div></TruncateMarkup></div>
+                                    <div className="mb-1">
+                                        <div className="fw-bold">
+                                            <ResponsiveEllipsis
+                                                text={lesson.title || ''}
+                                                maxLine="1"
+                                                ellipsis="..."
+                                                trimRight
+                                                basedOn="letters"
+                                            />
+                                        </div>
+                                    </div>
                                     <div className="small text-body d-flex align-items-center">
                                         {
                                             [
@@ -249,7 +269,13 @@ const SectionItem = ({ course, section, toggler, permitted }) => {
 
                             <div className="d-flex align-items-center flex-grow-1 cursor-default" onClick={() => toggler.toggle(`section_${section.id}`)}>
                                 <div className="flex-grow-1">
-                                    <TruncateMarkup lines={1}><div className="mb-0">{section.title}</div></TruncateMarkup>
+                                    <ResponsiveEllipsis
+                                        text={section.title || ''}
+                                        maxLine="1"
+                                        ellipsis="..."
+                                        trimRight
+                                        basedOn="letters"
+                                    />
                                 </div>
                             </div>
 
@@ -508,17 +534,33 @@ const CoursePage = withRemount(({ remount }) => {
                                             (<div className="rounded svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center"><BsCardImage /></div>)}
                                     </AspectRatio>
                                 </div>
-                                <div className="ms-3 text-white">
+                                <div className="flex-grow-1 ms-3 text-white">
                                     <div className="hstack gap-2 flex-wrap mb-2"><div className="badge text-dark bg-white">{appSettings.course.subjects.find(subject => course.subject == subject.value)?.name}</div>{course.purchased && <div className="badge text-white bg-primary">Purchased</div>}</div>
                                     <div className="d-flex align-items-center mb-1">
-                                        <TruncateMarkup lines={1}><div className="h5 text-white mb-0">{course.title}</div></TruncateMarkup>
+                                        <div className="h5 text-white mb-0">
+                                            <ResponsiveEllipsis
+                                                text={course.title || ''}
+                                                maxLine="1"
+                                                ellipsis="..."
+                                                trimRight
+                                                basedOn="letters"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="hstack">
                                         <div className="text-primary">{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
                                         <span className="mx-2">·</span>
                                         <div><span><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
                                     </div>
-                                    <div className="mb-1"><TruncateMarkup lines={2}><div>{course.description}</div></TruncateMarkup></div>
+                                    <div className="mb-1">
+                                        <ResponsiveEllipsis
+                                            text={course.description || ''}
+                                            maxLine="3"
+                                            ellipsis="..."
+                                            trimRight
+                                            basedOn="letters"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
