@@ -85,11 +85,11 @@ export const useTimeout = (callback, timer) => {
 export const useInterval = (callback, timer) => {
     const intervalIdRef = React.useRef()
 
-    useEffect(() => {
+    React.useEffect(() => {
         intervalIdRef.current = callback;
     }, [callback])
 
-    useEffect(() => {
+    React.useEffect(() => {
         const fn = () => {
             intervalIdRef.current()
         }
@@ -144,9 +144,12 @@ export const setRefs = (...refs) => (element) => {
     });
 };
 
-export function withRemount(Component) {
+export function withRemount(Component, delay = 0) {
     const WrapperComponent = (props) => {
         const [key, setKey] = React.useState(1);
+
+        useInterval(() => { if (delay > 0) setKey(key + 1); }, delay, true);
+
         return (<Component key={key} {...props} remount={() => setKey(key + 1)} />);
     };
     return WrapperComponent;
@@ -187,9 +190,9 @@ export function withAsync([state, setState]) {
 export function useMounted() {
     const mounted = React.useMemo(() => ({ current: true }), []);
     React.useEffect(() => {
-      return () => { mounted.current = false}
+        return () => { mounted.current = false }
     }, [mounted]);
     return mounted;
-  }
+}
 
 export { default as useConfetti } from './useConfetti';
