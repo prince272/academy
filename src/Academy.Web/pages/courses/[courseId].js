@@ -537,7 +537,7 @@ const CoursePage = withRemount(({ remount }) => {
                                 <div className="flex-grow-1 ms-3 text-white">
                                     <div className="hstack gap-2 flex-wrap mb-2"><div className="badge text-dark bg-white">{appSettings.course.subjects.find(subject => course.subject == subject.value)?.name}</div>{course.purchased && <div className="badge text-white bg-primary">Purchased</div>}</div>
                                     <div className="d-flex align-items-center mb-1">
-                                        <div className="h5 text-white mb-0">
+                                        <div className="h5 text-white mb-0 w-100">
                                             <ResponsiveEllipsis
                                                 text={course.title || ''}
                                                 maxLine="1"
