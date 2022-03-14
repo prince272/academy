@@ -7,6 +7,10 @@ import { useSessionState, withAsync } from './hooks';
 import { useEventDispatcher } from './eventDispatcher';
 import axios from 'axios';
 import * as https from 'https';
+import { setupCache, buildMemoryStorage } from 'axios-cache-interceptor';
+
+const http = axios.create();
+setupCache(http, { storage: buildMemoryStorage() });
 
 const createHttpClient = (defaultConfig) => {
 
@@ -18,6 +22,7 @@ const createHttpClient = (defaultConfig) => {
             return queryString.stringify(params)
         },
         withCredentials: true,
+        cache: false,
     }, defaultConfig);
 
     if (serverSide) defaultConfig.httpsAgent = new https.Agent({ rejectUnauthorized: false });
@@ -26,7 +31,6 @@ const createHttpClient = (defaultConfig) => {
         config = Object.assign({}, defaultConfig, config);
         const { throwIfError, ...requestConfig } = config;
 
-        const http = axios.create();
         if (throwIfError) {
             return (await http.request(requestConfig));
         }

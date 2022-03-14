@@ -67,7 +67,7 @@ const Header = () => {
         <Navbar id="header" collapseOnSelect expanded={expanded} onToggle={(toggle) => setExpanded(toggle)} bg="white" variant="light" expand="md" className="fixed-top shadow-sm">
             <div className="container">
                 <Link href="/" passHref>
-                    <Navbar.Brand className="me-auto">
+                    <Navbar.Brand className="me-auto" onClick={() => { setExpanded(false); }}>
                         <div className="svg-icon"><SvgAppWordmark style={{ width: "auto", height: "2.5rem" }} /></div>
                     </Navbar.Brand>
                 </Link>
