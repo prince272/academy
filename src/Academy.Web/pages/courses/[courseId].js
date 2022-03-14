@@ -5,9 +5,9 @@ import { forwardRef, useEffect, useState } from 'react';
 import Loader from '../../components/Loader';
 import { NextSeo } from 'next-seo';
 
-import LinesEllipsis from 'react-lines-ellipsis';
+import LinesEllipsisLoose from 'react-lines-ellipsis/lib/loose'
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
-const ResponsiveEllipsis = withRemount(responsiveHOC()(LinesEllipsis), 1000);
+const ResponsiveEllipsis = responsiveHOC()(LinesEllipsisLoose);
 
 import { BsGripVertical, BsCardImage, BsChevronDown, BsChevronRight, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsFilm, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill, BsCart, BsCart2, BsBasket2, BsCart4, BsCart3 } from 'react-icons/bs';
 import { Collapse, Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
@@ -54,7 +54,7 @@ const QuestionItem = ({ course, section, lesson, question, permitted }) => {
 
                             <div className="d-flex align-items-center flex-grow-1 cursor-default">
                                 <div className="flex-grow-1">
-                                    <ResponsiveEllipsis
+                                    <ResponsiveEllipsis className="overflow-hidden"
                                         text={`${question.index + 1}. ${stripHtml(question.text)}`}
                                         maxLine="1"
                                         ellipsis="..."
@@ -151,12 +151,13 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                 <div className="flex-grow-1">
                                     <div className="mb-1">
                                         <div className="fw-bold">
-                                            <ResponsiveEllipsis
+                                            <ResponsiveEllipsis className="overflow-hidden"
                                                 text={lesson.title || ''}
                                                 maxLine="1"
                                                 ellipsis="..."
                                                 trimRight
                                                 basedOn="letters"
+                                                lineHeight="24"
                                             />
                                         </div>
                                     </div>
@@ -207,7 +208,7 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                 </div>
                             </div>
                         </div>
-                        <Collapse in={toggler.in(`lesson_${lesson.id}`)}>
+                        <Collapse in={toggler.in(`lesson_${lesson.id}`)} mountOnEnter={true} unmountOnExit={true}>
                             <div>
                                 <QuestionList {...{ course, section, lesson, permitted }} />
                             </div>
@@ -269,7 +270,7 @@ const SectionItem = ({ course, section, toggler, permitted }) => {
 
                             <div className="d-flex align-items-center flex-grow-1 cursor-default" onClick={() => toggler.toggle(`section_${section.id}`)}>
                                 <div className="flex-grow-1">
-                                    <ResponsiveEllipsis
+                                    <ResponsiveEllipsis className="overflow-hidden"
                                         text={section.title || ''}
                                         maxLine="1"
                                         ellipsis="..."
@@ -309,7 +310,7 @@ const SectionItem = ({ course, section, toggler, permitted }) => {
                                 </div>
                             </div>
                         </div>
-                        <Collapse in={toggler.in(`section_${section.id}`)}>
+                        <Collapse in={toggler.in(`section_${section.id}`)} mountOnEnter={true} unmountOnExit={true}>
                             <div>
                                 <LessonList {...{ course, section, toggler, permitted }} />
                             </div>
@@ -549,7 +550,7 @@ const CoursePage = withRemount(({ remount }) => {
                                     <div className="hstack gap-2 flex-wrap mb-2"><div className="badge text-dark bg-white">{appSettings.course.subjects.find(subject => course.subject == subject.value)?.name}</div>{course.purchased && <div className="badge text-white bg-primary">Purchased</div>}</div>
                                     <div className="d-flex align-items-center mb-1">
                                         <div className="h5 text-white mb-0 w-100">
-                                            <ResponsiveEllipsis
+                                            <ResponsiveEllipsis className="overflow-hidden"
                                                 text={course.title || ''}
                                                 maxLine="1"
                                                 ellipsis="..."
@@ -564,7 +565,7 @@ const CoursePage = withRemount(({ remount }) => {
                                         <div><span><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
                                     </div>
                                     <div className="mb-1">
-                                        <ResponsiveEllipsis
+                                        <ResponsiveEllipsis className="overflow-hidden"
                                             text={course.description || ''}
                                             maxLine="3"
                                             ellipsis="..."

@@ -9,9 +9,9 @@ import { AspectRatio } from 'react-aspect-ratio';
 import { BsCardImage, BsThreeDots, BsPlus, BsBookHalf, BsClockFill } from 'react-icons/bs';
 
 
-import LinesEllipsis from 'react-lines-ellipsis';
+import LinesEllipsisLoose from 'react-lines-ellipsis/lib/loose'
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
-const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
+const ResponsiveEllipsis = responsiveHOC()(LinesEllipsisLoose);
 
 import { Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import { ModalPathPrefix, useModal } from '../modals';
@@ -41,7 +41,7 @@ const CourseItem = ({ course }) => {
             <div className="card-body p-2 position-relative">
                 <div className="d-inline-block badge text-dark bg-soft-primary mb-2">{appSettings.course.subjects.find(subject => course.subject == subject.value)?.name}</div>
                 <div className="fs-6 mb-2" style={{ height: "48px" }}>
-                    <ResponsiveEllipsis
+                    <ResponsiveEllipsis className="overflow-hidden"
                         text={course.title || ''}
                         maxLine='2'
                         ellipsis='...'

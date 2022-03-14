@@ -144,12 +144,9 @@ export const setRefs = (...refs) => (element) => {
     });
 };
 
-export function withRemount(Component, delay = 0) {
+export function withRemount(Component) {
     const WrapperComponent = (props) => {
         const [key, setKey] = React.useState(1);
-
-        useInterval(() => { if (delay > 0) setKey(key + 1); }, delay, true);
-
         return (<Component key={key} {...props} remount={() => setKey(key + 1)} />);
     };
     return WrapperComponent;

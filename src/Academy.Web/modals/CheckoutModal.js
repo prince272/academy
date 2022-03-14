@@ -16,9 +16,9 @@ import Loader from '../components/Loader';
 import { withAsync, withRemount } from '../utils/hooks';
 import { BsCheckCircleFill, BsClockHistory, BsXCircleFill } from 'react-icons/bs';
 
-import LinesEllipsis from 'react-lines-ellipsis';
+import LinesEllipsisLoose from 'react-lines-ellipsis/lib/loose'
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
-const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
+const ResponsiveEllipsis = responsiveHOC()(LinesEllipsisLoose);
 
 import _ from 'lodash';
 
@@ -112,7 +112,7 @@ const CheckoutModal = withRemount((props) => {
             <Modal.Body className="p-0" as={Form} onSubmit={preventDefault(() => submit())}>
                 <div className="mt-3 px-4">
                     <div className="h4">
-                        <ResponsiveEllipsis
+                        <ResponsiveEllipsis className="overflow-hidden"
                             text={payment.status == 'pending' ? (payment.title || '') : `Payment ${noCase(payment.status)}`}
                             maxLine='1'
                             ellipsis='...'

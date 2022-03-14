@@ -15,9 +15,10 @@ import { pascalCase } from 'change-case';
 import Loader from '../../components/Loader';
 
 import { BsArrowLeft, BsCheckCircleFill, BsFilm, BsGripVertical, BsJournalRichtext, BsLightbulb, BsLightbulbFill, BsMusicNoteBeamed, BsXCircle, BsXCircleFill, BsXLg } from 'react-icons/bs';
-import LinesEllipsis from 'react-lines-ellipsis';
+
+import LinesEllipsisLoose from 'react-lines-ellipsis/lib/loose'
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
-const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
+const ResponsiveEllipsis = responsiveHOC()(LinesEllipsisLoose);
 
 import { SvgBitCube, SvgBitCubes } from '../../resources/images/icons';
 
@@ -472,7 +473,7 @@ const LessonViewModal = withRemount((props) => {
                             </OverlayTrigger>
 
                             <div className="h6 text-center mb-0 mx-2 w-100">
-                                <ResponsiveEllipsis
+                                <ResponsiveEllipsis className="overflow-hidden"
                                     text={lesson.title || ''}
                                     maxLine='1'
                                     ellipsis='...'
