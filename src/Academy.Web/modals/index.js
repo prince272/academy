@@ -47,7 +47,8 @@ const useModalProvider = () => {
             }).filter(route => route.match != null)[0];
 
             if (currentRoute != null) {
-
+                modal.close();
+                
                 // Todo: navigations with state parameter would have it's value as null since redirecting
                 // to sign in does not carry the state along.
                 if (currentRoute.authenticate && !client.user) {

@@ -66,7 +66,6 @@ const CourseItem = ({ course }) => {
                                         <Link href={`/courses/${courseId}`} passHref><Dropdown.Item>View</Dropdown.Item></Link>
                                         <Link href={`${ModalPathPrefix}/courses/${courseId}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
                                         <Link href={`${ModalPathPrefix}/courses/${courseId}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
-
                                     </Dropdown.Menu>
                                 </Dropdown>
                             )}

@@ -327,12 +327,6 @@ const LessonViewModal = withRemount((props) => {
             router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { returnUrl: route.url, payment: JSON.stringify(payment) } });
             return;
         }
-        else {
-            updateModalProps({
-                contentClassName: 'h-100',
-                fullscreen: true
-            });
-        }
 
         result = await client.get(`/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`);
 
@@ -358,8 +352,7 @@ const LessonViewModal = withRemount((props) => {
         load();
 
         return async () => {
-            course = await setCourse((await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
-            eventDispatcher.emit(`editCourse`, course);
+            eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
         };
     }, []);
 
@@ -446,12 +439,20 @@ const LessonViewModal = withRemount((props) => {
             setCurrentView(nextView);
         }
         else {
-            modal.close();
+            const lessons = course.sections.find(section => section.id == sectionId).lessons;
+            const nextLesson = lessons[lessons.findIndex(lesson => lesson.id == lessonId) + 1];
 
-            const lessons = course.sections.flatMap(section => section.lessons);
-            const lessonComplete = lessons.slice(-1)[0]?.id == lesson.id && lessons.every(_lesson => _lesson.status == 'completed');
-            if (lessonComplete && course.certificateTemplate) {
-                await dialog.open({ course }, CertificateViewDialog);
+            if (nextLesson) {
+                router.replace(`${ModalPathPrefix}/courses/${courseId}/sections/${sectionId}/lessons/${nextLesson.id}`);
+            }
+            else {
+                modal.close();
+
+                const allLessons = course.sections.flatMap(section => section.lessons);
+                const allLessonsComplete = allLessons.slice(-1)[0]?.id == lesson.id && allLessons.every(_lesson => _lesson.status == 'completed');
+                if (allLessonsComplete && course.certificateTemplate) {
+                    await dialog.open({ course }, CertificateViewDialog);
+                }
             }
         }
     };
@@ -470,16 +471,14 @@ const LessonViewModal = withRemount((props) => {
                                 </a>
                             </OverlayTrigger>
 
-                            <div className="mb-0 mx-2">
-                                <div className="h6 text-center mb-0">
-                                    <ResponsiveEllipsis
-                                        text={lesson.title || ''}
-                                        maxLine='1'
-                                        ellipsis='...'
-                                        trimRight
-                                        basedOn='letters'
-                                    />
-                                </div>
+                            <div className="h6 text-center mb-0 mx-2 w-100">
+                                <ResponsiveEllipsis
+                                    text={lesson.title || ''}
+                                    maxLine='1'
+                                    ellipsis='...'
+                                    trimRight
+                                    basedOn='letters'
+                                />
                                 <div className="pt-1 small">
 
                                     <div className="hstack gap-2 justify-content-center">
@@ -536,7 +535,8 @@ const LessonViewModal = withRemount((props) => {
 
 LessonViewModal.getModalProps = () => {
     return {
-        size: 'sm'
+        contentClassName: 'h-100',
+        fullscreen: true
     };
 };
 

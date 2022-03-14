@@ -325,6 +325,13 @@ const SectionList = ({ course, setCourse, toggler, permitted }) => {
     const courseId = course.id;
     const client = useClient();
 
+    useEffect(() => {
+        toggler.set(course.sections.map((section, index) => ({
+            id: `section_${section.id}`,
+            value: section.status == 'started'
+        })))
+    }, []);
+
     const handleDragEnd = (reorder) => {
         const { source, destination, type } = reorder;
 
@@ -447,15 +454,19 @@ const CoursePage = withRemount(({ remount }) => {
 
     const dialog = useDialog();
 
-    const [toggles, SetToggles] = useState([]);
+    const [toggles, setToggles] = useState([]);
     const toggler = {
         in: (toggleId) => {
             return toggles.find(_toggle => _toggle.id == toggleId)?.value;
         },
         toggle: (toggleId, toggleValue) => {
-            const toggle = { id: toggleId, value: toggleValue == !undefined ? toggleValue : !toggles.find(_toggle => _toggle.id == toggleId)?.value };
-            SetToggles(_.unionBy([toggle], toggles, 'id'));
-        }
+            const toggle = {
+                id: toggleId,
+                value: (toggleValue !== undefined) ? toggleValue : !toggles.find(_toggle => _toggle.id == toggleId)?.value
+            };
+            setToggles(_.unionBy([toggle], toggles, 'id'));
+        },
+        set: setToggles
     };
 
     const load = async () => {
