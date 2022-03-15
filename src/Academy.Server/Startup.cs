@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -234,7 +235,11 @@ namespace Academy.Server
                 var migrationAssembly = Assembly.GetExecutingAssembly().GetName().Name;
 
                 // Configure the context to use Microsoft SQL Server.
-                options.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationAssembly));
+                options.UseSqlServer(connectionString, sql => { 
+                    sql.MigrationsAssembly(migrationAssembly);
+                    sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    options.ConfigureWarnings(waring => waring.Ignore(CoreEventId.RowLimitingOperationWithoutOrderByWarning));
+                });
             });
 
             services.AddTransient<IUnitOfWork, UnitOfWork<AppDbContext>>();

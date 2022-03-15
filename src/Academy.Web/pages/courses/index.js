@@ -146,7 +146,7 @@ const CoursesPage = withRemount((props) => {
         return items;
     })();
 
-    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher'))));
+    const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher'))));
 
     return (
         <>

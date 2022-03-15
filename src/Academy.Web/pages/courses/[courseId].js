@@ -528,7 +528,7 @@ const CoursePage = withRemount(({ remount }) => {
 
     if (loading) return (<Loader {...loading} />);
 
-    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id)));
+    const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id)));
 
     return (
         <>

@@ -27,7 +27,7 @@ const CourseItem = ({ course }) => {
     const courseId = course.id;
     const appSettings = useAppSettings();
     const client = useClient();
-    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id)));
+    const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id)));
 
     return (
         <div className="card shadow-sm">

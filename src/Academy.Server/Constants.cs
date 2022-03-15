@@ -20,7 +20,7 @@ namespace Academy.Server
 
     public static class RoleConstants
     {
-        public const string Admin = "Manager";
+        public const string Admin = "Admin";
 
         public const string Teacher = "Teacher";
 

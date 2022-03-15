@@ -59,7 +59,7 @@ const Header = () => {
     const router = useRouter();
     const appSettings = useAppSettings();
     const dialog = useDialog();
-    const permitted = (client.user && (client.user.roles.some(role => role == 'manager') || (client.user.roles.some(role => role == 'teacher'))));
+    const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher'))));
 
     const [expanded, setExpanded] = useState(false);
     return (

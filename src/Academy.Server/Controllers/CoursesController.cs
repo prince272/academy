@@ -1027,7 +1027,7 @@ namespace Academy.Server.Controllers
                     lessonModel.Media = (permitted || (lessonModel.Status != CourseStatus.Locked)) ? lessonModel.Media : null;
                     lessonModel.Questions.ForEach(questionModel =>
                     {
-                        questionModel.Text = (permitted || (questionModel.Status != CourseStatus.Locked)) ? questionModel.Text : null;
+                        questionModel.Text = (permitted || (lessonModel.Status != CourseStatus.Locked)) ? questionModel.Text : null;
                     });
                     return lessonModel;
                 }).ToArray();
