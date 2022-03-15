@@ -1024,12 +1024,6 @@ namespace Academy.Server.Controllers
                         started = false;
                     }
 
-                    lessonModel.Document = (permitted || (lessonModel.Status != CourseStatus.Locked)) ? lessonModel.Document : null;
-                    lessonModel.Media = (permitted || (lessonModel.Status != CourseStatus.Locked)) ? lessonModel.Media : null;
-                    lessonModel.Questions.ForEach(questionModel =>
-                    {
-                        questionModel.Text = (permitted || (lessonModel.Status != CourseStatus.Locked)) ? questionModel.Text : null;
-                    });
                     return lessonModel;
                 }).ToArray();
 
