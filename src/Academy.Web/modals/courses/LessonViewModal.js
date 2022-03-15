@@ -145,7 +145,7 @@ LessonView.displayName = 'LessonView';
 
 const QuestionView = (props) => {
     const client = useClient();
-    const { lesson, question, setCurrentView } = props;
+    const { question, setCurrentView } = props;
 
     useEffect(() => {
         // shuffle answers.
@@ -292,7 +292,8 @@ const LessonViewModal = withRemount((props) => {
     const lessonId = route.query.lessonId;
 
     let [course, setCourse] = withAsync(useState(null));
-    let [lesson, setLesson] = withAsync(useState(null));
+    let [section, setSection] = withAsync(useState(null));
+
     const [views, setViews] = useState([]);
     const [currentView, setCurrentView] = useState(null);
 
@@ -329,23 +330,31 @@ const LessonViewModal = withRemount((props) => {
             return;
         }
 
-        result = await client.get(`/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`);
+        result = await client.get(`/courses/${courseId}/sections/${sectionId}`);
 
         if (result.error) {
             const error = result.error;
-            setLoading({ ...error, message: 'Unable to load lesson.', fallback: modal.close, remount });
+            setLoading({ ...error, message: 'Unable to start lesson.', fallback: modal.close, remount });
             return;
         }
 
-        lesson = await setLesson(result.data);
+        section = await setSection(result.data);
 
         const newViews = [];
-
-        newViews.push({ ...lesson, _id: _.uniqueId(), _type: 'lesson' });
-        lesson.questions.forEach(question => { newViews.push({ ...question, _id: _.uniqueId(), _type: 'question' }) })
+        section.lessons.forEach(lesson => {
+            newViews.push({ ...lesson, _id: _.uniqueId(), _type: 'lesson' });
+            lesson.questions.forEach((question, questionIndex) => {
+                newViews.push({
+                    ...question,
+                    title: `Question ${questionIndex + 1} of ${lesson.questions.length}`,
+                    _id: _.uniqueId(),
+                    _type: 'question'
+                })
+            })
+        });
 
         setViews(newViews);
-        setCurrentView(newViews[0]);
+        setCurrentView(newViews.find(newView => newView._type == 'lesson' && newView.id == lessonId));
         setLoading(null);
     };
 
@@ -374,7 +383,7 @@ const LessonViewModal = withRemount((props) => {
         if (currentView._type == 'lesson') {
 
             setSubmitting(true);
-            let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/progress`, currentView._data);
+            let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.id}/progress`, currentView._data);
 
             if (result.error) {
                 const error = result.error;
@@ -389,7 +398,7 @@ const LessonViewModal = withRemount((props) => {
         else if (currentView._type == 'question' && (!currentView._submitted || (skip && !currentView._correctAnswer))) {
 
             setSubmitting(true);
-            let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/progress`, { ...currentView._data, skip });
+            let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { ...currentView._data, skip });
 
             if (result.error) {
                 const error = result.error;
@@ -440,20 +449,12 @@ const LessonViewModal = withRemount((props) => {
             setCurrentView(nextView);
         }
         else {
-            const lessons = course.sections.find(section => section.id == sectionId).lessons;
-            const nextLesson = lessons[lessons.findIndex(lesson => lesson.id == lessonId) + 1];
+            modal.close();
 
-            if (nextLesson) {
-                router.replace(`${ModalPathPrefix}/courses/${courseId}/sections/${sectionId}/lessons/${nextLesson.id}`);
-            }
-            else {
-                modal.close();
+            const lastSection = course.sections.slice(-1)[0];
 
-                const allLessons = course.sections.flatMap(section => section.lessons);
-                const allLessonsComplete = allLessons.slice(-1)[0]?.id == lesson.id && allLessons.every(_lesson => _lesson.status == 'completed');
-                if (allLessonsComplete && course.certificateTemplate) {
-                    await dialog.open({ course }, CertificateViewDialog);
-                }
+            if ((lastSection && lastSection.id == sectionId) && course.certificateTemplate) {
+                await dialog.open({ course }, CertificateViewDialog);
             }
         }
     };
@@ -474,7 +475,7 @@ const LessonViewModal = withRemount((props) => {
 
                             <div className="h6 text-center mb-0 mx-2 w-100">
                                 <ResponsiveEllipsis className="overflow-hidden"
-                                    text={lesson.title || ''}
+                                    text={currentView.title || ''}
                                     maxLine='1'
                                     ellipsis='...'
                                     trimRight
@@ -498,7 +499,7 @@ const LessonViewModal = withRemount((props) => {
             <Modal.Body className="position-static">
                 <>
                     {currentView._type == 'lesson' && <LessonView key={currentView.id} {...{ course, lesson: currentView, setCurrentView, moveBackward, moveForward }} />}
-                    {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, lesson, question: currentView, setCurrentView, moveBackward, moveForward }} />}
+                    {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, question: currentView, setCurrentView, moveBackward, moveForward }} />}
                 </>
             </Modal.Body>
 

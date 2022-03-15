@@ -730,7 +730,7 @@ namespace Academy.Server.Controllers
         [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId)
         {
-            var courseModel = (await GetCourseModel(courseId, sectionId, lessonId));
+            var courseModel = (await GetCourseModel(courseId, sectionId));
             if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var sectionModel = courseModel.Sections.FirstOrDefault(_ => _.Id == sectionId);
@@ -873,7 +873,7 @@ namespace Academy.Server.Controllers
         [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions/{questionId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId, int questionId)
         {
-            var courseModel = (await GetCourseModel(courseId, sectionId, lessonId, questionId));
+            var courseModel = (await GetCourseModel(courseId, sectionId));
             if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var sectionModel = courseModel.Sections.FirstOrDefault(_ => _.Id == sectionId);
@@ -890,7 +890,7 @@ namespace Academy.Server.Controllers
 
 
         [NonAction]
-        private async Task<CourseModel> GetCourseModel(int courseId, int? sectionId = null, int? lessonId = null, int? questionId = null)
+        private async Task<CourseModel> GetCourseModel(int courseId, int? sectionId = null)
         {
             var course = await unitOfWork.Query<Course>().AsNoTrackingWithIdentityResolution()
                                 .Include(_ => _.User)
@@ -923,7 +923,7 @@ namespace Academy.Server.Controllers
                     .ProjectTo<Lesson>(new MapperConfiguration(config =>
                     {
                         var map = config.CreateMap<Lesson, Lesson>();
-                        map.ForMember(_ => _.Document, config => config.MapFrom(_ => _.Id == lessonId ? _.Document : null));
+                        map.ForMember(_ => _.Document, config => config.MapFrom(_ => _.SectionId == sectionId ? _.Document : null));
                     })).ToListAsync();
 
                 foreach (var lesson in section.Lessons)
@@ -934,6 +934,7 @@ namespace Academy.Server.Controllers
                         .ProjectTo<Question>(new MapperConfiguration(config =>
                         {
                             var map = config.CreateMap<Question, Question>();
+                            map.ForMember(_ => _.Text, config => config.MapFrom(_ => _.Lesson.SectionId == sectionId ? _.Text : null));
                         })).ToListAsync();
 
                     foreach (var question in lesson.Questions)
@@ -944,7 +945,7 @@ namespace Academy.Server.Controllers
                             .ProjectTo<QuestionAnswer>(new MapperConfiguration(config =>
                             {
                                 var map = config.CreateMap<QuestionAnswer, QuestionAnswer>();
-                                map.ForMember(_ => _.Text, config => config.MapFrom(_ => _.Question.LessonId == lessonId ? _.Text : null));
+                                map.ForMember(_ => _.Text, config => config.MapFrom(_ => _.Question.Lesson.SectionId == sectionId ? _.Text : null));
                             })).ToListAsync();
                     }
                 }

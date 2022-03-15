@@ -33,11 +33,13 @@ namespace Academy.Server.Controllers
             appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
         }
 
-        [Authorize(Roles = RoleConstants.Teacher)]
+        [Authorize]
         [HttpPost("upload")]
         public async Task<IActionResult> Upload()
         {
             var user = await HttpContext.Request.GetCurrentUserAsync();
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher);
+            if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var mediaName = Request.Headers["Upload-Name"].ToString();
             var mediaSize = long.Parse(Request.Headers["Upload-Size"]);
@@ -69,7 +71,7 @@ namespace Academy.Server.Controllers
             return Result.Succeed(media);
         }
 
-        [Authorize(Roles = RoleConstants.Teacher)]
+        [Authorize]
         [HttpPatch("upload/{mediaId}")]
         public async Task<IActionResult> Upload(int mediaId)
         {

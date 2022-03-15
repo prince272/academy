@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { NextSeo } from 'next-seo';
 import { useRouter } from 'next/router';
 import { BsHeartFill, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
-import { SvgBookLoverIllus, SvgOptionsIllus, SvgTeachingIllus, SvgCertificateIllus, SvgTeacherIllus, SvgExamsIllus, SvgQuizIllus, SvgFaqIllus } from '../resources/images/illustrations';
+import { SvgBookLoverIllus, SvgOptionsIllus, SvgTeachingIllus, SvgCertificateIllus, SvgTeacherIllus, SvgExamsIllus, SvgQuizIllus, SvgFaqIllus, SvgOnlineLearningIllus } from '../resources/images/illustrations';
 import { AspectRatio } from 'react-aspect-ratio';
 import { Accordion } from 'react-bootstrap';
 import { ModalPathPrefix } from '../modals';
@@ -115,7 +115,7 @@ const HomePage = () => {
             <div className="row justify-content-center">
               <div className="col-lg-10 text-center">
                 <span className="d-block mb-4 h6 text-warning">Are you ready to start your journey with us?</span>
-                <h2 className="mb-4 display-3 fw-bold text-white">An academy of ours is the most powerful weapon you can possibly have.</h2>
+                <h2 className="mb-4 display-3 fw-bold text-white">Having the patience to specialize academically will pay off in the long run.</h2>
                 <div>
                   <Link href="/courses">
                     <a type="button" className="btn btn-white ">Start Learning</a>
@@ -139,7 +139,7 @@ const HomePage = () => {
               <div className="text-center">
                 <div className="p-3 mb-4">
                   <AspectRatio ratio="3/2">
-                    <SvgOptionsIllus />
+                    <SvgOnlineLearningIllus />
                   </AspectRatio>
                 </div>
                 <h5 className="h3">Flexible learning</h5>
@@ -185,7 +185,7 @@ const HomePage = () => {
                   </AspectRatio>
                 </div>
                 <h5 className="h3">For Teachers</h5>
-                <p className="lead">As teachers, our passion for what you do has helped many people find their own passion.</p>
+                <p className="lead">As teachers, our passion for what we do has helped many people find their own passion.</p>
 
                 <Link href="/teach"><a className="btn btn-dark ">Become a teacher</a></Link>
               </div>

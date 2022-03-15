@@ -185,7 +185,7 @@ namespace Academy.Server
                         ProcessDictionaryKeys = true,
                         ProcessExtensionDataNames = true,
                     }));
-
+                    options.SerializerSettings.Converters.Add(new TrimmingStringConverter());
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                 })
@@ -381,6 +381,13 @@ namespace Academy.Server
                 var statusCode = StatusCodes.Status500InternalServerError;
                 var response = Result.Failed(statusCode);
                 context.Response.StatusCode = statusCode;
+                await context.Response.WriteAsJsonAsync(response.Value);
+            }));
+
+            app.UseStatusCodePages(_ => _.Run(async context =>
+            {
+                var response = Result.Failed(context.Response.StatusCode);
+                context.Response.StatusCode = response.StatusCode ?? throw new NullReferenceException();
                 await context.Response.WriteAsJsonAsync(response.Value);
             }));
 
