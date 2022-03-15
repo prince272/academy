@@ -219,11 +219,6 @@ const useClientProvider = () => {
             catch (silentError) {
                 console.error("Silent authentication error: ", silentError);
 
-                if (state.provider == 'username') {
-                    eventDispatcher.emit('signinError', state);
-                    return;
-                }
-
                 try {
                     const context = await userManager.signinPopup({ state });
                     await loadUserContext(context);

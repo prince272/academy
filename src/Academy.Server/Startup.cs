@@ -289,6 +289,9 @@ namespace Academy.Server
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
+
+                options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
+                options.Authentication.CookieSlidingExpiration = true;
             })
                 .AddApiAuthorization<User, AppDbContext>();
 
@@ -302,8 +305,10 @@ namespace Academy.Server
                 // Cookie settings
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SameSite = SameSiteMode.None;
-                options.ExpireTimeSpan = TimeSpan.FromDays(360);
+
+                options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
+
                 options.LoginPath = "/accounts/signin";
                 options.LogoutPath = "/accounts/signout";
 
