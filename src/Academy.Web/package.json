@@ -30,6 +30,7 @@
     "moment": "^2.29.1",
     "moment-duration-format": "^2.3.2",
     "next": "^11.1.4",
+    "next-http-proxy-middleware": "^1.2.4",
     "next-images": "^1.8.2",
     "next-pwa": "^5.4.4",
     "next-router-query": "^0.1.3",
