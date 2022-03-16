@@ -169,7 +169,8 @@ namespace Academy.Server
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()
-                    .WithExposedHeaders("Content-Disposition");
+                    .WithExposedHeaders("Content-Disposition")
+                    .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
                 });
             });
 

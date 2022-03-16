@@ -337,6 +337,9 @@ namespace Academy.Server.Controllers
 
             var user = await HttpContext.Request.GetCurrentUserAsync();
 
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher);
+            if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
+
             if (user.Balance < form.Amount)
                 return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Amount), "Balance is insufficient."));
 

@@ -165,8 +165,8 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                         {
                                             [
                                                 (lesson.media != null) ? (<span key="1">{lesson.media.type == 'video' ? <BsFilm size="1rem" /> : lesson.media.type == 'audio' ? <BsMusicNoteBeamed size="1rem" /> : <></>} {pascalCase(lesson.media.type)}</span>) : null,
-                                                (<a key="2" className="text-body" href="#" onClick={preventDefault(stopPropagation(() => toggler.toggle(`lesson_${lesson.id}`)))}><BsJournalRichtext size="1rem" /> {lesson.questions.length} {lesson.questions.length > 1 ? 'Questions' : 'Question'}</a>),
-                                            ].filter(curr => curr != null).reduce((prev, curr) => [prev, (<span key="0" className="mx-2">·</span>), curr])
+                                                ((permitted || lesson.questions.length > 0) ? (<a key="2" className="text-body" href="#" onClick={preventDefault(stopPropagation(() => { if (permitted) toggler.toggle(`lesson_${lesson.id}`) }))}><BsJournalRichtext size="1rem" /> {lesson.questions.length} {lesson.questions.length > 1 ? 'Questions' : 'Question'}</a>) : null),
+                                            ].filter(curr => curr).reduce((prev, curr, index) => index == 0 ? curr : [prev, (<span key="0" className="mx-2">·</span>), curr], false)
                                         }
                                     </div>
                                 </div>

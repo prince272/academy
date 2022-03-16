@@ -892,32 +892,23 @@ namespace Academy.Server.Controllers
         [NonAction]
         private async Task<CourseModel> GetCourseModel(int courseId, int? sectionId = null)
         {
-            var course = await unitOfWork.Query<Course>().AsNoTrackingWithIdentityResolution()
-                                .Include(_ => _.User)
-                                .FirstOrDefaultAsync(_ => _.Id == courseId);
+            var course = await unitOfWork.Query<Course>()
+                .AsNoTracking()
+                .Include(_ => _.User)
+                .FirstOrDefaultAsync(_ => _.Id == courseId);
 
             if (course == null) return null;
 
-            var user = await HttpContext.Request.GetCurrentUserAsync();
-            var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
-
-            var courseCertificate = user?.Certificates.FirstOrDefault(_ => _.CourseId == course.Id);
-            var coursePurchased = user != null ? await unitOfWork.Query<Payment>()
-                .AnyAsync(_ => _.UserId == user.Id &&
-                               _.Reason == PaymentReason.Course &&
-                               _.ReferenceId == course.Code &&
-                               _.Status == PaymentStatus.Complete) : false;
-
-            var courseStudents = await unitOfWork.Query<User>().CountAsync(_ => _.Id == course.UserId);
-
-            course.Sections = await unitOfWork.Query<Section>().AsNoTrackingWithIdentityResolution()
-                             .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
-                             .Where(_ => _.CourseId == course.Id)
-                             .ToListAsync();
+            course.Sections = await unitOfWork.Query<Section>()
+                .AsNoTracking()
+                .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
+                .Where(_ => _.CourseId == course.Id)
+                .ToListAsync();
 
             foreach (var section in course.Sections)
             {
-                section.Lessons = await unitOfWork.Query<Lesson>().AsNoTrackingWithIdentityResolution()
+                section.Lessons = await unitOfWork.Query<Lesson>()
+                    .AsNoTracking()
                     .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
                     .Where(_ => _.SectionId == section.Id)
                     .ProjectTo<Lesson>(new MapperConfiguration(config =>
@@ -928,25 +919,19 @@ namespace Academy.Server.Controllers
 
                 foreach (var lesson in section.Lessons)
                 {
-                    lesson.Questions = await unitOfWork.Query<Question>().AsNoTrackingWithIdentityResolution()
+                    lesson.Questions = await unitOfWork.Query<Question>()
+                        .AsNoTracking()
                         .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
                         .Where(_ => _.LessonId == lesson.Id)
-                        .ProjectTo<Question>(new MapperConfiguration(config =>
-                        {
-                            var map = config.CreateMap<Question, Question>();
-                            map.ForMember(_ => _.Text, config => config.MapFrom(_ => _.Lesson.SectionId == sectionId ? _.Text : null));
-                        })).ToListAsync();
+                        .ToListAsync();
 
                     foreach (var question in lesson.Questions)
                     {
-                        question.Answers = await unitOfWork.Query<QuestionAnswer>().AsNoTrackingWithIdentityResolution()
+                        question.Answers = await unitOfWork.Query<QuestionAnswer>()
+                            .AsNoTracking()
                             .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
                             .Where(_ => _.QuestionId == question.Id)
-                            .ProjectTo<QuestionAnswer>(new MapperConfiguration(config =>
-                            {
-                                var map = config.CreateMap<QuestionAnswer, QuestionAnswer>();
-                                map.ForMember(_ => _.Text, config => config.MapFrom(_ => _.Question.Lesson.SectionId == sectionId ? _.Text : null));
-                            })).ToListAsync();
+                            .ToListAsync();
                     }
                 }
             }
@@ -963,6 +948,21 @@ namespace Academy.Server.Controllers
                 var complete = statuses.Count(status => status == CourseStatus.Completed);
                 return (Math.Round(complete / (decimal)Math.Max(statuses.Count(), 1), 2, MidpointRounding.ToZero));
             };
+
+            var user = await HttpContext.Request.GetCurrentUserAsync();
+            var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
+
+            var courseCertificate = user?.Certificates.FirstOrDefault(_ => _.CourseId == course.Id);
+            var coursePurchased = user != null ? await unitOfWork.Query<Payment>()
+                .AsNoTracking()
+                .AnyAsync(_ => _.UserId == user.Id &&
+                               _.Reason == PaymentReason.Course &&
+                               _.ReferenceId == course.Code &&
+                               _.Status == PaymentStatus.Complete) : false;
+
+            var courseStudents = await unitOfWork.Query<User>()
+                .AsNoTracking()
+                .CountAsync(_ => _.Id == course.UserId);
 
             var started = true;
 
@@ -1009,6 +1009,7 @@ namespace Academy.Server.Controllers
                     }).ToArray();
                     lessonModel.Status = GetStatus(lessonModel.Questions.Select(question => question.Status)
                         .Prepend(progress != null ? CourseStatus.Completed : CourseStatus.Locked).ToArray());
+
                     if (lessonModel.Status == CourseStatus.Locked && started)
                     {
                         lessonModel.Status = CourseStatus.Started;
