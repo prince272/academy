@@ -923,7 +923,11 @@ namespace Academy.Server.Controllers
                         .AsNoTracking()
                         .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
                         .Where(_ => _.LessonId == lesson.Id)
-                        .ToListAsync();
+                        .ProjectTo<Question>(new MapperConfiguration(config =>
+                        {
+                            var map = config.CreateMap<Question, Question>();
+                            map.ForMember(_ => _.Text, config => config.MapFrom(_ => _.Lesson.SectionId == sectionId ? _.Text : null));
+                        })).ToListAsync();
 
                     foreach (var question in lesson.Questions)
                     {
@@ -931,7 +935,11 @@ namespace Academy.Server.Controllers
                             .AsNoTracking()
                             .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
                             .Where(_ => _.QuestionId == question.Id)
-                            .ToListAsync();
+                            .ProjectTo<QuestionAnswer>(new MapperConfiguration(config =>
+                        {
+                            var map = config.CreateMap<QuestionAnswer, QuestionAnswer>();
+                            map.ForMember(_ => _.Text, config => config.MapFrom(_ => _.Question.Lesson.SectionId == sectionId ? _.Text : null));
+                        })).ToListAsync();
                     }
                 }
             }

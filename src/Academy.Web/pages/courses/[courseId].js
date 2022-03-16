@@ -165,7 +165,7 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                         {
                                             [
                                                 (lesson.media != null) ? (<span key="1">{lesson.media.type == 'video' ? <BsFilm size="1rem" /> : lesson.media.type == 'audio' ? <BsMusicNoteBeamed size="1rem" /> : <></>} {pascalCase(lesson.media.type)}</span>) : null,
-                                                ((permitted || lesson.questions.length > 0) ? (<a key="2" className="text-body" href="#" onClick={preventDefault(stopPropagation(() => { if (permitted) toggler.toggle(`lesson_${lesson.id}`) }))}><BsJournalRichtext size="1rem" /> {lesson.questions.length} {lesson.questions.length > 1 ? 'Questions' : 'Question'}</a>) : null),
+                                                ((permitted || lesson.questions.length > 0) ? (<span key="2" className="text-body"><BsJournalRichtext size="1rem" /> {lesson.questions.length} {lesson.questions.length > 1 ? 'Questions' : 'Question'}</span>) : null),
                                             ].filter(curr => curr).reduce((prev, curr, index) => index == 0 ? curr : [prev, (<span key="0" className="mx-2">·</span>), curr], false)
                                         }
                                     </div>
@@ -190,6 +190,7 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                                         <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}`} passHref><Dropdown.Item>View</Dropdown.Item></Link>
                                                         <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
                                                         <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
+                                                        <Dropdown.Item href="#" onClick={() => { toggler.toggle(`lesson_${lesson.id}`); }}>{toggler.in(`lesson_${lesson.id}`) ? 'Hide' : 'Show'} Questions</Dropdown.Item>
                                                     </Dropdown.Menu>
                                                 </Dropdown>
                                             )}

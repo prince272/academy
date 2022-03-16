@@ -330,6 +330,7 @@ const LessonViewModal = withRemount((props) => {
             return;
         }
 
+        setLoading({ message: 'Preparing lessons...' });
         result = await client.get(`/courses/${courseId}/sections/${sectionId}`);
 
         if (result.error) {
