@@ -83,6 +83,10 @@ namespace Academy.Server
         public EmailAccount Info { get; set; }
     }
 
+    public static class JsonSerializerSettingsDefaults
+    {
+        public static Newtonsoft.Json.JsonSerializerSettings Web { get; set; }
+    }
 
     public class AppSettings
     {

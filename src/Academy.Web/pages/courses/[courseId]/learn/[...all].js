@@ -32,6 +32,7 @@ import { useEventDispatcher } from '../../../../utils/eventDispatcher';
 import { useAppSettings } from '../../../../utils/appSettings';
 import { ModalPathPrefix } from '../../../../modals';
 import { useRouterQuery } from 'next-router-query';
+import protection from '../../../../utils/protection';
 
 
 const LessonView = (props) => {
@@ -157,7 +158,7 @@ const QuestionView = (props) => {
             _submitted: false,
             _data: {
                 id: question.id,
-                answers: question.type == 'reorder' ? answers.map(answer => answer.id) : []
+                inputs: question.type == 'reorder' ? answers.map(answer => answer.id) : []
             }
         };
         setCurrentView(newQuestion);
@@ -165,11 +166,11 @@ const QuestionView = (props) => {
 
     const handleAnswer = (index) => {
 
-        if (question.type == 'singleAnswer' || question.type == 'multipleAnswer') {
+        if (question.type == 'selectSingle' || question.type == 'selectMultiple') {
 
             const answers = ({
-                'singleAnswer': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : false })),
-                'multipleAnswer': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : answer.checked })),
+                'selectSingle': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : false })),
+                'selectMultiple': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : answer.checked })),
             })[question.type] ?? null;
 
             answers.forEach((answer, answerIndex) => { answer.index = answerIndex; });
@@ -179,7 +180,7 @@ const QuestionView = (props) => {
                 _submitted: false,
                 _data: {
                     id: question.id,
-                    answers: answers.filter(answer => answer.checked).map(answer => answer.id)
+                    inputs: answers.filter(answer => answer.checked).map(answer => answer.id)
                 }
             };
             setCurrentView(newQuestion);
@@ -210,10 +211,10 @@ const QuestionView = (props) => {
         const newQuestion = {
             ...question, answers, _submitted: false, _data: {
                 id: question.id,
-                answers: answers.map(answer => answer.id)
+                inputs: answers.map(answer => answer.id)
             }
         };
-        setQuestion(newQuestion);
+        setCurrentView(newQuestion);
     };
 
     return (
@@ -298,6 +299,7 @@ const LearnPage = withRemount(({ remount }) => {
 
     const [views, setViews] = useState([]);
     const [currentView, setCurrentView] = useState(null);
+    const appSettings = useAppSettings();
 
     const componentId = useMemo(() => _.uniqueId('Component'), []);
 
@@ -347,13 +349,14 @@ const LearnPage = withRemount(({ remount }) => {
 
         const newViews = [];
         section.lessons.forEach(lesson => {
-            newViews.push({ ...lesson, _id: _.uniqueId(), _type: 'lesson' });
+            newViews.push({ ...lesson, _id: _.uniqueId(), _type: 'lesson', _data: {} });
             lesson.questions.forEach((question, questionIndex) => {
                 newViews.push({
                     ...question,
                     title: `Question ${questionIndex + 1} of ${lesson.questions.length}`,
                     _id: _.uniqueId(),
-                    _type: 'question'
+                    _type: 'question',
+                    _data: {}
                 })
             })
         });
@@ -384,62 +387,83 @@ const LearnPage = withRemount(({ remount }) => {
         if (currentView._type == 'lesson') {
 
             setSubmitting(true);
-            let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.id}/progress`, currentView._data);
+            client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.id}/progress`, currentView._data).then(result => {
 
-            if (result.error) {
-                const error = result.error;
-                toast.error(error.message, { id: componentId });
+                if (result.error) {
+                    const error = result.error;
+                    toast.error(error.message, { id: componentId });
+                    setSubmitting(false);
+                    return;
+                }
+
+                client.updateUser({ bits: result.data.bits });
                 setSubmitting(false);
-                return;
-            }
-
-            client.updateUser({ bits: result.data.bits });
-            setSubmitting(false);
+            });
         }
-        else if (currentView._type == 'question' && (!currentView._submitted || (solve && !currentView._correctAnswer))) {
+        else if (currentView._type == 'question' && (!currentView._submitted || (solve && !currentView._correct))) {
 
             setSubmitting(true);
-            let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { ...currentView._data, solve });
 
-            if (result.error) {
-                const error = result.error;
-                toast.error(error.message, { id: componentId });
+            client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { ...currentView._data, solve }).then(result => {
+
+                if (result.error) {
+                    const error = result.error;
+                    toast.error(error.message, { id: componentId });
+                    setSubmitting(false);
+                    return;
+                }
+
+                client.updateUser({ bits: result.data.bits });
                 setSubmitting(false);
-                return;
-            }
+            });
 
-            client.updateUser({ bits: result.data.bits });
-            setSubmitting(false);
+            const answers = JSON.parse(protection.decrypt(appSettings.company.name, currentView.secret));
+            const checkAnswer = (inputs) => {
+                if (inputs == null) return false;
 
-            const _correctAnswer = result.data.correct;
+                if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
+                    const checkedIds = answers.filter(ans => ans.checked).map(ans => ans.id).sort((a, b) => (a > b) ? 1 : -1);
+                    const inputIds = (inputs).sort((a, b) => (a > b) ? 1 : -1);
+                    return checkedIds.every((checkId, checkIndex) => checkId == inputIds[checkIndex]);
+                }
+                else if (currentView.type == 'reorder') {
+                    const checkedIds = answers.map(ans => ans.id);
+                    const inputIds = (inputs);
+                    return checkedIds.every((checkId, checkIndex) => checkId == inputIds[checkIndex]);
+                }
+                else {
+                    return false;
+                };
+            };
 
-            let _alert = _correctAnswer ?
+            const _correct = solve || checkAnswer(currentView._data.inputs);
+
+            if (_correct) confetti.fire();
+
+            let _alert = _correct ?
                 { type: 'success', message: 'Correct answer, Continue!' } :
                 { type: 'error', message: 'Wrong answer, Please try again!' };
 
-            if (_correctAnswer) confetti.fire();
-
-            let answers = currentView.answers;
-
-            if (currentView.type == 'singleAnswer' || currentView.type == 'multipleAnswer') {
-                answers = currentView.answers.map(answer => ({
-                    ...answer,
-                    [solve ? 'checked' : undefined]: result.data.answers.find(_answer => _answer.id == answer.id).checked,
-                    correct: result.data.answers.find(_answer => _answer.id == answer.id).checked,
-                }));
+            if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
+                setCurrentView({
+                    ...currentView,
+                    answers: currentView.answers.map(answer => ({
+                        ...answer,
+                        [solve ? 'checked' : undefined]: answers.find(_answer => _answer.id == answer.id).checked,
+                        correct: answers.find(_answer => _answer.id == answer.id).checked,
+                    })), _correct, _alert, _submitted: true
+                });
             }
             else if (currentView.type == 'reorder') {
 
-                // Reorder the answers accordingly.
-
-                if (solve) {
-                    answers = currentView.answers.sort(function (a, b) {
-                        return result.data.answers.findIndex(answer => answer.id == a.id) - result.data.answers.findIndex(answer => answer.id == b.id);
-                    });
-                }
+                setCurrentView({
+                    ...currentView,
+                    answers: solve ? currentView.answers.sort(function (a, b) {
+                        return answers.findIndex(answer => answer.id == a.id) - answers.findIndex(answer => answer.id == b.id);
+                    }) : currentView.answers, _correct, _alert, _submitted: true
+                });
             }
 
-            setCurrentView({ ...currentView, answers, _correctAnswer, _alert, _submitted: true });
             return;
         }
 
@@ -501,7 +525,7 @@ const LearnPage = withRemount(({ remount }) => {
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
                         <div className="d-flex gap-3 justify-content-end w-100">
-                            {currentView._type == 'question' && !currentView._correctAnswer && (
+                            {currentView._type == 'question' && !currentView._correct && (
                                 <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Find answer</Tooltip>}>
                                     <button className="btn btn-secondary" disabled={submitting} onClick={async () => {
                                         const confirmed = await dialog.confirm({
@@ -515,10 +539,9 @@ const LearnPage = withRemount(({ remount }) => {
                                     }}><div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{formatNumber(client.user.bits)}</div></div></button>
                                 </OverlayTrigger>
                             )}
-                            <button className={`btn btn-primary  px-5 w-100 w-sm-auto`} type="button" disabled={submitting} onClick={() => moveForward()}>
+                            <button className={`btn btn-primary  px-5 w-100 w-sm-auto`} type="button" disabled={(currentView._type == 'question' && !(currentView._data.inputs && currentView._data.inputs.length))} onClick={() => moveForward()}>
                                 <div className="position-relative d-flex align-items-center justify-content-center">
-                                    <div className={`${submitting ? 'invisible' : ''}`}><div>{currentView._type == 'question' ? (currentView._submitted ? 'Continue' : 'Check answer') : ('Continue')}</div></div>
-                                    {submitting && <div className="position-absolute top-50 start-50 translate-middle"><div className="spinner-border spinner-border-sm"></div></div>}
+                                    <div><div>{currentView._type == 'question' ? (currentView._submitted ? 'Continue' : 'Check answer') : ('Continue')}</div></div>
                                 </div>
                             </button>
                         </div>

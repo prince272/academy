@@ -52,7 +52,9 @@ namespace Academy.Server.Data.Entities
 
         public CourseStatus Status { get; set; }
 
-        public List<(bool Solve, string[] Answers)> Choices { get; set; } = new List<(bool, string[])>();
+        public string[] Inputs { get; set; }
+
+        public bool Solve { get; set; }
     }
 
     public enum CourseStatus

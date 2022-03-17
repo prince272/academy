@@ -19,13 +19,15 @@ namespace Academy.Server.Data.Entities
 
         public virtual ICollection<QuestionAnswer> Answers { get; set; } = new List<QuestionAnswer>();
 
-        public bool CheckAnswer(string[] answers)
+        public bool Check(string[] inputs)
         {
-            if (Type == QuestionType.SingleAnswer || Type == QuestionType.MultipleAnswer)
-                return Enumerable.SequenceEqual(Answers.Where(_ => _.Checked).Select(_ => _.Id.ToString()).OrderBy(_ => _), answers.OrderBy(_ => _));
+            if (inputs == null) return false;
+
+            if (Type == QuestionType.SelectSingle || Type == QuestionType.SelectMultiple)
+                return Answers.Where(_ => _.Checked).Select(_ => _.Id.ToString()).OrderBy(_ => _).SequenceEqual(inputs.OrderBy(_ => _));
 
             else if (Type == QuestionType.Reorder)
-                return Enumerable.SequenceEqual(Answers.Select(_ => _.Id.ToString()), answers);
+                return Answers.Select(_ => _.Id.ToString()).SequenceEqual(inputs);
 
             else return false;
         }
@@ -33,8 +35,8 @@ namespace Academy.Server.Data.Entities
 
     public enum QuestionType
     {
-        SingleAnswer,
-        MultipleAnswer,
+        SelectSingle,
+        SelectMultiple,
         Reorder,
         Text
     }

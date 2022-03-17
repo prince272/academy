@@ -112,9 +112,11 @@ namespace Academy.Server.Models.Courses
 
         public long Duration { get; set; }
 
+        public string Secret { get; set; }
+
         public QuestionAnswerModel[] Answers { get; set; }
 
-        public bool[] Choices { get; set; }
+        public bool? Correct { get; set; }
     }
 
     public class QuestionAnswerModel

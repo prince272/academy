@@ -8,14 +8,14 @@ namespace Academy.Server.Models.Courses
 
         public bool Solve { get; set; }
 
-        public string[] Answers { get; set; }
+        public string[] Inputs { get; set; }
     }
 
     public class QuestionProgressValidator : AbstractValidator<QuestionProgressModel>
     {
         public QuestionProgressValidator()
         {
-            RuleFor(_ => _.Answers).NotEmpty().When(_ => _.Id != null && !_.Solve);
+            RuleFor(_ => _.Inputs).NotEmpty().When(_ => _.Id != null && !_.Solve);
         }
     }
 }

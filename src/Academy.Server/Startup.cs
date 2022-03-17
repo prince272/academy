@@ -189,6 +189,7 @@ namespace Academy.Server
                     options.SerializerSettings.Converters.Add(new TrimmingStringConverter());
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    JsonSerializerSettingsDefaults.Web = options.SerializerSettings;
                 })
                 .ConfigureApiBehaviorOptions(options =>
             {

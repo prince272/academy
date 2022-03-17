@@ -7,7 +7,7 @@ import { NextSeo } from 'next-seo';
 
 import ResponsiveEllipsis from 'react-lines-ellipsis/lib/loose';
 
-import { BsGripVertical, BsCardImage, BsChevronDown, BsChevronRight, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsFilm, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill, BsCart, BsCart2, BsBasket2, BsCart4, BsCart3 } from 'react-icons/bs';
+import { BsGripVertical, BsCardImage, BsChevronDown, BsChevronRight, BsPersonFill, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsFilm, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill, BsCart, BsCart2, BsBasket2, BsCart4, BsCart3 } from 'react-icons/bs';
 import { Collapse, Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import Link from 'next/link';
 import { useClient } from '../../../utils/client';
@@ -15,7 +15,7 @@ import { useRouterQuery } from 'next-router-query';
 import { ModalPathPrefix, useModal } from '../../../modals';
 
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
-import { arrayMove, arrayTransfer, preventDefault, stopPropagation, stripHtml } from '../../../utils/helpers';
+import { arrayMove, arrayTransfer, formatNumber, preventDefault, stopPropagation, stripHtml } from '../../../utils/helpers';
 import { pascalCase } from 'change-case';
 import { withAsync, withRemount } from '../../../utils/hooks';
 
@@ -66,8 +66,8 @@ const QuestionItem = ({ course, section, lesson, question, permitted }) => {
                                     <>
                                         {question.status == 'completed' && (
                                             <div>
-                                                <div className={`text-${(question.choices[0] ? 'success' : 'danger')} d-flex justify-content-center align-items-center`} style={{ height: "32px", width: "32px" }}>
-                                                    <span className="svg-icon svg-icon-sm d-inline-block" >{question.choices[0] ? <BsCheck2 /> : <BsX />}</span>
+                                                <div className={`text-${(question.correct ? 'success' : 'danger')} d-flex justify-content-center align-items-center`} style={{ height: "32px", width: "32px" }}>
+                                                    <span className="svg-icon svg-icon-sm d-inline-block" >{question.correct ? <BsCheck2 /> : <BsX />}</span>
                                                 </div>
                                             </div>
                                         )}
@@ -567,6 +567,8 @@ const CoursePage = withRemount(({ remount }) => {
                                         <div className="text-primary">{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
                                         <span className="mx-2">·</span>
                                         <div><span><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
+                                        <span className="mx-2">·</span>
+                                        <div><span><BsPersonFill /></span> {formatNumber(course.students)}</div>
                                     </div>
                                     <div className="mb-1">
                                         <ResponsiveEllipsis className="overflow-hidden"
