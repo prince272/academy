@@ -367,7 +367,15 @@ const LearnPage = withRemount(({ remount }) => {
     };
 
     useEffect(() => {
-        load();
+        if (!client.user) {
+            const location = window.location;
+            router.replace(`/courses/${courseId}`);
+            router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: { returnUrl: location.href } });
+        }
+    }, [client.user]);
+
+    useEffect(() => {
+        if (client.user) load();
     }, []);
 
     const moveBackward = () => {
