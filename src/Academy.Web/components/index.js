@@ -263,6 +263,7 @@ const Body = ({ children }) => {
             modal.open(location.href, false);
             router.replace("/", undefined, { shallow: true });
         }
+        setPageLoading(false);
     }, []);
 
     return (
