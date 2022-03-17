@@ -17,7 +17,7 @@ import { ModalPathPrefix, useModal } from '../../../modals';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { arrayMove, arrayTransfer, preventDefault, stopPropagation, stripHtml } from '../../../utils/helpers';
 import { pascalCase } from 'change-case';
-import { withRemount } from '../../../utils/hooks';
+import { withAsync, withRemount } from '../../../utils/hooks';
 
 import * as moment from 'moment';
 import momentDurationFormatSetup from 'moment-duration-format';
@@ -443,8 +443,8 @@ const SectionList = ({ course, setCourse, toggler, permitted }) => {
 const CoursePage = withRemount(({ remount }) => {
     const modal = useModal();
     const router = useRouter()
-    const { courseId } = useRouterQuery();
-    const [course, setCourse] = useState(null);
+    const { courseId, certificate } = useRouterQuery();
+    let [course, setCourse] = withAsync(useState(null));
     const [loading, setLoading] = useState({});
 
     const appSettings = useAppSettings();
@@ -481,7 +481,12 @@ const CoursePage = withRemount(({ remount }) => {
             return;
         }
 
-        setCourse(result.data);
+        course = await setCourse(result.data);
+
+        if (certificate && course.certificateTemplate && course.status == 'completed') {
+            dialog.open({ course }, CertificateViewDialog);
+        }
+
         setLoading(null);
     };
 

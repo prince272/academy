@@ -326,7 +326,7 @@ const LearnPage = withRemount(({ remount }) => {
                 return;
             }
 
-            setLoading({ status: 402, fallback: () => router.push(`/courses/${courseId}`),  message: 'The lesson cannot be accessed because you need to purchase the course.', remount });
+            setLoading({ status: 402, fallback: () => router.push(`/courses/${courseId}`), message: 'The lesson cannot be accessed because you need to purchase the course.', remount });
             const payment = result.data;
 
             router.replace(`/courses/${courseId}`)
@@ -453,10 +453,11 @@ const LearnPage = withRemount(({ remount }) => {
             const lastSection = course.sections.slice(-1)[0];
 
             if ((lastSection && lastSection.id == sectionId) && course.certificateTemplate) {
-                dialog.open({ course }, CertificateViewDialog);
+                router.replace({ pathname: `/courses/${courseId}`, query: { certificate: true } });
             }
-
-            router.replace(`/courses/${courseId}`);
+            else {
+                router.replace(`/courses/${courseId}`);
+            }
         }
     };
 
@@ -464,7 +465,7 @@ const LearnPage = withRemount(({ remount }) => {
 
     return (
         <div className="d-flex flex-column" style={{ height: "inherit" }}>
-            <div className="py-2 px-2 zi-1">
+            <div className="py-2 px-3 zi-1">
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
                         <div className="d-flex align-items-center justify-content-between">
@@ -491,12 +492,12 @@ const LearnPage = withRemount(({ remount }) => {
                 </div>
             </div>
 
-            <div className="py-2 px-2 flex-grow-1">
+            <div className="py-2 px-3 flex-grow-1" style={{ overflowY: "auto" }}>
                 {currentView._type == 'lesson' && <LessonView key={currentView.id} {...{ course, lesson: currentView, setCurrentView, moveBackward, moveForward }} />}
                 {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, question: currentView, setCurrentView, moveBackward, moveForward }} />}
             </div>
 
-            <div className="py-2 px-2">
+            <div className="py-2 px-3">
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
                         <div className="d-flex gap-3 justify-content-end w-100">
