@@ -158,9 +158,6 @@ const useModalProvider = () => {
 
                 if (abort) abortRouteChange(url);
             }
-            else {
-                modal.close();
-            }
 
             return currentRoute != null;
         },

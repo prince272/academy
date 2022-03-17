@@ -216,20 +216,24 @@ const Body = ({ children }) => {
         };
     }, [client, router]);
 
-    const handleRouteStart = (url, abort = true) => {
-        try {
-            if (new URL(url, window.location.origin).pathname.toLowerCase().startsWith(ModalPathPrefix)) {
-                modal.open(url, abort);
+    const handleRouteStart = (url, { shallow }) => {
 
-                if (!abort) router.replace('/');
+        try {
+
+            const location = new URL(url, window.location.origin);
+            if (location.pathname.toLowerCase().startsWith(ModalPathPrefix)) {
+                modal.open(location.href, true);
             }
             else {
+                if (!shallow)
+                    modal.close();
                 setPageLoading(true);
                 loadingBarRef.current.continuousStart();
             }
         }
         catch (ex) {
-            handleRouteComplete();
+            loadingBarRef.current.complete();
+            setPageLoading(false);
             throw ex;
         }
     };
@@ -254,8 +258,11 @@ const Body = ({ children }) => {
     useEffect(() => setLoadingBarColor(getComputedStyle(document.body).getPropertyValue('--bs-primary')), []);
 
     useEffect(() => {
-        handleRouteStart(window.location.href, false);
-        handleRouteComplete();
+        const location = window.location;
+        if (location.pathname.toLowerCase().startsWith(ModalPathPrefix)) {
+            modal.open(location.href, false);
+            router.replace("/", undefined, { shallow: true });
+        }
     }, []);
 
     return (
