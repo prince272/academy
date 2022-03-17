@@ -16,9 +16,7 @@ import Loader from '../components/Loader';
 import { withAsync, withRemount } from '../utils/hooks';
 import { BsCheckCircleFill, BsClockHistory, BsXCircleFill } from 'react-icons/bs';
 
-import LinesEllipsisLoose from 'react-lines-ellipsis/lib/loose'
-import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
-const ResponsiveEllipsis = responsiveHOC()(LinesEllipsisLoose);
+import ResponsiveEllipsis from 'react-lines-ellipsis/lib/loose';
 
 import _ from 'lodash';
 

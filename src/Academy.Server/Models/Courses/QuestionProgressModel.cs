@@ -6,7 +6,7 @@ namespace Academy.Server.Models.Courses
     {
         public int? Id { get; set; }
 
-        public bool Skip { get; set; }
+        public bool Solve { get; set; }
 
         public string[] Answers { get; set; }
     }
@@ -15,7 +15,7 @@ namespace Academy.Server.Models.Courses
     {
         public QuestionProgressValidator()
         {
-            RuleFor(_ => _.Answers).NotEmpty().When(_ => _.Id != null && !_.Skip);
+            RuleFor(_ => _.Answers).NotEmpty().When(_ => _.Id != null && !_.Solve);
         }
     }
 }

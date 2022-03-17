@@ -1,5 +1,8 @@
 import $ from 'jquery';
-import './summernote';
+if (typeof window !== 'undefined') {
+  import('./summernote');
+}
+
 import PropTypes from 'prop-types';
 import { useEffect } from 'react';
 import { useMemo } from 'react';
@@ -77,8 +80,8 @@ const DocumentEditor = (props) => {
       onChange: props.onChange,
     };
     const editor = $(`#${editorId}`);
-    editor.summernote({...options, minHeight: 180, dialogsInBody: true });
-   
+    editor.summernote({ ...options, minHeight: 180, dialogsInBody: true });
+
     const editorEditable = editor.parent().find('.note-editable');
     const editorPlaceholder = editor.parent().find('.note-placeholder');
 
@@ -107,7 +110,7 @@ const DocumentEditor = (props) => {
     replace(value);
   }, [value]);
 
-    return <><div id={editorId}></div></>;
+  return <><div id={editorId}></div></>;
 };
 
 DocumentEditor.propTypes = {

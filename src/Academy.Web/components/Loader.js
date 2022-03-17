@@ -1,6 +1,6 @@
 import { Spinner } from "react-bootstrap";
 import { BsArrowLeft, BsArrowRepeat, BsChevronLeft } from "react-icons/bs";
-import { SvgPageNotFoundIllus, SvgServerDownIllus } from '../resources/images/illustrations';
+import { SvgPageNotFoundIllus, SvgOnlinePaymentsIllus, SvgServerDownIllus } from '../resources/images/illustrations';
 
 const Loader = ({ status, message, remount, fallback, ...props }) => {
 
@@ -10,9 +10,9 @@ const Loader = ({ status, message, remount, fallback, ...props }) => {
         render = (
             <div className="d-flex flex-column text-center justify-content-center">
                 <div className="mb-4">
-                    {status == '404' ?
-                        (<SvgPageNotFoundIllus style={{ width: "auto", height: "128px" }} />) :
-                        (<SvgServerDownIllus style={{ width: "auto", height: "128px" }} />)}
+                    {status == 404 ? (<SvgPageNotFoundIllus style={{ width: "auto", height: "160px" }} />) :
+                     status == 402 ? (<SvgOnlinePaymentsIllus  style={{ width: "auto", height: "160px" }} />) :
+                     (<SvgServerDownIllus style={{ width: "auto", height: "160px" }} />)}
 
                 </div>
                 {message && <div className="mb-3">{message}</div>}

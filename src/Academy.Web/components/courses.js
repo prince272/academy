@@ -8,10 +8,7 @@ import Loader from '../components/Loader';
 import { AspectRatio } from 'react-aspect-ratio';
 import { BsCardImage, BsThreeDots, BsPlus, BsBookHalf, BsClockFill } from 'react-icons/bs';
 
-
-import LinesEllipsisLoose from 'react-lines-ellipsis/lib/loose'
-import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
-const ResponsiveEllipsis = responsiveHOC()(LinesEllipsisLoose);
+import ResponsiveEllipsis from 'react-lines-ellipsis/lib/loose';
 
 import { Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import { ModalPathPrefix, useModal } from '../modals';

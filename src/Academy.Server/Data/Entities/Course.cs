@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Academy.Server.Models.Courses;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -41,21 +42,24 @@ namespace Academy.Server.Data.Entities
     {
         public int CourseId { get; set; }
 
-        public CourseProgressType Type { get; set; }
+        public int SectionId { get; set; }
 
-        public int Id { get; set; }
+        public int LessonId { get; set; }
+
+        public int? QuestionId { get; set; }
 
         public DateTimeOffset? Completed { get; set; }
 
-        public DateTimeOffset Started { get; set; }
+        public CourseStatus Status { get; set; }
 
-        public List<(bool Skip, string[] Answers)> Choices { get; set; } = new List<(bool, string[])>();
+        public List<(bool Solve, string[] Answers)> Choices { get; set; } = new List<(bool, string[])>();
     }
 
-    public enum CourseProgressType
+    public enum CourseStatus
     {
-        Lesson,
-        Question
+        Completed,
+        Locked,
+        Started,
     }
 
     public enum CourseSubject

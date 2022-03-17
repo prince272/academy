@@ -4,7 +4,6 @@ import Loader from '../../components/Loader';
 
 const IndexPage = () => {
     const router = useRouter();
-
     return (<Loader />);
 };
 

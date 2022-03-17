@@ -2,34 +2,32 @@ import router, { useRouter } from 'next/router';
 import { AspectRatio } from 'react-aspect-ratio';
 import Image from 'next/image';
 import { forwardRef, useEffect, useState } from 'react';
-import Loader from '../../components/Loader';
+import Loader from '../../../components/Loader';
 import { NextSeo } from 'next-seo';
 
-import LinesEllipsisLoose from 'react-lines-ellipsis/lib/loose'
-import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
-const ResponsiveEllipsis = responsiveHOC()(LinesEllipsisLoose);
+import ResponsiveEllipsis from 'react-lines-ellipsis/lib/loose';
 
 import { BsGripVertical, BsCardImage, BsChevronDown, BsChevronRight, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsFilm, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill, BsCart, BsCart2, BsBasket2, BsCart4, BsCart3 } from 'react-icons/bs';
 import { Collapse, Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import Link from 'next/link';
-import { useClient } from '../../utils/client';
+import { useClient } from '../../../utils/client';
 import { useRouterQuery } from 'next-router-query';
-import { ModalPathPrefix, useModal } from '../../modals';
+import { ModalPathPrefix, useModal } from '../../../modals';
 
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
-import { arrayMove, arrayTransfer, preventDefault, stopPropagation, stripHtml } from '../../utils/helpers';
+import { arrayMove, arrayTransfer, preventDefault, stopPropagation, stripHtml } from '../../../utils/helpers';
 import { pascalCase } from 'change-case';
-import { withRemount } from '../../utils/hooks';
+import { withRemount } from '../../../utils/hooks';
 
 import * as moment from 'moment';
 import momentDurationFormatSetup from 'moment-duration-format';
 momentDurationFormatSetup(moment);
 
 import * as Scroll from 'react-scroll';
-import { useAppSettings } from '../../utils/appSettings';
-import { useDialog } from '../../utils/dialog';
-import CertificateViewDialog from '../../modals/courses/CertificateViewDialog';
-import { useEventDispatcher } from '../../utils/eventDispatcher';
+import { useAppSettings } from '../../../utils/appSettings';
+import { useDialog } from '../../../utils/dialog';
+import CertificateViewDialog from '../../../modals/courses/CertificateViewDialog';
+import { useEventDispatcher } from '../../../utils/eventDispatcher';
 
 const QuestionItem = ({ course, section, lesson, question, permitted }) => {
     const courseId = course.id;
@@ -147,7 +145,7 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="d-flex align-items-center flex-grow-1 cursor-default" onClick={() => { if (!disabled) router.push(`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}`); }}>
+                            <div className="d-flex align-items-center flex-grow-1 cursor-default" onClick={() => { if (!disabled) router.push(`/courses/${courseId}/learn/${section.id}/${lesson.id}`); }}>
                                 <div className="flex-grow-1">
                                     <div className="mb-1">
                                         <div className="fw-bold">

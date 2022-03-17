@@ -161,14 +161,6 @@ namespace Academy.Server.Models.Courses
         public MediaModel Document { get; set; }
     }
 
-    public enum CourseStatus
-    {
-        Completed,
-        Locked,
-        Started,
-        Timeout
-    }
-
     public class CourseModelProfile : Profile
     {
         public CourseModelProfile()

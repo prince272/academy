@@ -174,7 +174,6 @@ const Body = ({ children }) => {
     const router = useRouter();
     const client = useClient();
     const [pageLoading, setPageLoading] = useState(true);
-    const modalUrlRef = useRef(null);
     const eventDispatcher = useEventDispatcher();
     const loadingBarRef = useRef(null);
     const [loadingBarColor, setLoadingBarColor] = useState(null);
@@ -217,24 +216,30 @@ const Body = ({ children }) => {
         };
     }, [client, router]);
 
-    useEffect(() => {
+    const handleRouteStart = (url, abort = true) => {
+        try {
+            if (new URL(url, window.location.origin).pathname.toLowerCase().startsWith(ModalPathPrefix)) {
+                modal.open(url, abort);
 
-        const handleRouteStart = (url) => {
-            try {
-                modal.open(url);
+                if (!abort) router.replace('/');
+            }
+            else {
                 setPageLoading(true);
                 loadingBarRef.current.continuousStart();
             }
-            catch (ex) {
-                throw ex;
-            }
-        };
+        }
+        catch (ex) {
+            handleRouteComplete();
+            throw ex;
+        }
+    };
 
-        const handleRouteComplete = () => {
-            setPageLoading(false);
-            loadingBarRef.current.complete();
-        };
+    const handleRouteComplete = () => {
+        loadingBarRef.current.complete();
+        setPageLoading(false);
+    };
 
+    useEffect(() => {
         router.events.on('routeChangeStart', handleRouteStart);
         router.events.on('routeChangeComplete', handleRouteComplete);
         router.events.on('routeChangeError', handleRouteComplete);
@@ -246,29 +251,18 @@ const Body = ({ children }) => {
         }
     }, [modal, router]);
 
-    useEffect(() => {
-        if (window.location.pathname.toLowerCase().startsWith(ModalPathPrefix)) {
-            modalUrlRef.current = window.location.href;
-            router.replace('/');
-        }
-    }, []);
-
     useEffect(() => setLoadingBarColor(getComputedStyle(document.body).getPropertyValue('--bs-primary')), []);
 
     useEffect(() => {
-        if (!client.loading && !modal.loading) {
-            if (modalUrlRef.current != null)
-                modal.open(modalUrlRef.current, {}, false);
-        }
-    }, [client.loading, modal.loading]);
-
-    useEffect(() => { setPageLoading(false); }, []);
+        handleRouteStart(window.location.href, false);
+        handleRouteComplete();
+    }, []);
 
     return (
         <>
             <LoadingBar color={loadingBarColor} ref={loadingBarRef} />
             {children}
-            {(client.loading || modal.loading || pageLoading) && (<div className="position-fixed top-50 start-50 translate-middle bg-light w-100 h-100 zi-3"><Loader /></div>)}
+            {(client.loading || pageLoading) && (<div className="position-fixed top-50 start-50 translate-middle bg-light w-100 h-100 zi-3"><Loader /></div>)}
         </>
     );
 };

@@ -47,7 +47,7 @@ export default function MyApp({ Component, pageProps, appSettings, error }) {
               <ClientProvider>
                 <DialogProvider>
                   <ModalProvider>
-                    <div className="pt-8 pb-5 position-relative">
+                    <div className={`${pageSettings.showHeader ? 'pt-8' : ''} ${pageSettings.showFooter ? 'pb-8' : ''} position-relative`}>
                       {pageSettings.showHeader && <Header />}
                       <Body>
                         <Component {...pageProps} />

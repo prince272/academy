@@ -1,18 +1,18 @@
 import { useState, useCallback, useEffect, useMemo, forwardRef, useRef, useImperativeHandle } from 'react';
 import Link from 'next/link';
-import { Form, Modal, OverlayTrigger, Tooltip, ProgressBar, Tabs, Tab, Nav } from 'react-bootstrap';
+import { Form, OverlayTrigger, Tooltip, ProgressBar, Tabs, Tab, Nav } from 'react-bootstrap';
 import { useForm, Controller as FormController } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 
-import { useConfetti, withAsync, withRemount } from '../../utils/hooks';
-import { arrayMove, preventDefault, sleep, stripHtml } from '../../utils/helpers';
+import { useConfetti, withAsync, withRemount } from '../../../../utils/hooks';
+import { arrayMove, formatNumber, preventDefault, sleep, stripHtml } from '../../../../utils/helpers';
 
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 
 import { pascalCase } from 'change-case';
 
-import Loader from '../../components/Loader';
+import Loader from '../../../../components/Loader';
 
 import { BsArrowLeft, BsCheckCircleFill, BsFilm, BsGripVertical, BsJournalRichtext, BsLightbulb, BsLightbulbFill, BsMusicNoteBeamed, BsXCircle, BsXCircleFill, BsXLg } from 'react-icons/bs';
 
@@ -20,17 +20,18 @@ import LinesEllipsisLoose from 'react-lines-ellipsis/lib/loose'
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
 const ResponsiveEllipsis = responsiveHOC()(LinesEllipsisLoose);
 
-import { SvgBitCube, SvgBitCubes } from '../../resources/images/icons';
+import { SvgBitCube, SvgBitCubes } from '../../../../resources/images/icons';
 
 import Plyr from 'plyr-react';
 import 'plyr-react/dist/plyr.css';
 import _ from 'lodash';
-import { useClient } from '../../utils/client';
-import { useDialog } from '../../utils/dialog';
-import CertificateViewDialog from './CertificateViewDialog';
-import { useEventDispatcher } from '../../utils/eventDispatcher';
-import { useAppSettings } from '../../utils/appSettings';
-import { ModalPathPrefix } from '..';
+import { useClient } from '../../../../utils/client';
+import { useDialog } from '../../../../utils/dialog';
+import CertificateViewDialog from '../../../../modals/courses/CertificateViewDialog';
+import { useEventDispatcher } from '../../../../utils/eventDispatcher';
+import { useAppSettings } from '../../../../utils/appSettings';
+import { ModalPathPrefix } from '../../../../modals';
+import { useRouterQuery } from 'next-router-query';
 
 
 const LessonView = (props) => {
@@ -279,17 +280,18 @@ const QuestionView = (props) => {
 };
 QuestionView.displayName = 'QuestionView';
 
-const LessonViewModal = withRemount((props) => {
-    const { route, modal, remount, updateModalProps } = props;
+const LearnPage = withRemount(({ remount }) => {
     const router = useRouter();
     const client = useClient();
     const dialog = useDialog();
 
     const [loading, setLoading] = useState({});
     const [submitting, setSubmitting] = useState(false);
-    const courseId = route.query.courseId;
-    const sectionId = route.query.sectionId;
-    const lessonId = route.query.lessonId;
+
+    const routerQuery = useRouterQuery();
+    const courseId = routerQuery.courseId;
+    const sectionId = routerQuery.all && routerQuery.all[0];
+    const lessonId = routerQuery.all && routerQuery.all[1];
 
     let [course, setCourse] = withAsync(useState(null));
     let [section, setSection] = withAsync(useState(null));
@@ -298,7 +300,6 @@ const LessonViewModal = withRemount((props) => {
     const [currentView, setCurrentView] = useState(null);
 
     const componentId = useMemo(() => _.uniqueId('Component'), []);
-    const eventDispatcher = useEventDispatcher();
 
     const confetti = useConfetti();
 
@@ -309,7 +310,7 @@ const LessonViewModal = withRemount((props) => {
 
         if (result.error) {
             const error = result.error;
-            setLoading({ ...error, message: 'Unable to load lesson.', fallback: modal.close, remount });
+            setLoading({ ...error, message: 'Unable to load lesson.', fallback: () => router.push(`/courses/${courseId}`), remount });
             return;
         }
 
@@ -321,12 +322,15 @@ const LessonViewModal = withRemount((props) => {
 
             if (result.error) {
                 const error = result.error;
-                setLoading({ ...error, message: 'Unable to load lesson.', fallback: modal.close, remount });
+                setLoading({ ...error, message: 'Unable to load lesson.', fallback: () => router.push(`/courses/${courseId}`), remount });
                 return;
             }
 
+            setLoading({ status: 402, fallback: () => router.push(`/courses/${courseId}`),  message: 'The lesson cannot be accessed because you need to purchase the course.', remount });
             const payment = result.data;
-            router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { returnUrl: route.url, payment: JSON.stringify(payment) } });
+
+            router.replace(`/courses/${courseId}`)
+            router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { returnUrl: window.location.href, payment: JSON.stringify(payment) } });
             return;
         }
 
@@ -361,10 +365,6 @@ const LessonViewModal = withRemount((props) => {
 
     useEffect(() => {
         load();
-
-        return async () => {
-            eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
-        };
     }, []);
 
     const moveBackward = () => {
@@ -375,11 +375,11 @@ const LessonViewModal = withRemount((props) => {
             setCurrentView(previousView);
         }
         else {
-            modal.close();
+            router.push(`/courses/${courseId}`);
         }
     };
 
-    const moveForward = async (skip) => {
+    const moveForward = async (solve) => {
 
         if (currentView._type == 'lesson') {
 
@@ -396,10 +396,10 @@ const LessonViewModal = withRemount((props) => {
             client.updateUser({ bits: result.data.bits });
             setSubmitting(false);
         }
-        else if (currentView._type == 'question' && (!currentView._submitted || (skip && !currentView._correctAnswer))) {
+        else if (currentView._type == 'question' && (!currentView._submitted || (solve && !currentView._correctAnswer))) {
 
             setSubmitting(true);
-            let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { ...currentView._data, skip });
+            let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { ...currentView._data, solve });
 
             if (result.error) {
                 const error = result.error;
@@ -424,7 +424,7 @@ const LessonViewModal = withRemount((props) => {
             if (currentView.type == 'singleAnswer' || currentView.type == 'multipleAnswer') {
                 answers = currentView.answers.map(answer => ({
                     ...answer,
-                    [skip ? 'checked' : undefined]: result.data.answers.find(_answer => _answer.id == answer.id).checked,
+                    [solve ? 'checked' : undefined]: result.data.answers.find(_answer => _answer.id == answer.id).checked,
                     correct: result.data.answers.find(_answer => _answer.id == answer.id).checked,
                 }));
             }
@@ -432,7 +432,7 @@ const LessonViewModal = withRemount((props) => {
 
                 // Reorder the answers accordingly.
 
-                if (skip) {
+                if (solve) {
                     answers = currentView.answers.sort(function (a, b) {
                         return result.data.answers.findIndex(answer => answer.id == a.id) - result.data.answers.findIndex(answer => answer.id == b.id);
                     });
@@ -450,21 +450,21 @@ const LessonViewModal = withRemount((props) => {
             setCurrentView(nextView);
         }
         else {
-            modal.close();
-
             const lastSection = course.sections.slice(-1)[0];
 
             if ((lastSection && lastSection.id == sectionId) && course.certificateTemplate) {
-                await dialog.open({ course }, CertificateViewDialog);
+                dialog.open({ course }, CertificateViewDialog);
             }
+
+            router.replace(`/courses/${courseId}`);
         }
     };
 
     if (loading) return (<Loader {...loading} />);
 
     return (
-        <>
-            <Modal.Header className="py-2 px-2 zi-1">
+        <div className="d-flex flex-column" style={{ height: "inherit" }}>
+            <div className="py-2 px-2 zi-1">
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
                         <div className="d-flex align-items-center justify-content-between">
@@ -482,35 +482,27 @@ const LessonViewModal = withRemount((props) => {
                                     trimRight
                                     basedOn='letters'
                                 />
-                                <div className="pt-1 small">
-
-                                    <div className="hstack gap-2 justify-content-center">
-                                        <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1 fw-bold">{client.user.bits}</div></div>
-                                    </div>
-                                </div>
                             </div>
-                            <a className="btn btn-outline-secondary btn-sm btn-icon btn-no-focus border-0" onClick={() => modal.close()}>
+                            <a className="btn btn-outline-secondary btn-sm btn-icon btn-no-focus border-0" onClick={() => router.replace(`/courses/${courseId}`)}>
                                 <span className="svg-icon svg-icon-xs d-inline-block" ><BsXLg /></span>
                             </a>
                         </div>
                     </div>
                 </div>
-            </Modal.Header>
+            </div>
 
-            <Modal.Body className="position-static">
-                <>
-                    {currentView._type == 'lesson' && <LessonView key={currentView.id} {...{ course, lesson: currentView, setCurrentView, moveBackward, moveForward }} />}
-                    {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, question: currentView, setCurrentView, moveBackward, moveForward }} />}
-                </>
-            </Modal.Body>
+            <div className="py-2 px-2 flex-grow-1">
+                {currentView._type == 'lesson' && <LessonView key={currentView.id} {...{ course, lesson: currentView, setCurrentView, moveBackward, moveForward }} />}
+                {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, question: currentView, setCurrentView, moveBackward, moveForward }} />}
+            </div>
 
-            <Modal.Footer className="zi-1 py-3">
+            <div className="py-2 px-2">
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
                         <div className="d-flex gap-3 justify-content-end w-100">
                             {currentView._type == 'question' && !currentView._correctAnswer && (
                                 <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Find answer</Tooltip>}>
-                                    <button className="btn btn-secondary btn-icon" disabled={submitting} onClick={async () => {
+                                    <button className="btn btn-secondary" disabled={submitting} onClick={async () => {
                                         const confirmed = await dialog.confirm({
                                             title: 'Find the answer',
                                             body: <>Use your bits to find the answer. (You have <span className="svg-icon svg-icon-xs d-inline-block me-1"><SvgBitCube /></span>{client.user.bits})</>
@@ -519,7 +511,7 @@ const LessonViewModal = withRemount((props) => {
                                         if (confirmed) {
                                             moveForward(true);
                                         }
-                                    }}><span className="svg-icon svg-icon-xs"><BsLightbulb /></span></button>
+                                    }}><div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{formatNumber(client.user.bits)}</div></div></button>
                                 </OverlayTrigger>
                             )}
                             <button className={`btn btn-primary  px-5 w-100 w-sm-auto`} type="button" disabled={submitting} onClick={() => moveForward()}>
@@ -531,16 +523,16 @@ const LessonViewModal = withRemount((props) => {
                         </div>
                     </div>
                 </div>
-            </Modal.Footer>
-        </>
+            </div>
+        </div>
     );
 });
 
-LessonViewModal.getModalProps = () => {
-    return {
-        contentClassName: 'h-100',
-        fullscreen: true
-    };
-};
+LearnPage.getPageSettings = () => {
+    return ({
+        showHeader: false,
+        showFooter: false
+    });
+}
 
-export default LessonViewModal;
+export default LearnPage;
