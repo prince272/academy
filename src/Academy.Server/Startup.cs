@@ -111,12 +111,12 @@ namespace Academy.Server
                 options.Course = new CourseInfo
                 {
                     Rate = 0.15m,
-                    BitRules = new List<CourseBitRule>
+                    BitRules = new Dictionary<CourseBitRuleType, CourseBitRule>
                     {
-                        new CourseBitRule(CourseBitRuleType.CompleteLesson, 10, "Complete a lesson"),
-                        new CourseBitRule(CourseBitRuleType.AnswerCorrectly, 5, "Answer question correctly"),
-                        new CourseBitRule(CourseBitRuleType.AnswerWrongly, -15, "Answer question wrongly"),
-                        new CourseBitRule(CourseBitRuleType.SkipQuestion, -5, "Skip question")
+                        { CourseBitRuleType.CompleteLesson, new CourseBitRule(CourseBitRuleType.CompleteLesson, 10, "Complete a lesson") },
+                        { CourseBitRuleType.AnswerCorrectly, new CourseBitRule(CourseBitRuleType.AnswerCorrectly, 5, "Answer question correctly") },
+                        { CourseBitRuleType.AnswerWrongly, new CourseBitRule(CourseBitRuleType.AnswerWrongly, -15, "Answer question wrongly") },
+                        { CourseBitRuleType.SeekAnswer, new CourseBitRule(CourseBitRuleType.SeekAnswer, -5, "Seek answer") }
                     }
                 };
 
@@ -181,11 +181,14 @@ namespace Academy.Server
             })
                 .AddNewtonsoftJson(options =>
                 {
-                    options.SerializerSettings.Converters.Add(new StringEnumConverter(new CamelCaseNamingStrategy
+                    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver
                     {
-                        ProcessDictionaryKeys = true,
-                        ProcessExtensionDataNames = true,
-                    }));
+                        NamingStrategy = new CamelCaseNamingStrategy
+                        {
+                            ProcessDictionaryKeys = true
+                        }
+                    };
+                    options.SerializerSettings.Converters.Add(new StringEnumConverter(new CamelCaseNamingStrategy()));
                     options.SerializerSettings.Converters.Add(new TrimmingStringConverter());
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
@@ -237,7 +240,8 @@ namespace Academy.Server
                 var migrationAssembly = Assembly.GetExecutingAssembly().GetName().Name;
 
                 // Configure the context to use Microsoft SQL Server.
-                options.UseSqlServer(connectionString, sql => { 
+                options.UseSqlServer(connectionString, sql =>
+                {
                     sql.MigrationsAssembly(migrationAssembly);
                     sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                     options.ConfigureWarnings(waring => waring.Ignore(CoreEventId.RowLimitingOperationWithoutOrderByWarning));
@@ -350,7 +354,8 @@ namespace Academy.Server
                 options.SecureSocketOptionsId = 2;
             });
 
-            services.AddmNotifySmsSender(options => {
+            services.AddmNotifySmsSender(options =>
+            {
 
                 options.ClientId = "Academy";
                 options.ClientSecret = "Jyo1bbROPF0fdiHoxv3uqtuVETob6OVPmjQxvHmkmmAAE";

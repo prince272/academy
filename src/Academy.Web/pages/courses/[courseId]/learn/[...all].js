@@ -147,7 +147,9 @@ LessonView.displayName = 'LessonView';
 
 const QuestionView = (props) => {
     const client = useClient();
-    const { question, setCurrentView } = props;
+    const dialog = useDialog();
+    const { question, setCurrentView, moveForward, submitting } = props;
+    const appSettings = useAppSettings();
 
     useEffect(() => {
         // shuffle answers.
@@ -218,7 +220,7 @@ const QuestionView = (props) => {
     };
 
     return (
-        <div className="row justify-content-center g-0 h-100">
+        <div className="row justify-content-center g-0">
             <div className="col-12 col-md-7 col-lg-6 col-xl-5">
                 <div className="w-100 text-break my-3" dangerouslySetInnerHTML={{ __html: question.text }} />
                 <DragDropContext onDragEnd={handleReorder}>
@@ -261,6 +263,25 @@ const QuestionView = (props) => {
                         )}
                     </Droppable>
                 </DragDropContext>
+                <div className="d-flex justify-content-end">
+                    {!question._correct && (
+                        <button className="btn btn-secondary" disabled={submitting} onClick={async () => {
+                            const confirmed = await dialog.confirm({
+                                title: 'Find the answer',
+                                body: <>Use your bits to find the answer. (You have <span className="svg-icon svg-icon-xs d-inline-block me-1"><SvgBitCube /></span>{client.user.bits})</>
+                            });
+
+                            if (confirmed) {
+                                moveForward(true);
+                            }
+                        }}>
+                            <div className="position-relative d-flex align-items-center justify-content-center">
+                                <div className={`${submitting ? 'invisible' : ''}`}>Seek answer <span className="svg-icon svg-icon-xs d-inline-block me-1"><SvgBitCube /></span>{appSettings.course.bitRules.seekAnswer.value}</div>
+                                {submitting && <div className="position-absolute top-50 start-50 translate-middle"><div className="spinner-border spinner-border-sm"></div></div>}
+                            </div>
+                        </button>
+                    )}
+                </div>
                 {question._submitted && (
                     <div className={`alert alert-${question._alert.type == 'error' ? 'danger' : question._alert.type}`} role="alert">
                         <div className="d-flex align-items-center">
@@ -284,7 +305,6 @@ QuestionView.displayName = 'QuestionView';
 const LearnPage = withRemount(({ remount }) => {
     const router = useRouter();
     const client = useClient();
-    const dialog = useDialog();
 
     const [loading, setLoading] = useState({});
     const [submitting, setSubmitting] = useState(false);
@@ -393,26 +413,46 @@ const LearnPage = withRemount(({ remount }) => {
 
         if (currentView._type == 'lesson') {
 
-            setSubmitting(true);
             client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.id}/progress`, currentView._data).then(result => {
 
                 if (result.error) {
                     const error = result.error;
                     toast.error(error.message, { id: componentId });
-                    setSubmitting(false);
                     return;
                 }
 
                 client.updateUser({ bits: result.data.bits });
-                setSubmitting(false);
             });
         }
         else if (currentView._type == 'question') {
 
-            if (!currentView._submitted) {
-                setSubmitting(true);
+            if (!currentView._submitted || solve) {
+                let inputs = currentView._data.inputs;
+                const answers = JSON.parse(protection.decrypt(appSettings.company.name, currentView.secret));
 
-                client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { ...currentView._data, solve }).then(result => {
+                const comparator = (a, b) => {
+                    return a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' })
+                };
+
+                const sequenceEqual = (a, b) => {
+                    if (a === b) return true;
+                    if (a == null || b == null) return false;
+                    if (a.length !== b.length) return false;
+
+                    // If you don't care about the order of the elements inside
+                    // the array, you should sort both arrays here.
+                    // Please note that calling sort on an array will modify that array.
+                    // you might want to clone your array first.
+
+                    for (var i = 0; i < a.length; ++i) {
+                        if (a[i] !== b[i]) return false;
+                    }
+                    return true;
+                };
+
+                if (solve) {
+                    setSubmitting(true);
+                    let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/questions/${currentView.id}/solve`);
 
                     if (result.error) {
                         const error = result.error;
@@ -421,35 +461,36 @@ const LearnPage = withRemount(({ remount }) => {
                         return;
                     }
 
+                    inputs = (() => {
+                        if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
+                            const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
+                            return checkedIds;
+                        }
+                        else if (currentView.type == 'reorder') {
+                            const checkedIds = answers.map(answer => answer.id.toString());
+                            return checkedIds;
+                        }
+                        else {
+                            return [];
+                        }
+                    })();
+
                     client.updateUser({ bits: result.data.bits });
                     setSubmitting(false);
+                }
+
+                client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { inputs }).then(result => {
+
+                    if (result.error) {
+                        const error = result.error;
+                        toast.error(error.message, { id: componentId });
+                        return;
+                    }
+
+                    client.updateUser({ bits: result.data.bits });
                 });
 
-                const answers = JSON.parse(protection.decrypt(appSettings.company.name, currentView.secret));
-
-                const checkAnswer = (inputs) => {
-                    if (inputs == null) return false;
-
-                    const comparator = (a, b) => {
-                        return a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' })
-                    };
-
-                    const sequenceEqual = (a, b) => {
-                        if (a === b) return true;
-                        if (a == null || b == null) return false;
-                        if (a.length !== b.length) return false;
-
-                        // If you don't care about the order of the elements inside
-                        // the array, you should sort both arrays here.
-                        // Please note that calling sort on an array will modify that array.
-                        // you might want to clone your array first.
-
-                        for (var i = 0; i < a.length; ++i) {
-                            if (a[i] !== b[i]) return false;
-                        }
-                        return true;
-                    };
-
+                const _correct = (() => {
                     if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
                         const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
                         const inputIds = inputs.map(inputId => inputId.toString()).sort(comparator);
@@ -462,17 +503,17 @@ const LearnPage = withRemount(({ remount }) => {
                     }
                     else {
                         return false;
-                    };
-                };
-
-                const _correct = solve || checkAnswer(currentView._data.inputs);
+                    }
+                })();
 
                 let _alert = _correct ?
                     {
-                        type: 'success', message: _.sample(['Correct answer, Continue!', `Well done, ${client.user.firstName}!`])
+                        type: 'success',
+                        message: _.sample(['Correct answer, Continue!', `Well done, ${client.user.firstName}!`])
                     } :
                     {
-                        type: 'error', message: _.sample(['Wrong answer, Please try again!', `Hmm, think again, ${client.user.firstName}!`, `Give it another try, ${client.user.firstName}!`])
+                        type: 'error',
+                        message: _.sample(['Wrong answer, Please try again!', `Hmm, think again, ${client.user.firstName}!`, `Give it another try, ${client.user.firstName}!`])
                     };
 
                 if (_correct) confetti.fire();
@@ -482,27 +523,27 @@ const LearnPage = withRemount(({ remount }) => {
                         ...currentView,
                         answers: currentView.answers.map(answer => ({
                             ...answer,
-                            [solve ? 'checked' : undefined]: answers.find(_answer => _answer.id == answer.id).checked,
-                            correct: answers.find(_answer => _answer.id == answer.id).checked,
-                        })), _correct, _alert, _submitted: true
+                            [_correct ? 'checked' : undefined]: answers.find(a => a.id == answer.id).checked,
+                            correct: answers.find(a => a.id == answer.id).checked
+                        })), _correct, _alert, _submitted: true, _data: { ...currentView._data, inputs }
                     });
                 }
                 else if (currentView.type == 'reorder') {
-
                     setCurrentView({
                         ...currentView,
-                        answers: solve ? currentView.answers.sort(function (a, b) {
+                        answers: _correct ? currentView.answers.sort(function (a, b) {
                             return answers.findIndex(answer => answer.id == a.id) - answers.findIndex(answer => answer.id == b.id);
-                        }) : currentView.answers, _correct, _alert, _submitted: true
+                        }) : currentView.answers, _correct, _alert, _submitted: true, _data: { ...currentView._data, inputs }
                     });
                 }
+
                 return;
             }
             else {
                 if (!currentView._correct) {
                     setCurrentView({
                         ...currentView,
-                        answers: currentView.answers.map(answer => ({
+                        answers: _.shuffle(currentView.answers).map(answer => ({
                             ...answer,
                             checked: false,
                             correct: false,
@@ -563,29 +604,15 @@ const LearnPage = withRemount(({ remount }) => {
             </div>
 
             <div className="py-2 px-3 flex-grow-1" style={{ overflowY: "auto" }}>
-                {currentView._type == 'lesson' && <LessonView key={currentView.id} {...{ course, lesson: currentView, setCurrentView, moveBackward, moveForward }} />}
-                {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, question: currentView, setCurrentView, moveBackward, moveForward }} />}
+                {currentView._type == 'lesson' && <LessonView key={currentView.id} {...{ course, lesson: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
+                {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, question: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
             </div>
 
             <div className="p-3">
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
                         <div className="d-flex gap-3 justify-content-end w-100">
-                            {currentView._type == 'question' && !currentView._correct && (
-                                <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Find answer</Tooltip>}>
-                                    <button className="btn btn-secondary" disabled={submitting} onClick={async () => {
-                                        const confirmed = await dialog.confirm({
-                                            title: 'Find the answer',
-                                            body: <>Use your bits to find the answer. (You have <span className="svg-icon svg-icon-xs d-inline-block me-1"><SvgBitCube /></span>{client.user.bits})</>
-                                        });
-
-                                        if (confirmed) {
-                                            moveForward(true);
-                                        }
-                                    }}><div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">Answer</div></div></button>
-                                </OverlayTrigger>
-                            )}
-                            <button className={`btn btn-primary  px-5 w-100 w-sm-auto`} type="button" disabled={(currentView._type == 'question' && !(currentView._data && currentView._data.inputs && currentView._data.inputs.length))} onClick={() => moveForward()}>
+                            <button className={`btn btn-primary  px-5 w-100 w-sm-auto`} type="button" disabled={submitting || (currentView._type == 'question' && !(currentView._data && currentView._data.inputs && currentView._data.inputs.length))} onClick={() => moveForward()}>
                                 <div className="position-relative d-flex align-items-center justify-content-center">
                                     <div><div>{currentView._type == 'question' ? (currentView._submitted ? (currentView._correct ? 'Continue' : 'Try again') : 'Check answer') : ('Continue')}</div></div>
                                 </div>

@@ -19,7 +19,7 @@ namespace Academy.Server.Data.Entities
 
         public virtual ICollection<QuestionAnswer> Answers { get; set; } = new List<QuestionAnswer>();
 
-        public bool Check(string[] inputs)
+        public bool CheckInputs(string[] inputs)
         {
             if (inputs == null) return false;
 

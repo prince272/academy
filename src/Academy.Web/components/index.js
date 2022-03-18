@@ -40,7 +40,7 @@ const BitInfoDialog = () => {
                 <hr />
                 <div className="h6 mb-3">How you may earn or lose bits:</div>
                 <div className="vstack gap-2">
-                    {appSettings.course.bitRules.map((bitRule) => {
+                    {Object.entries(appSettings.course.bitRules).map(([bitValue, bitRule]) => {
                         return (
                             <div key={bitRule.type} className="hstack gap-3 justify-content-between align-items-center text-nowrap">
                                 <div className="text-muted">{bitRule.description}</div>

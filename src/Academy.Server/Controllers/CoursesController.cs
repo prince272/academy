@@ -205,7 +205,6 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Progresss(int courseId, int sectionId, int lessonId, [FromBody] QuestionProgressModel form)
         {
             var user = await HttpContext.Request.GetCurrentUserAsync();
-            var remainingBits = user.Bits + appSettings.Course.BitRules.First(_ => _.Type == CourseBitRuleType.SkipQuestion).Value;
 
             var progress = user.Progresses.FirstOrDefault(_ => _.CourseId == courseId && _.SectionId == sectionId && _.LessonId == lessonId && _.QuestionId == form.Id);
             if (progress == null) user.Progresses.Add(progress = new CourseProgress()
@@ -215,15 +214,9 @@ namespace Academy.Server.Controllers
                 LessonId = lessonId,
                 QuestionId = form.Id,
                 Status = CourseStatus.Completed,
-                Solve = form.Solve && (remainingBits >= 0),
                 Inputs = form.Inputs
             });
             user.Progresses.Move(user.Progresses.IndexOf(progress), 0);
-
-            if (form.Solve)
-            {
-                user.Bits = remainingBits;
-            }
 
             var courseModel = await GetCourseModel(courseId);
             if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
@@ -241,7 +234,7 @@ namespace Academy.Server.Controllers
 
             if (lessonModel.Status == CourseStatus.Completed && (progress.QuestionId == null && progress.Completed == null))
             {
-                user.Bits += appSettings.Course.BitRules.First(_ => _.Type == CourseBitRuleType.CompleteLesson).Value;
+                user.Bits += appSettings.Course.BitRules[CourseBitRuleType.CompleteLesson].Value;
                 progress.Completed = DateTimeOffset.UtcNow;
             }
 
@@ -252,14 +245,17 @@ namespace Academy.Server.Controllers
 
                 if (questionModel.Status == CourseStatus.Completed && (progress.QuestionId != null && progress.Completed == null))
                 {
+                    user.Bits += questionModel.Correct.Value ? 
+                        appSettings.Course.BitRules[CourseBitRuleType.AnswerCorrectly].Value :
+                        appSettings.Course.BitRules[CourseBitRuleType.AnswerWrongly].Value;
+
                     progress.Completed = DateTimeOffset.UtcNow;
                 }
             }
 
             await unitOfWork.UpdateAsync(user);
-            return Result.Succeed(new { user.Bits, });
+            return Result.Succeed(new { user.Bits });
         }
-
 
         [Authorize]
         [HttpPost("/courses/{courseId}/certificate")]
@@ -850,6 +846,34 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
+        [HttpPost("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions/{questionId}/solve")]
+        public async Task<IActionResult> Solve(int courseId, int sectionId, int lessonId, int questionId)
+        {
+            var question = await unitOfWork.Query<Question>().AsSingleQuery()
+                .Include(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .Include(_ => _.Lesson).ThenInclude(_ => _.Section).ThenInclude(_ => _.Course)
+                .FirstOrDefaultAsync(_ => _.Id == questionId);
+            if (question == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var lesson = question.LessonId == lessonId ? question.Lesson : null;
+            if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var section = question.Lesson.SectionId == sectionId ? question.Lesson.Section : null;
+            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var course = question.Lesson.Section.CourseId == courseId ? question.Lesson.Section.Course : null;
+            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var user = await HttpContext.Request.GetCurrentUserAsync();
+
+            var remainingBits = user.Bits + appSettings.Course.BitRules[CourseBitRuleType.SeekAnswer].Value;
+            user.Bits = remainingBits;
+            await unitOfWork.UpdateAsync(user);
+
+            return Result.Succeed(new { user.Bits });
+        }
+
+        [Authorize]
         [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions/{questionId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId, int questionId)
         {
@@ -995,7 +1019,7 @@ namespace Academy.Server.Controllers
                             answerModel.Checked = (permitted) ? answer.Checked : null;
                             return answerModel;
                         }).ToArray();
-                        questionModel.Correct = progress.Status == CourseStatus.Completed ? progress.Solve || question.Check(progress.Inputs) : null;
+                        questionModel.Correct = progress.Status == CourseStatus.Completed ? question.CheckInputs(progress.Inputs) : null;
                         questionModel.Secret = Protection.Encrypt(appSettings.Company.Name, Newtonsoft.Json.JsonConvert.SerializeObject(question.Answers.Select(_ => mapper.Map<QuestionAnswerModel>(_)), JsonSerializerSettingsDefaults.Web));
                         questionModel.Status = progress.Status;
                         return questionModel;

@@ -51,7 +51,7 @@ namespace Academy.Server
     {
         public decimal Rate { get; set; }
 
-        public List<CourseBitRule> BitRules { get; set; }
+        public Dictionary<CourseBitRuleType, CourseBitRule> BitRules { get; set; }
     }
 
     public class CurrencyInfo
@@ -136,6 +136,6 @@ namespace Academy.Server
         CompleteLesson,
         AnswerCorrectly,
         AnswerWrongly,
-        SkipQuestion
+        SeekAnswer
     }
 }
