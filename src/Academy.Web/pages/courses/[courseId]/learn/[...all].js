@@ -367,15 +367,15 @@ const LearnPage = withRemount(({ remount }) => {
     };
 
     useEffect(() => {
-        if (!client.user) {
+        if (!client.loading && !client.user) {
             const location = window.location;
             router.replace(`/courses/${courseId}`);
             router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: { returnUrl: location.href } });
         }
-    }, [client.user]);
+    }, [client.loading, client.user]);
 
     useEffect(() => {
-        if (client.user) load();
+         load();
     }, []);
 
     const moveBackward = () => {
@@ -429,16 +429,18 @@ const LearnPage = withRemount(({ remount }) => {
             const checkAnswer = (inputs) => {
                 if (inputs == null) return false;
 
-                const sortAlphaNum = (a, b) => `${a}`.localeCompare(`${b}`, 'en', { numeric: true, sensitivity: 'base' });
+                const comparator = (a, b) => {
+                    return a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' })
+                  };
 
                 if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
-                    const checkedIds = answers.filter(ans => ans.checked).map(ans => ans.id).sort(sortAlphaNum);
-                    const inputIds = (inputs).sort(sortAlphaNum);
+                    const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
+                    const inputIds = inputs.map(inputId => inputId.toString()).sort(comparator);
                     return checkedIds.every((checkId, checkIndex) => checkId == inputIds[checkIndex]);
                 }
                 else if (currentView.type == 'reorder') {
-                    const checkedIds = answers.map(ans => ans.id);
-                    const inputIds = (inputs);
+                    const checkedIds = answers.map(answer => answer.id.toString());
+                    const inputIds = inputs.map(inputId => inputId.toString());
                     return checkedIds.every((checkId, checkIndex) => checkId == inputIds[checkIndex]);
                 }
                 else {
