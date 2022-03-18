@@ -36,10 +36,10 @@ namespace Academy.Server.Services
             services.AddScoped<IEmailSender, SmtpEmailSender>();
         }
 
-        public static void AddSmsSender(this IServiceCollection services, Action<SmsSenderOptions> configure)
+        public static void AddmNotifySmsSender(this IServiceCollection services, Action<mNotifySmsSenderOptions> configure)
         {
             services.Configure(configure);
-            services.AddScoped<ISmsSender, SmsSender>();
+            services.AddScoped<ISmsSender, mNotifySmsSender>();
         }
 
         public static void AddRazorViewRenderer(this IServiceCollection services, Action<RazorViewRendererOptions> configure)

@@ -61,7 +61,9 @@ namespace Academy.Server.Controllers
             if (ValidationHelper.PhoneOrEmail(form.Username))
             {
                 user.PhoneNumber = form.Username;
-                return Result.Failed(StatusCodes.Status400BadRequest, "Please use your email address instead.");
+
+                if (!form.Username.StartsWith("+233"))
+                    return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Username), "This phone number is not allowed."));
             }
             else user.Email = form.Username;
 
@@ -210,13 +212,13 @@ namespace Academy.Server.Controllers
             if (ValidationHelper.PhoneOrEmail(form.Username))
             {
                 form.Code = await userManager.GenerateChangePhoneNumberTokenAsync(user, form.Username);
-                await smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("ChangeAccount_SMS", (subject, user, form)));
+                await smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ChangeAccount", (user, form)));
             }
             else
             {
                 form.Code = await userManager.GenerateChangeEmailTokenAsync(user, form.Username);
                 await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = form.Username },
-                    subject: subject, body: await viewRenderer.RenderToStringAsync("ChangeAccount_EMAIL", (subject, user, form)));
+                    subject: subject, body: await viewRenderer.RenderToStringAsync("Email/ChangeAccount", (user, form)));
             }
 
             return Result.Succeed();
@@ -287,12 +289,12 @@ namespace Academy.Server.Controllers
 
             if (ValidationHelper.PhoneOrEmail(form.Username))
             {
-                await smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("ResetPassword_SMS", (subject, user, form)));
+                await smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ResetPassword", (user, form)));
             }
             else
             {
                 await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = form.Username },
-                    subject: subject, body: await viewRenderer.RenderToStringAsync("ResetPassword_EMAIL", (subject, user, form)));
+                    subject: subject, body: await viewRenderer.RenderToStringAsync("Email/ResetPassword", (user, form)));
             }
 
             return Result.Succeed();

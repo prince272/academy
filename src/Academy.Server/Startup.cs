@@ -350,7 +350,11 @@ namespace Academy.Server
                 options.SecureSocketOptionsId = 2;
             });
 
-            services.AddSmsSender(options => { });
+            services.AddmNotifySmsSender(options => {
+
+                options.ClientId = "Academy";
+                options.ClientSecret = "Jyo1bbROPF0fdiHoxv3uqtuVETob6OVPmjQxvHmkmmAAE";
+            });
 
             services.AddRazorViewRenderer(options =>
             {

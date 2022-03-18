@@ -51,7 +51,7 @@ const PhoneInputControl = () => {
   const { className, value, onChange, disabled, ...rest } = usePhoneInputProps();
 
   return (
-    <div className="root">
+    <div>
       <ReactPhoneInput
         addInternationalOption={false}
         international={false}
@@ -64,14 +64,16 @@ const PhoneInputControl = () => {
       />
       <style jsx>
         {`
-          .root > :global(.PhoneInput .PhoneInputCountry) {
+          div > :global(.PhoneInput .PhoneInputCountry) {
             display: ${isPhone(value) ? 'flex' : 'none'} !important;
             order: 1;
             margin-left: -50px;
             margin-right: 16px;
           }
-
-          .root > :global(.PhoneInput input) {
+          div > :global(.PhoneInput .PhoneInputCountry .PhoneInputCountrySelect) {
+            opacity: 0;
+          }
+          div > :global(.PhoneInput input) {
             padding-right: ${isPhone(value) ? '60px' : '0px'};
           }
 

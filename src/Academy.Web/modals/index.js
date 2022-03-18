@@ -6,7 +6,7 @@ import { Modal as BsModal } from 'react-bootstrap';
 import { useClient } from '../utils/client';
 
 // accounts
-import ChangeAccountModal from './accounts/ChangeAccountModal';
+import { ChangeEmailModal, ChangePhoneNumberModal } from './accounts/ChangeAccountModal';
 import ChangePasswordModal from './accounts/ChangePasswordModal';
 import ConfirmAccountModal from './accounts/ConfirmAccountModal';
 import EditProfileModal from './accounts/EditProfileModal';
@@ -77,8 +77,13 @@ const useModalProvider = () => {
                 authenticate: true
             },
             {
-                pattern: `${ModalPathPrefix}/accounts/account/change`,
-                modal: ChangeAccountModal,
+                pattern: `${ModalPathPrefix}/accounts/email/change`,
+                modal: ChangeEmailModal,
+                authenticate: true
+            },
+            {
+                pattern: `${ModalPathPrefix}/accounts/phoneNumber/change`,
+                modal: ChangePhoneNumberModal,
                 authenticate: true
             },
             {
