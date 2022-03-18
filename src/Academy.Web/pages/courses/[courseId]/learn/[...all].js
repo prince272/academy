@@ -244,7 +244,7 @@ const QuestionView = (props) => {
 
                                                             </div>
 
-                                                            <div className="d-flex align-items-center flex-grow-1 cursor-default py-2 pe-3">
+                                                            <div className="d-flex align-items-center flex-grow-1 cursor-default py-3 pe-3">
                                                                 <div className="flex-grow-1">
                                                                     <div>{answer.text}</div>
                                                                 </div>
@@ -436,6 +436,8 @@ const LearnPage = withRemount(({ remount }) => {
                 if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
                     const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
                     const inputIds = inputs.map(inputId => inputId.toString()).sort(comparator);
+                    console.log(checkedIds)
+                    console.log(inputIds)
                     return checkedIds.every((checkId, checkIndex) => checkId == inputIds[checkIndex]);
                 }
                 else if (currentView.type == 'reorder') {
