@@ -108,12 +108,6 @@ const createModal = (accountType) => {
                                 <PhoneInput className={`form-control`} value={accountInfo} disabled={true} />
                             </div>
                         )}
-                        {client.user.phoneNumber && (
-                            <div className="col-12">
-                                <label className="form-label">Current phone number</label>
-                                <PhoneInput className={`form-control`} value={client.user.phoneNumber} disabled={true} />
-                            </div>
-                        )}
                         <div className="col-12">
                             <label className="form-label">New {noCase(accountType)}</label>
                             <FormController name="username" control={form.control} render={({ field }) => {

@@ -429,9 +429,11 @@ const LearnPage = withRemount(({ remount }) => {
             const checkAnswer = (inputs) => {
                 if (inputs == null) return false;
 
+                const sortAlphaNum = (a, b) => a.localeCompare(b, 'en', { numeric: true });
+
                 if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
-                    const checkedIds = answers.filter(ans => ans.checked).map(ans => ans.id).sort((a, b) => (a > b) ? 1 : -1);
-                    const inputIds = (inputs).sort((a, b) => (a > b) ? 1 : -1);
+                    const checkedIds = answers.filter(ans => ans.checked).map(ans => ans.id).sort(sortAlphaNum);
+                    const inputIds = (inputs).sort(sortAlphaNum);
                     return checkedIds.every((checkId, checkIndex) => checkId == inputIds[checkIndex]);
                 }
                 else if (currentView.type == 'reorder') {
