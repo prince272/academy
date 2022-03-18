@@ -429,7 +429,7 @@ const LearnPage = withRemount(({ remount }) => {
             const checkAnswer = (inputs) => {
                 if (inputs == null) return false;
 
-                const sortAlphaNum = (a, b) => a.localeCompare(b, 'en', { numeric: true });
+                const sortAlphaNum = (a, b) => `${a}`.localeCompare(`${b}`, 'en', { numeric: true, sensitivity: 'base' });
 
                 if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
                     const checkedIds = answers.filter(ans => ans.checked).map(ans => ans.id).sort(sortAlphaNum);
