@@ -349,14 +349,13 @@ const LearnPage = withRemount(({ remount }) => {
 
         const newViews = [];
         section.lessons.forEach(lesson => {
-            newViews.push({ ...lesson, _id: _.uniqueId(), _type: 'lesson', _data: {} });
+            newViews.push({ ...lesson, _id: _.uniqueId(), _type: 'lesson' });
             lesson.questions.forEach((question, questionIndex) => {
                 newViews.push({
                     ...question,
                     title: `Question ${questionIndex + 1} of ${lesson.questions.length}`,
                     _id: _.uniqueId(),
-                    _type: 'question',
-                    _data: {}
+                    _type: 'question'
                 })
             })
         });
@@ -408,91 +407,110 @@ const LearnPage = withRemount(({ remount }) => {
                 setSubmitting(false);
             });
         }
-        else if (currentView._type == 'question' && (!currentView._submitted || (solve && !currentView._correct))) {
+        else if (currentView._type == 'question') {
 
-            setSubmitting(true);
+            if (!currentView._submitted) {
+                setSubmitting(true);
 
-            client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { ...currentView._data, solve }).then(result => {
+                client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { ...currentView._data, solve }).then(result => {
 
-                if (result.error) {
-                    const error = result.error;
-                    toast.error(error.message, { id: componentId });
-                    setSubmitting(false);
-                    return;
-                }
-
-                client.updateUser({ bits: result.data.bits });
-                setSubmitting(false);
-            });
-
-            const answers = JSON.parse(protection.decrypt(appSettings.company.name, currentView.secret));
-            const checkAnswer = (inputs) => {
-                if (inputs == null) return false;
-
-                const comparator = (a, b) => {
-                    return a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' })
-                };
-
-                const sequenceEqual = (a, b) => {
-                    if (a === b) return true;
-                    if (a == null || b == null) return false;
-                    if (a.length !== b.length) return false;
-
-                    // If you don't care about the order of the elements inside
-                    // the array, you should sort both arrays here.
-                    // Please note that calling sort on an array will modify that array.
-                    // you might want to clone your array first.
-
-                    for (var i = 0; i < a.length; ++i) {
-                        if (a[i] !== b[i]) return false;
+                    if (result.error) {
+                        const error = result.error;
+                        toast.error(error.message, { id: componentId });
+                        setSubmitting(false);
+                        return;
                     }
-                    return true;
+
+                    client.updateUser({ bits: result.data.bits });
+                    setSubmitting(false);
+                });
+
+                const answers = JSON.parse(protection.decrypt(appSettings.company.name, currentView.secret));
+
+                const checkAnswer = (inputs) => {
+                    if (inputs == null) return false;
+
+                    const comparator = (a, b) => {
+                        return a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' })
+                    };
+
+                    const sequenceEqual = (a, b) => {
+                        if (a === b) return true;
+                        if (a == null || b == null) return false;
+                        if (a.length !== b.length) return false;
+
+                        // If you don't care about the order of the elements inside
+                        // the array, you should sort both arrays here.
+                        // Please note that calling sort on an array will modify that array.
+                        // you might want to clone your array first.
+
+                        for (var i = 0; i < a.length; ++i) {
+                            if (a[i] !== b[i]) return false;
+                        }
+                        return true;
+                    };
+
+                    if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
+                        const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
+                        const inputIds = inputs.map(inputId => inputId.toString()).sort(comparator);
+                        return sequenceEqual(checkedIds, inputIds);
+                    }
+                    else if (currentView.type == 'reorder') {
+                        const checkedIds = answers.map(answer => answer.id.toString());
+                        const inputIds = inputs.map(inputId => inputId.toString());
+                        return sequenceEqual(checkedIds, inputIds);
+                    }
+                    else {
+                        return false;
+                    };
                 };
+
+                const _correct = solve || checkAnswer(currentView._data.inputs);
+
+                let _alert = _correct ?
+                    {
+                        type: 'success', message: _.sample(['Correct answer, Continue!', `Well done, ${client.user.firstName}!`])
+                    } :
+                    {
+                        type: 'error', message: _.sample(['Wrong answer, Please try again!', `Hmm, think again, ${client.user.firstName}!`, `Give it another try, ${client.user.firstName}!`])
+                    };
+
+                if (_correct) confetti.fire();
 
                 if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
-                    const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
-                    const inputIds = inputs.map(inputId => inputId.toString()).sort(comparator);
-                    return sequenceEqual(checkedIds, inputIds);
+                    setCurrentView({
+                        ...currentView,
+                        answers: currentView.answers.map(answer => ({
+                            ...answer,
+                            [solve ? 'checked' : undefined]: answers.find(_answer => _answer.id == answer.id).checked,
+                            correct: answers.find(_answer => _answer.id == answer.id).checked,
+                        })), _correct, _alert, _submitted: true
+                    });
                 }
                 else if (currentView.type == 'reorder') {
-                    const checkedIds = answers.map(answer => answer.id.toString());
-                    const inputIds = inputs.map(inputId => inputId.toString());
-                    return sequenceEqual(checkedIds, inputIds);
+
+                    setCurrentView({
+                        ...currentView,
+                        answers: solve ? currentView.answers.sort(function (a, b) {
+                            return answers.findIndex(answer => answer.id == a.id) - answers.findIndex(answer => answer.id == b.id);
+                        }) : currentView.answers, _correct, _alert, _submitted: true
+                    });
                 }
-                else {
-                    return false;
-                };
-            };
-
-            const _correct = solve || checkAnswer(currentView._data.inputs);
-
-            if (_correct) confetti.fire();
-
-            let _alert = _correct ?
-                { type: 'success', message: 'Correct answer, Continue!' } :
-                { type: 'error', message: 'Wrong answer, Please try again!' };
-
-            if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
-                setCurrentView({
-                    ...currentView,
-                    answers: currentView.answers.map(answer => ({
-                        ...answer,
-                        [solve ? 'checked' : undefined]: answers.find(_answer => _answer.id == answer.id).checked,
-                        correct: answers.find(_answer => _answer.id == answer.id).checked,
-                    })), _correct, _alert, _submitted: true
-                });
+                return;
             }
-            else if (currentView.type == 'reorder') {
-
-                setCurrentView({
-                    ...currentView,
-                    answers: solve ? currentView.answers.sort(function (a, b) {
-                        return answers.findIndex(answer => answer.id == a.id) - answers.findIndex(answer => answer.id == b.id);
-                    }) : currentView.answers, _correct, _alert, _submitted: true
-                });
+            else {
+                if (!currentView._correct) {
+                    setCurrentView({
+                        ...currentView,
+                        answers: currentView.answers.map(answer => ({
+                            ...answer,
+                            checked: false,
+                            correct: false,
+                        })), _correct: false, _alert: null, _submitted: false, _data: null
+                    });
+                    return;
+                }
             }
-
-            return;
         }
 
         const currentViewIndex = views.findIndex(view => view._id == currentView._id);
@@ -549,7 +567,7 @@ const LearnPage = withRemount(({ remount }) => {
                 {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, question: currentView, setCurrentView, moveBackward, moveForward }} />}
             </div>
 
-            <div className="py-2 px-3">
+            <div className="p-3">
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
                         <div className="d-flex gap-3 justify-content-end w-100">
@@ -564,12 +582,12 @@ const LearnPage = withRemount(({ remount }) => {
                                         if (confirmed) {
                                             moveForward(true);
                                         }
-                                    }}><div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{formatNumber(client.user.bits)}</div></div></button>
+                                    }}><div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">Answer</div></div></button>
                                 </OverlayTrigger>
                             )}
-                            <button className={`btn btn-primary  px-5 w-100 w-sm-auto`} type="button" disabled={(currentView._type == 'question' && !(currentView._data.inputs && currentView._data.inputs.length))} onClick={() => moveForward()}>
+                            <button className={`btn btn-primary  px-5 w-100 w-sm-auto`} type="button" disabled={(currentView._type == 'question' && !(currentView._data && currentView._data.inputs && currentView._data.inputs.length))} onClick={() => moveForward()}>
                                 <div className="position-relative d-flex align-items-center justify-content-center">
-                                    <div><div>{currentView._type == 'question' ? (currentView._submitted ? 'Continue' : 'Check answer') : ('Continue')}</div></div>
+                                    <div><div>{currentView._type == 'question' ? (currentView._submitted ? (currentView._correct ? 'Continue' : 'Try again') : 'Check answer') : ('Continue')}</div></div>
                                 </div>
                             </button>
                         </div>
