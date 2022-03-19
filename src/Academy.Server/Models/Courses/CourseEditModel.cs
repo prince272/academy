@@ -14,7 +14,7 @@ namespace Academy.Server.Models.Courses
 
         public string Description { get; set; }
 
-        public bool Published { get; set; }
+        public CourseState State { get; set; }
 
         public int? ImageId { get; set; }
 

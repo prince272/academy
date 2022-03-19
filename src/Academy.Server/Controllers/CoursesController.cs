@@ -63,7 +63,10 @@ namespace Academy.Server.Controllers
             course.Subject = form.Subject;
             course.Description = form.Description;
             course.Created = DateTimeOffset.UtcNow;
-            course.Published = form.Published ? course.Published ?? DateTimeOffset.UtcNow : null;
+           
+            course.State = course.State == CourseState.Rejected ? (user.HasRoles(RoleConstants.Admin) ? form.State : course.State) : form.State;
+            course.Published = course.State == CourseState.Visible ? course.Published ?? DateTimeOffset.UtcNow : null;
+
             course.Cost = Math.Round(form.Cost, 2, MidpointRounding.AwayFromZero);
             course.Price = form.Cost > 0 ? Math.Round((appSettings.Course.Rate * form.Cost) + form.Cost, 2, MidpointRounding.AwayFromZero) : 0;
             course.Image = (await unitOfWork.FindAsync<Media>(form.ImageId));
@@ -91,7 +94,10 @@ namespace Academy.Server.Controllers
             course.Subject = form.Subject;
             course.Description = form.Description;
             course.Updated = DateTimeOffset.UtcNow;
-            course.Published = form.Published ? course.Published ?? DateTimeOffset.UtcNow : null;
+
+            course.State = course.State == CourseState.Rejected ? (user.HasRoles(RoleConstants.Admin) ? form.State : course.State) : form.State;
+            course.Published = course.State == CourseState.Visible ? course.Published ?? DateTimeOffset.UtcNow : null;
+
             course.Cost = Math.Round(form.Cost, 2, MidpointRounding.AwayFromZero);
             course.Price = form.Cost > 0 ? Math.Round((appSettings.Course.Rate * form.Cost) + form.Cost, 2, MidpointRounding.AwayFromZero) : 0;
             course.Image = (await unitOfWork.FindAsync<Media>(form.ImageId));
@@ -138,7 +144,7 @@ namespace Academy.Server.Controllers
 
             if (!permitted)
             {
-                query = query.Where(course => course.Published != null);
+                query = query.Where(course => course.State == CourseState.Visible);
             }
 
             if (search.UserId != null) query = query.Where(_ => _.Id == search.UserId);

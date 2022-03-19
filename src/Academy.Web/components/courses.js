@@ -19,6 +19,7 @@ import momentDurationFormatSetup from 'moment-duration-format';
 momentDurationFormatSetup(moment);
 
 import { DialogProvider } from '../utils/dialog';
+import { pascalCase } from 'change-case';
 
 const CourseItem = ({ course }) => {
     const courseId = course.id;
@@ -29,11 +30,20 @@ const CourseItem = ({ course }) => {
     return (
         <div className="card shadow-sm">
             <div className="card-img-top pt-2 px-2">
-                <AspectRatio ratio="1">
-                    {course.image ?
-                        (<Image className="rounded" priority unoptimized loader={({ src }) => src} src={course.image.url} layout="fill" objectFit="cover" alt={course.title} />) :
-                        (<div className="rounded svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center"><BsCardImage /></div>)}
-                </AspectRatio>
+                <div className="position-relative">
+                    <AspectRatio ratio="1">
+                        {course.image ?
+                            (<Image className="rounded" priority unoptimized loader={({ src }) => src} src={course.image.url} layout="fill" objectFit="cover" alt={course.title} />) :
+                            (<div className="rounded svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center"><BsCardImage /></div>)}
+                    </AspectRatio>
+                    {permitted && (
+                        <div class="position-absolute bottom-0 start-0"><div className={`badge bg-${({
+                            'hidden': 'warning',
+                            'visible': 'success',
+                            'rejected': 'danger'
+                        })[course.state]} ${course.state == 'hidden' ? 'text-dark' : 'text-white'} m-2`}>{pascalCase(course.state)}</div></div>
+                    )}
+                </div>
             </div>
             <div className="card-body p-2 position-relative">
                 <div className="d-inline-block badge text-dark bg-soft-primary mb-2">{appSettings.course.subjects.find(subject => course.subject == subject.value)?.name}</div>

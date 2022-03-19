@@ -27,6 +27,8 @@ namespace Academy.Server.Data.Entities
 
         public DateTimeOffset? Published { get; set; }
 
+        public CourseState State { get; set; }
+
         public Media Image { get; set; }
 
         public Media CertificateTemplate { get; set; }
@@ -36,6 +38,13 @@ namespace Academy.Server.Data.Entities
         public decimal Price { get; set; }
 
         public virtual ICollection<Section> Sections { get; set; } = new List<Section>();
+    }
+
+    public enum CourseState
+    {
+        Hidden,
+        Visible,
+        Rejected
     }
 
     public class CourseProgress

@@ -51,7 +51,6 @@ const CourseEditModal = withRemount((props) => {
                 ...result.data,
                 imageId: result.data.image?.id,
                 certificateTemplateId: result.data.certificateTemplate?.id,
-                published: !!result.data.published
             });
             setLoading(null);
         }
@@ -111,7 +110,7 @@ const CourseEditModal = withRemount((props) => {
 
     const courseCost = parseFloat(`${form.watch("cost")}`.replace(/,/g, '')) || 0;
     const coursePrice = ((appSettings.course.rate * courseCost) + courseCost).toFixed(2) * 1;
-    
+
     return (
         <>
             <Modal.Header closeButton>
@@ -134,18 +133,18 @@ const CourseEditModal = withRemount((props) => {
                             </select>
                             <div className="invalid-feedback">{formState.errors.type?.message}</div>
                         </div>
-                        <div className="col-12">
-                            <FormController name={`published`} control={form.control}
-                                render={({ field }) => {
-                                    return (
-                                        <div className="form-check">
-                                            <input type="checkbox" className={`form-check-input ${formState.errors.published ? 'is-invalid' : ''}`} checked={field.value} onChange={(e) => {
-                                                field.onChange(e.target.checked);
-                                            }} />
-                                            <label className="form-check-label" onClick={() => field.onChange(!field.value)}>Show this course to the public</label>
-                                        </div>
-                                    );
-                                }} />
+                        <div className="col-12 col-sm-6">
+                            <label className="form-label">State</label>
+                            <select {...form.register("state")} className={`form-select  ${formState.errors.state ? 'is-invalid' : ''}`}>
+                                {[
+                                    { value: 'hidden', name: 'Hidden' },
+                                    { value: 'visible', name: 'Visible' },
+                                    ...(client.user.roles.some(role => role == 'admin') ? [{ value: 'rejected', name: 'Rejected' }] : [])
+                                ].map((state) => (
+                                    <option key={state.value} value={state.value}>{state.name}</option>
+                                ))}
+                            </select>
+                            <div className="invalid-feedback">{formState.errors.type?.message}</div>
                         </div>
                         <div className="col-12">
                             <label className="form-label">Description</label>
