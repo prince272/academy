@@ -126,12 +126,12 @@ const CourseEditModal = withRemount((props) => {
                         </div>
                         <div className="col-12 col-sm-6">
                             <label className="form-label">Subject</label>
-                            <select {...form.register("subject")} className={`form-select  ${formState.errors.type ? 'is-invalid' : ''}`}>
+                            <select {...form.register("subject")} className={`form-select  ${formState.errors.subject ? 'is-invalid' : ''}`}>
                                 {appSettings.course.subjects.map((subject) => (
                                     <option key={subject.value} value={subject.value}>{subject.name}</option>
                                 ))}
                             </select>
-                            <div className="invalid-feedback">{formState.errors.type?.message}</div>
+                            <div className="invalid-feedback">{formState.errors.subject?.message}</div>
                         </div>
                         <div className="col-12 col-sm-6">
                             <label className="form-label">State</label>
@@ -144,7 +144,7 @@ const CourseEditModal = withRemount((props) => {
                                     <option key={state.value} value={state.value}>{state.name}</option>
                                 ))}
                             </select>
-                            <div className="invalid-feedback">{formState.errors.type?.message}</div>
+                            <div className="invalid-feedback">{formState.errors.state?.message}</div>
                         </div>
                         <div className="col-12">
                             <label className="form-label">Description</label>
