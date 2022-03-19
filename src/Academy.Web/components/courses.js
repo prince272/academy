@@ -37,7 +37,7 @@ const CourseItem = ({ course }) => {
                             (<div className="rounded svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center"><BsCardImage /></div>)}
                     </AspectRatio>
                     {permitted && (
-                        <div class="position-absolute bottom-0 start-0"><div className={`badge bg-${({
+                        <div className="position-absolute bottom-0 start-0"><div className={`badge bg-${({
                             'hidden': 'warning',
                             'visible': 'success',
                             'rejected': 'danger'
