@@ -1,7 +1,9 @@
 ﻿using Academy.Server.Data;
 using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.DocumentProcessor;
+using Academy.Server.Extensions.EmailSender;
 using Academy.Server.Extensions.StorageProvider;
+using Academy.Server.Extensions.ViewRenderer;
 using Academy.Server.Models.Courses;
 using Academy.Server.Models.Students;
 using Academy.Server.Services;
@@ -33,6 +35,8 @@ namespace Academy.Server.Controllers
         private readonly IDocumentProcessor documentProcessor;
         private readonly ISharedService sharedService;
         private readonly AppSettings appSettings;
+        private readonly IEmailSender emailSender;
+        private readonly IViewRenderer viewRenderer;
 
         public CoursesController(IServiceProvider serviceProvider)
         {
@@ -42,6 +46,8 @@ namespace Academy.Server.Controllers
             documentProcessor = serviceProvider.GetRequiredService<IDocumentProcessor>();
             sharedService = serviceProvider.GetRequiredService<ISharedService>();
             appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
+            emailSender = serviceProvider.GetRequiredService<IEmailSender>();
+            viewRenderer = serviceProvider.GetRequiredService<IViewRenderer>();
         }
 
         [Authorize]
@@ -274,6 +280,7 @@ namespace Academy.Server.Controllers
             if (courseModel.Course.CertificateTemplate == null)
                 return Result.Failed(StatusCodes.Status400BadRequest);
 
+            var created = false;
             var certificate = user.Certificates.FirstOrDefault(_ => _.CourseId == courseModel.Id);
             if (certificate == null)
             {
@@ -284,6 +291,7 @@ namespace Academy.Server.Controllers
                     Number = Compute.GenerateCode("CERT")
                 });
                 await unitOfWork.CreateAsync(certificate);
+                created = true;
             }
 
             var certificateFields = new Dictionary<string, object>();
@@ -320,6 +328,18 @@ namespace Academy.Server.Controllers
             certificate.Document = (await CreateMedia(MediaType.Document, DocumentFormat.Pdf));
             certificate.Image = (await CreateMedia(MediaType.Image, DocumentFormat.Jpg));
             await unitOfWork.UpdateAsync(certificate);
+
+            courseModel.Certificate = mapper.Map<CertificateModel>(certificate);
+
+            if (created)
+            {
+                if (user.Email != null)
+                {
+                    emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = user.Email },
+                       subject: $"Congratulations! You've completed the {courseModel.Title} course!",
+                       body: await viewRenderer.RenderToStringAsync("Email/CourseCertification", (user, courseModel))).Forget();
+                }
+            }
 
             return Result.Succeed();
         }

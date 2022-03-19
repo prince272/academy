@@ -1,0 +1,114 @@
+﻿@model (User User, CourseModel Course)
+@{
+    Layout = "Email/_Layout";
+}
+
+@section head { }
+
+<table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+      <tbody>
+        <tr>
+          <td class="o_bg-light o_px-xs" align="center">
+            <!--[if mso]><table width="632" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+            <table class="o_block" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+              <tbody>
+                <tr>
+                  <td class="o_bg-white o_px-md o_py o_sans o_text o_text-secondary" align="center">
+                    <p><img class="o_img-full o_br" src="@(Context.Request.AbsoluteUrl("/img/course-certification.png"))" width="584" height="352" alt="" style="max-width: 584px;"></p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!--[if mso]></td></tr></table><![endif]-->
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- spacer -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+      <tbody>
+        <tr>
+          <td class="o_bg-light o_px-xs" align="center">
+            <!--[if mso]><table width="632" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+            <table class="o_block" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+              <tbody>
+                <tr>
+                  <td class="o_bg-white" style="font-size: 24px; line-height: 24px; height: 24px;">&nbsp; </td>
+                </tr>
+              </tbody>
+            </table>
+            <!--[if mso]></td></tr></table><![endif]-->
+          </td>
+        </tr>
+      </tbody>
+</table>
+
+<!-- content-lg-left -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+      <tbody>
+        <tr>
+          <td class="o_bg-light o_px-xs" align="center">
+            <!--[if mso]><table width="632" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+            <table class="o_block" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+              <tbody>
+                <tr>
+                  <td class="o_bg-white o_px-md o_py o_sans o_text o_text-secondary" align="left">
+                      <p>Hi <b>@(Model.User.FullName)</b>,<br />You’ve successfully completed the @(Model.Course.Title). Your certificate has been added to your profile for you to download whenever you want.</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!--[if mso]></td></tr></table><![endif]-->
+          </td>
+        </tr>
+      </tbody>
+</table>
+
+<!-- spacer -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+      <tbody>
+        <tr>
+          <td class="o_bg-light o_px-xs" align="center">
+            <!--[if mso]><table width="632" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+            <table class="o_block" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+              <tbody>
+                <tr>
+                  <td class="o_bg-white" style="font-size: 24px; line-height: 24px; height: 24px;">&nbsp; </td>
+                </tr>
+              </tbody>
+            </table>
+            <!--[if mso]></td></tr></table><![endif]-->
+          </td>
+        </tr>
+      </tbody>
+</table>
+
+
+<table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+      <tbody>
+        <tr>
+          <td class="o_bg-light o_px-xs" align="center">
+            <!--[if mso]><table width="632" cellspacing="0" cellpadding="0" border="0" role="presentation"><tbody><tr><td><![endif]-->
+            <table class="o_block" width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
+              <tbody>
+                <tr>
+                  <td class="o_bg-white o_px-md o_py-xs" align="center">
+                    <table align="center" cellspacing="0" cellpadding="0" border="0" role="presentation">
+                      <tbody>
+                        <tr>
+                          <td width="300" class="o_btn o_bg-primary o_br o_heading o_text" align="center">
+                            <a class="o_text-white" href="@(Model.Course.Certificate.Document.Url)">Download Certificate</a>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!--[if mso]></td></tr></table><![endif]-->
+          </td>
+        </tr>
+      </tbody>
+    </table>
