@@ -139,7 +139,7 @@ const Header = () => {
                                             <Link href={`${ModalPathPrefix}/accounts/email/change`} passHref><Dropdown.Item>Change email</Dropdown.Item></Link>
                                             <Link href={`${ModalPathPrefix}/accounts/phoneNumber/change`} passHref><Dropdown.Item>Change phone number</Dropdown.Item></Link>
                                             <Link href={`${ModalPathPrefix}/accounts/password/change`} passHref><Dropdown.Item>Change password</Dropdown.Item></Link>
-                                            <Link href={`${ModalPathPrefix}/accounts/withdraw`} passHref><Dropdown.Item>Withdraw</Dropdown.Item></Link>
+                                            {permitted && (<Link href={`${ModalPathPrefix}/accounts/withdraw`} passHref><Dropdown.Item>Withdraw</Dropdown.Item></Link>)}
                                             <Dropdown.Divider />
                                             <Link href={`${ModalPathPrefix}/accounts/signout`} passHref><Dropdown.Item>Sign out</Dropdown.Item></Link>
                                         </Dropdown.Menu>

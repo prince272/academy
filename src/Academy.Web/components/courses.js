@@ -33,8 +33,8 @@ const CourseItem = ({ course }) => {
                 <div className="position-relative">
                     <AspectRatio ratio="1">
                         {course.image ?
-                            (<Image className="rounded" priority unoptimized loader={({ src }) => src} src={course.image.url} layout="fill" objectFit="cover" alt={course.title} />) :
-                            (<div className="rounded svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center"><BsCardImage /></div>)}
+                            (<Image className="rounded border" priority unoptimized loader={({ src }) => src} src={course.image.url} layout="fill" objectFit="cover" alt={course.title} />) :
+                            (<div className="rounded border svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center"><BsCardImage /></div>)}
                     </AspectRatio>
                     {permitted && (
                         <div className="position-absolute bottom-0 start-0"><div className={`badge bg-${({

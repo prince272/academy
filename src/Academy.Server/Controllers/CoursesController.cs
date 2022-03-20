@@ -219,15 +219,18 @@ namespace Academy.Server.Controllers
             var user = await HttpContext.Request.GetCurrentUserAsync();
 
             var progress = user.Progresses.FirstOrDefault(_ => _.CourseId == courseId && _.SectionId == sectionId && _.LessonId == lessonId && _.QuestionId == form.Id);
-            if (progress == null) user.Progresses.Add(progress = new CourseProgress()
+            if (progress == null)
             {
-                CourseId = courseId,
-                SectionId = sectionId,
-                LessonId = lessonId,
-                QuestionId = form.Id,
-                Status = CourseStatus.Completed,
-                Inputs = form.Inputs
-            });
+                user.Progresses.Add(progress = new CourseProgress()
+                {
+                    CourseId = courseId,
+                    SectionId = sectionId,
+                    LessonId = lessonId,
+                    QuestionId = form.Id,
+                    Status = CourseStatus.Completed,
+                    Inputs = form.Inputs
+                });
+            }
             user.Progresses.Move(user.Progresses.IndexOf(progress), 0);
 
             var courseModel = await GetCourseModel(courseId);
@@ -940,11 +943,16 @@ namespace Academy.Server.Controllers
                     .AsNoTracking()
                     .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
                     .Where(_ => _.SectionId == section.Id)
-                    .ProjectTo<Lesson>(new MapperConfiguration(config =>
+                    .Select(lesson => new Lesson
                     {
-                        var map = config.CreateMap<Lesson, Lesson>();
-                        map.ForMember(_ => _.Document, config => config.MapFrom(_ => _.SectionId == sectionId ? _.Document : null));
-                    })).ToListAsync();
+                        SectionId = lesson.SectionId,
+                        Index = lesson.Index,
+                        Id = lesson.Id,
+                        Title = lesson.Title,
+                        Document = section.Id == sectionId ? lesson.Document : null,
+                        Media = lesson.Media,
+                        Duration = lesson.Duration
+                    }).ToListAsync();
 
                 foreach (var lesson in section.Lessons)
                 {
@@ -952,11 +960,14 @@ namespace Academy.Server.Controllers
                         .AsNoTracking()
                         .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
                         .Where(_ => _.LessonId == lesson.Id)
-                        .ProjectTo<Question>(new MapperConfiguration(config =>
+                        .Select(question => new Question
                         {
-                            var map = config.CreateMap<Question, Question>();
-                            map.ForMember(_ => _.Text, config => config.MapFrom(_ => _.Lesson.SectionId == sectionId ? _.Text : null));
-                        })).ToListAsync();
+                            LessonId = question.LessonId,
+                            Index = question.Index,
+                            Id = question.Id,
+                            Text = section.Id == sectionId ? question.Text : null,
+                            Type = question.Type
+                        }).ToListAsync();
 
                     foreach (var question in lesson.Questions)
                     {
@@ -964,11 +975,13 @@ namespace Academy.Server.Controllers
                             .AsNoTracking()
                             .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
                             .Where(_ => _.QuestionId == question.Id)
-                            .ProjectTo<QuestionAnswer>(new MapperConfiguration(config =>
-                        {
-                            var map = config.CreateMap<QuestionAnswer, QuestionAnswer>();
-                            map.ForMember(_ => _.Text, config => config.MapFrom(_ => _.Question.Lesson.SectionId == sectionId ? _.Text : null));
-                        })).ToListAsync();
+                            .Select(answer => new QuestionAnswer
+                            {
+                                QuestionId = answer.QuestionId,
+                                Index = answer.Index,
+                                Id = answer.Id,
+                                Text = section.Id == sectionId ? answer.Text : null
+                            }).ToListAsync();
                     }
                 }
             }

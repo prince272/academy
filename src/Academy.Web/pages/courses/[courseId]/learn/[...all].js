@@ -158,34 +158,28 @@ const QuestionView = (props) => {
         const newQuestion = {
             ...question, answers,
             _submitted: false,
-            _data: {
-                id: question.id,
-                inputs: question.type == 'reorder' ? answers.map(answer => answer.id) : []
-            }
+            _inputs: question.type == 'reorder' ? answers.map(answer => answer.id) : []
         };
         setCurrentView(newQuestion);
     }, []);
 
-    const handleAnswer = (index) => {
+    const handleSelect = (index) => {
 
         if (question.type == 'selectSingle' || question.type == 'selectMultiple') {
 
-            const answers = ({
+            const answers = (({
                 'selectSingle': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : false })),
                 'selectMultiple': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : answer.checked })),
-            })[question.type] ?? null;
+            })[question.type] || null).map((answer, answerIndex) => ({ ...answer, index: answerIndex }));
 
-            answers.forEach((answer, answerIndex) => { answer.index = answerIndex; });
-
-            const newQuestion = {
-                ...question, answers,
+            setCurrentView({
+                ...question,
+                answers,
+                _inputs: answers.filter(answer => answer.checked).map(answer => answer.id),
+                _correct: false,
+                _alert: null,
                 _submitted: false,
-                _data: {
-                    id: question.id,
-                    inputs: answers.filter(answer => answer.checked).map(answer => answer.id)
-                }
-            };
-            setCurrentView(newQuestion);
+            });
         }
     };
 
@@ -210,13 +204,14 @@ const QuestionView = (props) => {
         arrayMove(answers, source.index, destination.index);
         answers.forEach((answer, answerIndex) => { answer.index = answerIndex; });
 
-        const newQuestion = {
-            ...question, answers, _submitted: false, _data: {
-                id: question.id,
-                inputs: answers.map(answer => answer.id)
-            }
-        };
-        setCurrentView(newQuestion);
+        setCurrentView({
+            ...question,
+            answers,
+            _inputs: answers.map(answer => answer.id),
+            _correct: false,
+            _alert: null,
+            _submitted: false,
+        });
     };
 
     return (
@@ -234,7 +229,7 @@ const QuestionView = (props) => {
                                             {(provided) => (
                                                 <div ref={provided.innerRef} {...provided.draggableProps} className="pb-3">
                                                     <div className={`card shadow-sm bg-white text-body ${answer.checked ? `${question._submitted ? (answer.correct ? 'border-success bg-soft-success' : 'border-danger bg-soft-danger') : 'border-primary bg-soft-primary'}` : `btn-outline-primary`}`}
-                                                        style={{ borderLeftWidth: "5px", borderColor: "transparent" }} onClick={() => handleAnswer(answer.index)}>
+                                                        style={{ borderLeftWidth: "5px", borderColor: "transparent" }} onClick={() => handleSelect(answer.index)}>
                                                         <div className="d-flex justify-content-between align-items-stretch border-bottom-0" style={{ minHeight: "52px" }}>
                                                             <div className="px-2 py-1 d-flex align-items-center hstack gap-2">
 
@@ -413,7 +408,7 @@ const LearnPage = withRemount(({ remount }) => {
 
         if (currentView._type == 'lesson') {
 
-            client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.id}/progress`, currentView._data).then(result => {
+            client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.id}/progress`, {}).then(result => {
 
                 if (result.error) {
                     const error = result.error;
@@ -427,7 +422,7 @@ const LearnPage = withRemount(({ remount }) => {
         else if (currentView._type == 'question') {
 
             if (!currentView._submitted || solve) {
-                let inputs = currentView._data.inputs;
+                let _inputs = currentView._inputs;
                 const answers = JSON.parse(protection.decrypt(appSettings.company.name, currentView.secret));
 
                 const comparator = (a, b) => {
@@ -461,7 +456,7 @@ const LearnPage = withRemount(({ remount }) => {
                         return;
                     }
 
-                    inputs = (() => {
+                    _inputs = (() => {
                         if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
                             const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
                             return checkedIds;
@@ -479,7 +474,7 @@ const LearnPage = withRemount(({ remount }) => {
                     setSubmitting(false);
                 }
 
-                client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { inputs }).then(result => {
+                client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { id: currentView.id, inputs: _inputs }).then(result => {
 
                     if (result.error) {
                         const error = result.error;
@@ -493,12 +488,12 @@ const LearnPage = withRemount(({ remount }) => {
                 const _correct = (() => {
                     if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
                         const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
-                        const inputIds = inputs.map(inputId => inputId.toString()).sort(comparator);
+                        const inputIds = _inputs.map(inputId => inputId.toString()).sort(comparator);
                         return sequenceEqual(checkedIds, inputIds);
                     }
                     else if (currentView.type == 'reorder') {
                         const checkedIds = answers.map(answer => answer.id.toString());
-                        const inputIds = inputs.map(inputId => inputId.toString());
+                        const inputIds = _inputs.map(inputId => inputId.toString());
                         return sequenceEqual(checkedIds, inputIds);
                     }
                     else {
@@ -525,7 +520,11 @@ const LearnPage = withRemount(({ remount }) => {
                             ...answer,
                             [_correct ? 'checked' : undefined]: answers.find(a => a.id == answer.id).checked,
                             correct: answers.find(a => a.id == answer.id).checked
-                        })), _correct, _alert, _submitted: true, _data: { ...currentView._data, inputs }
+                        })),
+                        _inputs,
+                        _correct,
+                        _alert,
+                        _submitted: true,
                     });
                 }
                 else if (currentView.type == 'reorder') {
@@ -533,7 +532,11 @@ const LearnPage = withRemount(({ remount }) => {
                         ...currentView,
                         answers: _correct ? currentView.answers.sort(function (a, b) {
                             return answers.findIndex(answer => answer.id == a.id) - answers.findIndex(answer => answer.id == b.id);
-                        }) : currentView.answers, _correct, _alert, _submitted: true, _data: { ...currentView._data, inputs }
+                        }) : currentView.answers,
+                        _inputs,
+                        _correct,
+                        _alert,
+                        _submitted: true,
                     });
                 }
 
@@ -543,11 +546,11 @@ const LearnPage = withRemount(({ remount }) => {
                 if (!currentView._correct) {
                     setCurrentView({
                         ...currentView,
-                        answers: _.shuffle(currentView.answers).map(answer => ({
-                            ...answer,
-                            checked: false,
-                            correct: false,
-                        })), _correct: false, _alert: null, _submitted: false, _data: null
+                        answers: _.shuffle(currentView.answers).map(answer => ({ ...answer, checked: false, correct: false, })),
+                        _inputs: null,
+                        _correct: false,
+                        _alert: null,
+                        _submitted: false,
                     });
                     return;
                 }
@@ -612,7 +615,7 @@ const LearnPage = withRemount(({ remount }) => {
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
                         <div className="d-flex gap-3 justify-content-end w-100">
-                            <button className={`btn btn-primary  px-5 w-100 w-sm-auto`} type="button" disabled={submitting || (currentView._type == 'question' && !(currentView._data && currentView._data.inputs && currentView._data.inputs.length))} onClick={() => moveForward()}>
+                            <button className={`btn btn-primary  px-5 w-100 w-sm-auto`} type="button" disabled={submitting || (currentView._type == 'question' && !(currentView._inputs && currentView._inputs.length))} onClick={() => moveForward()}>
                                 <div className="position-relative d-flex align-items-center justify-content-center">
                                     <div><div>{currentView._type == 'question' ? (currentView._submitted ? (currentView._correct ? 'Continue' : 'Try again') : 'Check answer') : ('Continue')}</div></div>
                                 </div>
