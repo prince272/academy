@@ -6,8 +6,10 @@ namespace Academy.Server.Extensions.DocumentProcessor
 {
     public interface IDocumentProcessor
     {
-        Task MergeAsync(Stream source, Stream destination, IDictionary<string, object> fields);
+        Task MergeWordDocumentAsync(Stream source, Stream destination, IDictionary<string, object> fields);
 
-        Task ConvertAsync(Stream source, Stream destination, DocumentFormat format);
+        Task ConvertWordDocumentAsync(Stream source, Stream destination, DocumentFormat format);
+
+        Task<string> ProcessHtmlDocumentAsync(string html);
     }
 }

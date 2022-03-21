@@ -1,4 +1,9 @@
-﻿using Syncfusion.DocIO;
+﻿using Academy.Server.Data.Entities;
+using Academy.Server.Extensions.StorageProvider;
+using Academy.Server.Utilities;
+using HtmlAgilityPack;
+using Microsoft.Extensions.DependencyInjection;
+using Syncfusion.DocIO;
 using Syncfusion.DocIO.DLS;
 using Syncfusion.DocIORenderer;
 using Syncfusion.EJ2.PdfViewer;
@@ -7,17 +12,21 @@ using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Academy.Server.Extensions.DocumentProcessor
 {
     public class WordDocumentProcessor : IDocumentProcessor
     {
-        public WordDocumentProcessor()
+        private readonly IStorageProvider storageProvider;
+
+        public WordDocumentProcessor(IServiceProvider serviceProvider)
         {
+            storageProvider = serviceProvider.GetRequiredService<IStorageProvider>();
         }
 
-        public Task MergeAsync(Stream source, Stream destination, IDictionary<string, object> fields)
+        public Task MergeWordDocumentAsync(Stream source, Stream destination, IDictionary<string, object> fields)
         {
             var sourcePosition = source.Position;
             var destinationPosition = destination.Position;
@@ -35,7 +44,7 @@ namespace Academy.Server.Extensions.DocumentProcessor
             return Task.CompletedTask;
         }
 
-        public Task ConvertAsync(Stream source, Stream destination, DocumentFormat format)
+        public Task ConvertWordDocumentAsync(Stream source, Stream destination, DocumentFormat format)
         {
             using var wordDocument = new WordDocument(source, FormatType.Docx);
 
@@ -92,6 +101,47 @@ namespace Academy.Server.Extensions.DocumentProcessor
             destination.Position = destinationPosition;
 
             return Task.CompletedTask;
+        }
+
+        public async Task<string> ProcessHtmlDocumentAsync(string html)
+        {
+            html = Sanitizer.SanitizeHtml(html);
+
+            var document = new HtmlDocument();
+            document.LoadHtml(html);
+
+            foreach (var imgNode in document.DocumentNode.SelectNodes("//img[@src]"))
+            {
+                var imgSrcValue = imgNode.GetAttributeValue("src", null);
+
+                if (imgSrcValue != null)
+                {
+                    if (imgSrcValue.StartsWith("data:"))
+                    {
+                        try
+                        {
+                            var match = Regex.Match(imgSrcValue, @"data:image/(?<type>.+?),(?<data>.+)");
+                            var dataExtension = match.Groups["type"].Value.Split(";")[0].ToLowerInvariant();
+                            var base64Data = match.Groups["data"].Value;
+                            var binData = Convert.FromBase64String(base64Data);
+                            var imageStream = new MemoryStream(binData);
+                            var imageMediaName = $"image{Compute.GenerateNumber(12)}.{dataExtension}";
+                            var imageMediaPath = MediaConstants.GetPath("html", MediaType.Image, imageMediaName);
+                            var imageMediaUrl = storageProvider.GetUrl(imageMediaPath);
+                            await storageProvider.WriteAsync(imageMediaPath, imageStream);
+                            imgNode.SetAttributeValue("src", imageMediaUrl);
+                        }
+                        catch (Exception)
+                        {
+
+                        }
+                    }
+                }
+            }
+
+            html = document.DocumentNode.WriteTo();
+
+            return html;
         }
     }
 

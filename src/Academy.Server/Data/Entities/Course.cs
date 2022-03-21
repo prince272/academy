@@ -47,8 +47,12 @@ namespace Academy.Server.Data.Entities
         Rejected
     }
 
-    public class CourseProgress
+    public class CourseProgress : IEntity
     {
+        public int UserId { get; set; }
+
+        public int Id { get; set; }
+
         public int CourseId { get; set; }
 
         public int SectionId { get; set; }

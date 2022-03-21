@@ -218,20 +218,22 @@ namespace Academy.Server.Controllers
         {
             var user = await HttpContext.Request.GetCurrentUserAsync();
 
-            var progress = user.Progresses.FirstOrDefault(_ => _.CourseId == courseId && _.SectionId == sectionId && _.LessonId == lessonId && _.QuestionId == form.Id);
+            var progress = user.CourseProgresses.FirstOrDefault(_ => _.CourseId == courseId && _.SectionId == sectionId && _.LessonId == lessonId && _.QuestionId == form.Id);
             if (progress == null)
             {
-                user.Progresses.Add(progress = new CourseProgress()
+                progress = new CourseProgress()
                 {
+                    UserId = user.Id,
                     CourseId = courseId,
                     SectionId = sectionId,
                     LessonId = lessonId,
                     QuestionId = form.Id,
                     Status = CourseStatus.Completed,
                     Inputs = form.Inputs
-                });
+                };
+
+                await unitOfWork.CreateAsync(progress);
             }
-            user.Progresses.Move(user.Progresses.IndexOf(progress), 0);
 
             var courseModel = await GetCourseModel(courseId);
             if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
@@ -251,6 +253,7 @@ namespace Academy.Server.Controllers
             {
                 user.Bits += appSettings.Course.BitRules[CourseBitRuleType.CompleteLesson].Value;
                 progress.Completed = DateTimeOffset.UtcNow;
+                    await unitOfWork.UpdateAsync(progress);
             }
 
             if (form.Id != null)
@@ -265,6 +268,7 @@ namespace Academy.Server.Controllers
                         appSettings.Course.BitRules[CourseBitRuleType.AnswerWrongly].Value;
 
                     progress.Completed = DateTimeOffset.UtcNow;
+                    await unitOfWork.UpdateAsync(progress);
                 }
             }
 
@@ -312,12 +316,12 @@ namespace Academy.Server.Controllers
 
             using var certificateTemplateStream = await storageProvider.GetStreamAsync(courseModel.Course.CertificateTemplate.Path);
             using var certificateMergedStream = new MemoryStream();
-            await documentProcessor.MergeAsync(certificateTemplateStream, certificateMergedStream, certificateFields);
+            await documentProcessor.MergeWordDocumentAsync(certificateTemplateStream, certificateMergedStream, certificateFields);
 
             async Task<Media> CreateMedia(MediaType mediaType, DocumentFormat format)
             {
                 using var certificateStream = new MemoryStream();
-                await documentProcessor.ConvertAsync(certificateMergedStream, certificateStream, format);
+                await documentProcessor.ConvertWordDocumentAsync(certificateMergedStream, certificateStream, format);
 
                 var mediaName = $"{courseModel.Title} Certificate.{format.ToString().ToLowerInvariant()}";
                 var mediaPath = MediaConstants.GetPath("certificates", mediaType, mediaName);
@@ -661,7 +665,7 @@ namespace Academy.Server.Controllers
             var lesson = new Lesson();
             lesson.SectionId = section.Id;  // Set the owner of the lesson.
             lesson.Title = form.Title;
-            lesson.Document = Sanitizer.SanitizeHtml(form.Document);
+            lesson.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
             lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
             lesson.Duration = await sharedService.CalculateDurationAsync(lesson);
 
@@ -693,7 +697,7 @@ namespace Academy.Server.Controllers
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             lesson.Title = form.Title;
-            lesson.Document = Sanitizer.SanitizeHtml(form.Document);
+            lesson.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
             lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
 
             // Calculate lesson duration.
@@ -771,7 +775,7 @@ namespace Academy.Server.Controllers
 
             var question = new Question();
             question.LessonId = lesson.Id; // Set the owner of the question.
-            question.Text = Sanitizer.SanitizeHtml(form.Text);
+            question.Text = await documentProcessor.ProcessHtmlDocumentAsync(form.Text);
             question.Type = form.Type;
 
             await unitOfWork.CreateAsync(question);
@@ -807,7 +811,7 @@ namespace Academy.Server.Controllers
             var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
-            question.Text = Sanitizer.SanitizeHtml(form.Text);
+            question.Text = await documentProcessor.ProcessHtmlDocumentAsync(form.Text);
             question.Type = form.Type;
 
             await unitOfWork.UpdateAsync(question);
@@ -980,7 +984,8 @@ namespace Academy.Server.Controllers
                                 QuestionId = answer.QuestionId,
                                 Index = answer.Index,
                                 Id = answer.Id,
-                                Text = section.Id == sectionId ? answer.Text : null
+                                Text = section.Id == sectionId ? answer.Text : null,
+                                Checked = answer.Checked,
                             }).ToListAsync();
                     }
                 }
@@ -1012,7 +1017,7 @@ namespace Academy.Server.Controllers
 
             var courseStudents = await unitOfWork.Query<User>()
                 .AsNoTracking()
-                .CountAsync(_ => _.Id == course.UserId);
+                .CountAsync(_ => _.CourseProgresses.Any(progress => progress.CourseId == course.Id));
 
             var courseModel = mapper.Map<CourseModel>(course);
             courseModel.Course = course;
@@ -1024,7 +1029,7 @@ namespace Academy.Server.Controllers
 
             var progresses = course.Sections.SelectMany(section => section.Lessons.SelectMany(lesson =>
             {
-                var progress = user?.Progresses.FirstOrDefault(_ => _.CourseId == course.Id && _.SectionId == section.Id && _.LessonId == lesson.Id && _.QuestionId == null);
+                var progress = user?.CourseProgresses.FirstOrDefault(_ => _.CourseId == course.Id && _.SectionId == section.Id && _.LessonId == lesson.Id && _.QuestionId == null);
                 progress ??= new CourseProgress { CourseId = course.Id, SectionId = section.Id, LessonId = lesson.Id, QuestionId = null, Status = CourseStatus.Locked };
 
                 var progresses = new List<CourseProgress>();
@@ -1032,7 +1037,7 @@ namespace Academy.Server.Controllers
 
                 lesson.Questions.ForEach(question =>
                 {
-                    progress = user?.Progresses.FirstOrDefault(_ => _.CourseId == course.Id && _.SectionId == section.Id && _.LessonId == lesson.Id && _.QuestionId == question.Id);
+                    progress = user?.CourseProgresses.FirstOrDefault(_ => _.CourseId == course.Id && _.SectionId == section.Id && _.LessonId == lesson.Id && _.QuestionId == question.Id);
                     progress ??= new CourseProgress { CourseId = course.Id, SectionId = section.Id, LessonId = lesson.Id, QuestionId = question.Id, Status = CourseStatus.Locked };
                     progresses.Add(progress);
                 });

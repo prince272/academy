@@ -27,6 +27,7 @@ namespace Academy.Server.Utilities
                 currentUser = await userManager.Users
                     .Include(_ => _.UserRoles).ThenInclude(_ => _.Role)
                     .Include(_ => _.Certificates)
+                    .Include(_ => _.CourseProgresses)
                     .FirstOrDefaultAsync(_ => _.Id.ToString() == sub);
 
                 httpRequest.HttpContext.Items[currentUserKey] = currentUser;

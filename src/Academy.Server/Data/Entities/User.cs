@@ -25,7 +25,7 @@ namespace Academy.Server.Data.Entities
 
         public Media Avatar { get; set; }
 
-        public List<CourseProgress> Progresses { get; set; } = new List<CourseProgress>();
+        public ICollection<CourseProgress> CourseProgresses { get; set; } = new List<CourseProgress>();
 
         public ICollection<Certificate> Certificates { get; set; } = new List<Certificate>();
 

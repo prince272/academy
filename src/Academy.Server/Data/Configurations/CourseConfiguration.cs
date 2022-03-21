@@ -13,4 +13,12 @@ namespace Academy.Server.Data.Configurations
             builder.Property(_ => _.CertificateTemplate).HasJsonValueConversion(); ;
         }
     }
+
+    public class CourseProgressConfiguration : IEntityTypeConfiguration<CourseProgress>
+    {
+        public void Configure(EntityTypeBuilder<CourseProgress> builder)
+        {
+            builder.Property(_ => _.Inputs).HasJsonValueConversion();
+        }
+    }
 }

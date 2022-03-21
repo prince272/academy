@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@botom/quill-resize-module": "^2.0.0",
     "@stefanprobst/next-error-boundary": "^3.0.2",
     "@svgr/webpack": "^5.5.0",
     "axios": "^0.25.0",
@@ -24,8 +25,10 @@
     "filepond-plugin-image-exif-orientation": "^1.0.11",
     "filepond-plugin-image-preview": "^4.6.10",
     "filepond-plugin-media-preview": "^1.0.9",
+    "highlight.js": "^11.5.0",
     "html-to-text": "^8.1.0",
     "jquery": "3.6.0",
+    "katex": "^0.15.3",
     "libphonenumber-js": "^1.9.44",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
@@ -56,6 +59,7 @@
     "react-lines-ellipsis": "^0.15.0",
     "react-phone-number-input": "^3.1.45",
     "react-pin-field": "^1.1.0",
+    "react-quill": "^2.0.0-beta.4",
     "react-scroll": "^1.8.4",
     "react-share": "^4.4.0",
     "react-textarea-autosize": "^8.3.3",
