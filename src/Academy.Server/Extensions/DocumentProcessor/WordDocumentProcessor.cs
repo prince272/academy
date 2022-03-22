@@ -112,9 +112,10 @@ namespace Academy.Server.Extensions.DocumentProcessor
             if (html == null) return null;
 
             var document = new HtmlDocument();
+            document.OptionEmptyCollection = true;
             document.LoadHtml(html);
 
-            foreach (var imgNode in document.DocumentNode.SelectNodes("//img[@src]"))
+            foreach (var imgNode in document.DocumentNode.SelectNodes("//img"))
             {
                 var imgSrcValue = imgNode.GetAttributeValue("src", null);
 
