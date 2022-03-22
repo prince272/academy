@@ -27,6 +27,7 @@
     "filepond-plugin-media-preview": "^1.0.9",
     "highlight.js": "^11.5.0",
     "html-to-text": "^8.1.0",
+    "jodit-react": "^1.2.18",
     "jquery": "3.6.0",
     "katex": "^0.15.3",
     "libphonenumber-js": "^1.9.44",

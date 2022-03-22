@@ -105,7 +105,11 @@ namespace Academy.Server.Extensions.DocumentProcessor
 
         public async Task<string> ProcessHtmlDocumentAsync(string html)
         {
+            if (html == null) return null;
+
             html = Sanitizer.SanitizeHtml(html);
+
+            if (html == null) return null;
 
             var document = new HtmlDocument();
             document.LoadHtml(html);
