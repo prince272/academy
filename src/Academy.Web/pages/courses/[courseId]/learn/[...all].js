@@ -62,7 +62,7 @@ const LessonView = (props) => {
         <Tab.Container id={`lesson_${lesson.id}`} defaultActiveKey={tabs[0]?.key}>
             {(tabs.length > 1) && (
                 <div className="position-absolute bottom-0 start-50 translate-middle-x zi-1 pb-4 mb-10">
-                    <Nav variant="segment" className="shadow-sm">
+                    <Nav variant="segment" className="shadow-sm flex-nowrap text-nowrap">
                         {tabs.map(tab => {
                             return (
                                 <Nav.Item key={tab.key}>
@@ -78,8 +78,9 @@ const LessonView = (props) => {
 
                     if (tab.key == 'document') {
                         return (
-                            <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-8 col-lg-7 col-xl-6">
-                                <div className="w-100 h-100 text-break" dangerouslySetInnerHTML={{ __html: lesson.document }} />
+                            <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5">
+                                <div className="h4 mb-5">{lesson.title}</div>
+                                <div className="text-break" dangerouslySetInnerHTML={{ __html: lesson.document }} />
                             </Tab.Pane>
                         );
                     }
@@ -88,6 +89,7 @@ const LessonView = (props) => {
 
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-8 col-lg-7 col-xl-6">
+                                <div className="h4 mb-3">{lesson.title}</div>
                                 <div className={`root ${media.type == 'audio' ? 'd-flex align-items-center justify-content-center h-100' : ''}`}>
                                     <Plyr
                                         source={
@@ -591,7 +593,7 @@ const LearnPage = withRemount(({ remount }) => {
 
                             <div className="h6 text-center mb-0 mx-2 w-100">
                                 <ResponsiveEllipsis className="overflow-hidden"
-                                    text={currentView.title || ''}
+                                    text={section.title || ''}
                                     maxLine='1'
                                     ellipsis='...'
                                     trimRight
