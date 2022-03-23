@@ -1,9 +1,7 @@
-import DocumentEditor from "../components/DocumentEditor";
-
 
 const  TestPage = () => {
 
-    return <DocumentEditor />
+    return (<></>);
 };
 
 export default TestPage;

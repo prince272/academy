@@ -73,13 +73,13 @@ const LessonView = (props) => {
                     </Nav>
                 </div>
             )}
-            <Tab.Content className={`row justify-content-center g-0 h-100`}>
+            <Tab.Content className={`row justify-content-center g-0 h-100 pt-7`}>
                 {tabs.map(tab => {
 
                     if (tab.key == 'document') {
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5">
-                                <div className="h4 mb-5">{lesson.title}</div>
+                                <div className="h4">{lesson.title}</div>
                                 <div className="text-break" dangerouslySetInnerHTML={{ __html: lesson.document }} />
                             </Tab.Pane>
                         );
