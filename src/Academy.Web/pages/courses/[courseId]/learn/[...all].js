@@ -569,6 +569,7 @@ const LearnPage = withRemount(({ remount }) => {
             const lastSection = course.sections.slice(-1)[0];
 
             if ((lastSection && lastSection.id == sectionId) && course.certificateTemplate) {
+                await sleep(2000);
                 router.replace({ pathname: `/courses/${courseId}`, query: { certificate: true } });
             }
             else {
