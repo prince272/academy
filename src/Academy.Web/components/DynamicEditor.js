@@ -11,6 +11,7 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 
 function DocumentEditor({ value, onChange }) {
+
     return (
         <div>
             <SunEditor
@@ -19,7 +20,18 @@ function DocumentEditor({ value, onChange }) {
                 onChange={onChange}
                 setDefaultStyle="font-family: Inter; font-size: 1rem;"
                 setOptions={{
-                    buttonList: buttonList.complex,
+                    katex: katex, // window.katex,
+                    codeMirror: CodeMirror,
+                    buttonList: [["undo", "redo"],
+                    ["font", "fontSize", "formatBlock"],
+                    ["bold", "underline", "italic", "strike", "subscript", "superscript"],
+                    ["removeFormat"], "/",
+                    ["fontColor", "hiliteColor"],
+                    ["outdent", "indent"],
+                    ["align", "horizontalRule", "list", "table"],
+                    ["link", "image", "video", "audio", "math"],
+                    ["fullScreen", "showBlocks", "codeView"],
+                    ["save"]],
                     height: 360
                 }} />
             <style jsx>
