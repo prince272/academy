@@ -73,13 +73,13 @@ const LessonView = (props) => {
                     </Nav>
                 </div>
             )}
-            <Tab.Content className={`row justify-content-center g-0 h-100 pt-7`}>
+            <Tab.Content className={`row justify-content-center g-0 h-100 pt-4`}>
                 {tabs.map(tab => {
 
                     if (tab.key == 'document') {
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5">
-                                <div className="text-break pt-4" dangerouslySetInnerHTML={{ __html: lesson.document }} />
+                                <div className="text-break" dangerouslySetInnerHTML={{ __html: lesson.document }} />
                             </Tab.Pane>
                         );
                     }
@@ -88,7 +88,7 @@ const LessonView = (props) => {
 
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-8 col-lg-7 col-xl-6">
-                                <div className={`pt-4 root ${media.type == 'audio' ? 'd-flex align-items-center justify-content-center h-100' : ''}`}>
+                                <div className={`root ${media.type == 'audio' ? 'd-flex align-items-center justify-content-center h-100' : ''}`}>
                                     <Plyr
                                         source={
                                             {
