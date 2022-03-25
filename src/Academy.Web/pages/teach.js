@@ -20,7 +20,7 @@ const TeachingPage = () => {
                             <div className="p-3">
                                 <h1 className="display-4 fw-bold">Become a <span className="text-primary fw-bolder">Teacher</span></h1>
                                 <p className="lead">Becoming a teacher lets you take part in shaping the next generation.</p>
-                                <Link href={{ pathname: `${ModalPathPrefix}/contact`, query: { subject: "applyAsTeacher" } }}><a className="btn btn-primary  mb-3">Apply as teacher</a></Link>
+                                <Link href={{ pathname: `${ModalPathPrefix}/teach` }}><a className="btn btn-primary  mb-3">Apply as teacher</a></Link>
                             </div>
                         </div>
                     </div>

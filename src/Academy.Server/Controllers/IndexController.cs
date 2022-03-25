@@ -7,6 +7,8 @@ using Academy.Server.Models;
 using Academy.Server.Models.Courses;
 using Academy.Server.Utilities;
 using Humanizer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +23,7 @@ namespace Academy.Server.Controllers
     [ApiController]
     public class IndexController : ControllerBase
     {
+        private readonly UserManager<User> userManager;
         private readonly AppSettings appSettings;
         private readonly IEmailSender emailSender;
         private readonly IPaymentProcessor paymentProcessor;
@@ -29,6 +32,7 @@ namespace Academy.Server.Controllers
 
         public IndexController(IServiceProvider serviceProvider)
         {
+            userManager = serviceProvider.GetRequiredService<UserManager<User>>();
             appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
             emailSender = serviceProvider.GetRequiredService<IEmailSender>();
             paymentProcessor = serviceProvider.GetRequiredService<IPaymentProcessor>();
@@ -84,11 +88,11 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Contact([FromBody] ContactModel form)
         {
             await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: appSettings.Company.Emails.Info,
-                subject: $"{form.FullName} - {form.Subject.Humanize()}",
+                subject: $"{form.FullName} - {form.Subject}",
                 body: await viewRenderer.RenderToStringAsync("Email/ContactSent", form));
 
             await emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = form.Email },
-                subject: form.Subject.Humanize(),
+                subject: form.Subject,
                 body: await viewRenderer.RenderToStringAsync("Email/ContactReceived", form));
 
             return Result.Succeed();
@@ -120,6 +124,18 @@ namespace Academy.Server.Controllers
                 payment.Amount,
                 payment.Status
             });
+        }
+
+        [Authorize]
+        [HttpPost("teach")]
+        public async Task<IActionResult> Teach([FromBody] TeachModal form)
+        {
+            var user = await HttpContext.Request.GetCurrentUserAsync();
+
+            if (!user.HasRoles(RoleConstants.Teacher))
+                (await userManager.AddToRolesAsync(user, new string[] { RoleConstants.Teacher })).ThrowIfFailed();
+
+            return Result.Succeed();
         }
     }
 }

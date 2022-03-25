@@ -19,6 +19,23 @@ const ConfirmationDialog = () => {
     );
 };
 
+const AlertDialog = () => {
+    const dialog = useDialog();
+    const { opended, close, params } = dialog;
+
+    return (
+        <Modal {...DefaultModalProps} show={opended} onHide={() => close()}>
+            <Modal.Header closeButton>
+                <Modal.Title>{params.title}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>{params.body}</Modal.Body>
+            <Modal.Footer>
+                <button className="btn btn-primary" style={{ minWidth: "88px" }} onClick={() => close(true)} {...params.proceedButtonProps}>Okay</button>
+            </Modal.Footer>
+        </Modal>
+    );
+};
+
 const DialogContext = createContext({});
 
 const DialogProvider = ({ children }) => {
@@ -54,6 +71,7 @@ const DialogProvider = ({ children }) => {
             params,
             open: (params, Component) => prepare(params, Component),
             confirm: (params) => prepare(params, ConfirmationDialog),
+            alert: (params) => prepare(params, AlertDialog),
             close: (...args) => close.current(...args),
         }}>
             {children}

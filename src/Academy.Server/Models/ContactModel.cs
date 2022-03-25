@@ -11,15 +11,9 @@ namespace Academy.Server.Models
 
         public string PhoneNumber { get; set; }
 
-        public ContactSubject Subject { get; set; }
+        public string Subject { get; set; }
 
         public string Message { get; set; }
-    }
-
-    public enum ContactSubject
-    {
-        ApplyAsTeacher,
-        GetInTouch
     }
 
     public class ContactValidator : AbstractValidator<ContactModel>
@@ -29,6 +23,7 @@ namespace Academy.Server.Models
             RuleFor(_ => _.FullName).NotEmpty();
             RuleFor(_ => _.Email).Email();
             RuleFor(_ => _.PhoneNumber).Phone();
+            RuleFor(_ => _.Subject).NotEmpty();
             RuleFor(_ => _.Message).NotEmpty();
         }
     }

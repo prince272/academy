@@ -9,15 +9,17 @@ import { useClient } from '../utils/client';
 import { sentenceCase } from 'change-case';
 import PhoneInput from '../components/PhoneInput';
 import { useAppSettings } from '../utils/appSettings';
+import { useDialog } from '../utils/dialog';
 import _ from 'lodash';
 
-const ContactModal = (props) => {
+const TeachModal = (props) => {
     const { route, modal } = props;
     const router = useRouter();
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
     const [submitting, setSubmitting] = useState(false);
 
+    const dialog = useDialog();
     const componentId = useMemo(() => _.uniqueId('Component'), []);
     const appSettings = useAppSettings();
 
@@ -31,7 +33,7 @@ const ContactModal = (props) => {
         form.handleSubmit(async (inputs) => {
             setSubmitting(true);
 
-            let result = await client.post('/contact', inputs);
+            let result = await client.post('/teach', inputs);
 
             if (result.error) {
                 const error = result.error;
@@ -41,8 +43,13 @@ const ContactModal = (props) => {
                 return;
             }
 
-            toast.success('We\'ll get back to you shortly. Thank you!', { id: componentId });
             modal.close();
+            await dialog.alert({
+                title: `Become a teacher`,
+                body: <>Your application for becoming a teacher was successful. You can now add your courses.</>
+            });
+
+            window.location.replace('/courses');
         })();
     };
 
@@ -55,27 +62,10 @@ const ContactModal = (props) => {
             <Modal.Header bsPrefix="modal-close" closeButton></Modal.Header>
             <Modal.Body as={Form} onSubmit={preventDefault(() => submit())}>
                 <div className="text-center mb-5">
-                    <h4>Get in touch</h4>
-                    <p>Please fill out the form and we'll get back to you shortly.</p>
+                    <h4>Become a teacher</h4>
+                    <p>Please fill out the form and you'll be redirected to add your courses.</p>
                 </div>
                 <div className="row g-3">
-                    <div className="col-12">
-                        <label className="form-label">Full name</label>
-                        <input {...form.register("fullName")} className={`form-control  ${formState.errors.fullName ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{formState.errors.fullName?.message}</div>
-                    </div>
-                    <div className="col-12 col-sm-7">
-                        <label className="form-label">Email</label>
-                        <input {...form.register("email")} className={`form-control  ${formState.errors.email ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{formState.errors.email?.message}</div>
-                    </div>
-                    <div className="col-12 col-sm-5">
-                        <label className="form-label">Phone number</label>
-                        <FormController name="phoneNumber" control={form.control} render={({ field }) => {
-                            return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.phoneNumber ? 'is-invalid' : ''}`} defaultCountry={appSettings.company.countryCode} />);
-                        }} />
-                        <div className="invalid-feedback">{formState.errors.phoneNumber?.message}</div>
-                    </div>
                     <div className="col-12">
                         <label className="form-label">Subject</label>
                         <input {...form.register("subject")} className={`form-control  ${formState.errors.subject ? 'is-invalid' : ''}`} />
@@ -100,4 +90,4 @@ const ContactModal = (props) => {
     );
 };
 
-export default ContactModal;
+export default TeachModal;

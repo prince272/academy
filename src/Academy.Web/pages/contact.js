@@ -21,7 +21,7 @@ const Contact = () => {
                     <div className="zi-1">
                         <h1 className="text-white">Contact Us</h1>
                         <p className="text-white">Got a question? Want to learn more? Get in touch.</p>
-                        <Link href={{ pathname: `${ModalPathPrefix}/contact`, query: { subject: "getInTouch" } }}><a className="btn btn-white  px-8 mb-3">Get in touch</a></Link>
+                        <Link href={{ pathname: `${ModalPathPrefix}/contact` }}><a className="btn btn-white  px-8 mb-3">Get in touch</a></Link>
                     </div>
                 </div>
             </div>

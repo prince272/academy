@@ -386,13 +386,14 @@ namespace Academy.Server.Controllers
             if (form.Type == CourseReorderType.Section)
             {
                 sections.Move(source.Index, destination.Index);
-
                 sections.ForEach((section, sectionIndex) =>
                 {
+                    unitOfWork.Context.Attach(section);
+
                     section.Index = sectionIndex;
                 });
 
-                await unitOfWork.UpdateAsync(sections);
+                await unitOfWork.Context.SaveChangesAsync();
             }
             else if (form.Type == CourseReorderType.Lesson)
             {
@@ -408,10 +409,12 @@ namespace Academy.Server.Controllers
 
                     sourceLessons.ForEach((lesson, lessonIndex) =>
                     {
+                        unitOfWork.Context.Attach(lesson);
+
                         lesson.Index = lessonIndex;
                     });
 
-                    await unitOfWork.UpdateAsync(sourceLessons);
+                    await unitOfWork.Context.SaveChangesAsync();
                 }
                 else
                 {
@@ -419,17 +422,21 @@ namespace Academy.Server.Controllers
 
                     sourceLessons.ForEach((lesson, lessonIndex) =>
                     {
+                        unitOfWork.Context.Attach(lesson);
+
                         lesson.SectionId = sourceSection.Id;
                         lesson.Index = lessonIndex;
                     });
+
                     destinationLessons.ForEach((lesson, lessonIndex) =>
                     {
+                        unitOfWork.Context.Attach(lesson);
+
                         lesson.SectionId = destinationSection.Id;
                         lesson.Index = lessonIndex;
                     });
 
-                    await unitOfWork.UpdateAsync(sourceLessons);
-                    await unitOfWork.UpdateAsync(destinationLessons);
+                    await unitOfWork.Context.SaveChangesAsync();
                 }
             }
             else if (form.Type == CourseReorderType.Question)
@@ -446,10 +453,12 @@ namespace Academy.Server.Controllers
 
                     sourceQuestions.ForEach((question, questionIndex) =>
                     {
+                        unitOfWork.Context.Attach(question);
+
                         question.Index = questionIndex;
                     });
 
-                    await unitOfWork.UpdateAsync(sourceQuestions);
+                    await unitOfWork.Context.SaveChangesAsync();
                 }
                 else
                 {
@@ -457,17 +466,20 @@ namespace Academy.Server.Controllers
 
                     sourceQuestions.ForEach((question, questionIndex) =>
                     {
+                        unitOfWork.Context.Attach(question);
+
                         question.LessonId = sourceLesson.Id;
                         question.Index = questionIndex;
                     });
                     destinationQuestions.ForEach((question, questionIndex) =>
                     {
+                        unitOfWork.Context.Attach(question);
+
                         question.LessonId = destinationLesson.Id;
                         question.Index = questionIndex;
                     });
 
-                    await unitOfWork.UpdateAsync(sourceQuestions);
-                    await unitOfWork.UpdateAsync(destinationQuestions);
+                    await unitOfWork.Context.SaveChangesAsync();
                 }
             }
             else

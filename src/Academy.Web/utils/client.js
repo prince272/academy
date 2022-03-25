@@ -270,12 +270,9 @@ const useClientProvider = () => {
             eventDispatcher.emit('signoutStart', state);
 
             try {
-
-                throw new Error('Signout using Popup has been disabled.');
-
-                // await userManager.signoutPopup({ state });
-                // unloadUserContext();
-                // eventDispatcher.emit('signoutComplete', state);
+                await userManager.signoutPopup({ state });
+                unloadUserContext();
+                eventDispatcher.emit('signoutComplete', state);
             }
             catch (popupError) {
                 console.error("Popup authentication error: ", popupError);

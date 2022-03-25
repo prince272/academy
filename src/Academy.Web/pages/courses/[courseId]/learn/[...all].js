@@ -607,7 +607,7 @@ const LearnPage = withRemount(({ remount }) => {
                 </div>
             </div>
 
-            <div className="py-2 px-3 flex-grow-1" style={{ overflowY: "auto" }}>
+            <div key={currentView._id} className="py-2 px-3 flex-grow-1" style={{ overflowY: "auto" }}>
                 {currentView._type == 'lesson' && <LessonView key={currentView.id} {...{ course, lesson: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
                 {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, question: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
             </div>

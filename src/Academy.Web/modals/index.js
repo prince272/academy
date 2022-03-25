@@ -26,6 +26,7 @@ import SectionEditModal from './courses/SectionEditModal';
 import CheckoutModal from './CheckoutModal';
 import ContactModal from './ContactModal';
 import SponsorModal from './SponsorModal';
+import TeachModal from './TeachModal';
 
 
 const DefaultModalProps = {
@@ -49,6 +50,11 @@ const useModalProvider = () => {
             {
                 pattern: `${ModalPathPrefix}/contact`,
                 modal: ContactModal
+            },         
+            {
+                pattern: `${ModalPathPrefix}/teach`,
+                modal: TeachModal,
+                authenticate: true
             },
             {
                 pattern: `${ModalPathPrefix}/sponsor`,
