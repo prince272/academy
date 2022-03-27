@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, forwardRef, useRef, useImperativeHandle } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, forwardRef, useRef, useImperativeHandle } from 'react';
 import Link from 'next/link';
 import { Form, OverlayTrigger, Tooltip, ProgressBar, Tabs, Tab, Nav } from 'react-bootstrap';
 import { useForm, Controller as FormController } from 'react-hook-form';
@@ -34,6 +34,30 @@ import { ModalPathPrefix } from '../../../../modals';
 import { useRouterQuery } from 'next-router-query';
 import protection from '../../../../utils/protection';
 
+import ReactDOMServer from 'react-dom/server';
+import parse, { domToReact } from 'html-react-parser';
+
+import hljs from "highlight.js";
+import 'highlight.js/styles/github-dark.css';
+
+const Highlight = ({ content }) => {
+
+    const ref = useRef();
+
+    useEffect(() => {
+        const nodes = ref.current.querySelectorAll('pre code');
+
+        for (let i = 0; i < nodes.length; i++) {
+            hljs.highlightElement(nodes[i]);
+        }
+    });
+
+    function br2nl(str) {
+        return str.replace(/<br\s*\/?>/mg, "\n");
+    }
+
+    return (<div ref={ref} dangerouslySetInnerHTML={{ __html: br2nl(content) }} />);
+};
 
 const LessonView = (props) => {
     const { lesson, setCurrentView } = props;
@@ -78,8 +102,8 @@ const LessonView = (props) => {
 
                     if (tab.key == 'document') {
                         return (
-                            <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5">
-                                <div className="text-break" dangerouslySetInnerHTML={{ __html: lesson.document }} />
+                            <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5 text-break">
+                                <Highlight content={lesson.document || '<div></div>'} />
                             </Tab.Pane>
                         );
                     }

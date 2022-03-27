@@ -201,7 +201,9 @@ const CheckoutModal = withRemount((props) => {
                             <div className="mb-3 px-10"><span className="svg-icon svg-icon-lg text-success"><BsCheckCircleFill /></span></div>
                             <div className="h3">Payment Complete</div>
                             <div className="mb-3">Thank you for your payment.</div>
-                            <Link href={route.query.returnUrl}><a className="btn btn-success">Continue</a></Link>
+                            <button type="button" className="btn btn-success" onClick={() => {
+                                window.location.replace(route.query.returnUrl)
+                            }}>Continue</button>
                         </div>
                     </div>
                 )}
