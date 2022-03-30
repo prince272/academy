@@ -28,25 +28,23 @@ const CourseItem = ({ course }) => {
     const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id)));
 
     return (
-        <div className="card shadow-sm">
-            <div className="card-img-top pt-2 px-2">
-                <div className="position-relative">
-                    <AspectRatio ratio="1">
-                        {course.image ?
-                            (<Image className="rounded border" priority unoptimized loader={({ src }) => src} src={course.image.url} layout="fill" objectFit="cover" alt={course.title} />) :
-                            (<div className="rounded border svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center"><BsCardImage /></div>)}
-                    </AspectRatio>
-                    {permitted && (
-                        <div className="position-absolute bottom-0 start-0"><div className={`badge bg-${({
-                            'hidden': 'warning',
-                            'visible': 'success',
-                            'rejected': 'danger'
-                        })[course.state]} ${course.state == 'hidden' ? 'text-dark' : 'text-white'} m-2`}>{pascalCase(course.state)}</div></div>
-                    )}
-                </div>
+        <div className="card shadow-sm flex-row flex-sm-column">
+            <div className="card-img-top p-2 position-relative w-25 w-sm-100">
+                <AspectRatio ratio="1">
+                    {course.image ?
+                        (<Image className="rounded border" priority unoptimized loader={({ src }) => src} src={course.image.url} layout="fill" objectFit="cover" alt={course.title} />) :
+                        (<div className="rounded border svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center"><BsCardImage /></div>)}
+                </AspectRatio>
+                {permitted && (
+                    <div className="position-absolute bottom-0 start-0"><div className={`badge bg-${({
+                        'hidden': 'warning',
+                        'visible': 'success',
+                        'rejected': 'danger'
+                    })[course.state]} ${course.state == 'hidden' ? 'text-dark' : 'text-white'} m-3`}>{pascalCase(course.state)}</div></div>
+                )}
             </div>
             <div className="card-body p-2 position-relative">
-                <div className="d-inline-block badge text-dark bg-soft-primary mb-2">{appSettings.course.subjects.find(subject => course.subject == subject.value)?.name}</div>
+                <div className="d-inline-block badge text-dark bg-soft-primary mb-2 me-5">{appSettings.course.subjects.find(subject => course.subject == subject.value)?.name}</div>
                 <div className="fs-6 mb-2" style={{ height: "48px" }}>
                     <ResponsiveEllipsis className="overflow-hidden"
                         text={course.title || ''}
