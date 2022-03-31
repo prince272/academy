@@ -790,7 +790,7 @@ namespace Academy.Server.Controllers
             var question = new Question();
             question.Index = -1;
             question.LessonId = lesson.Id; // Set the owner of the question.
-            question.Text = await documentProcessor.ProcessHtmlDocumentAsync(form.Text);
+            question.Text = form.Text;
             question.Type = form.Type;
 
             await unitOfWork.CreateAsync(question);
@@ -826,7 +826,7 @@ namespace Academy.Server.Controllers
             var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
-            question.Text = await documentProcessor.ProcessHtmlDocumentAsync(form.Text);
+            question.Text = form.Text;
             question.Type = form.Type;
 
             await unitOfWork.UpdateAsync(question);

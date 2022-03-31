@@ -1,7 +1,14 @@
 const withPWA = require("next-pwa");
 const dev = process.env.NODE_ENV !== "production";
 
-module.exports = {
+const withPWA = require('next-pwa');
+
+module.exports = withPWA({
+  pwa: {
+    dest: 'public',
+    disable: dev,
+    register: true,
+  },
   webpack5: true,
   webpack(config, { isServer }) {
 
@@ -24,4 +31,4 @@ module.exports = {
     return config;
   },
   reactStrictMode: true,
-};
+})

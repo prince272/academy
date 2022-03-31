@@ -106,7 +106,7 @@ const QuestionEditModal = withRemount((props) => {
                 setSubmitting(false);
                 return;
             }
-            
+
             eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
             toast.success(`Question ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`, { id: componentId });
             modal.close();
@@ -139,10 +139,7 @@ const QuestionEditModal = withRemount((props) => {
                     <div className={`row g-3 ${action == 'delete' ? 'd-none' : ''}`}>
                         <div className="col-12">
                             <label className="form-label">Question</label>
-                            <FormController name="text" control={form.control}
-                                render={({ field }) => {
-                                    return (<DocumentEditor value={field.value} onChange={(value) => field.onChange(value)} />);
-                                }} />
+                            <input {...form.register("text")} className={`form-control  ${formState.errors.text ? 'is-invalid' : ''}`} />
                             <div className="invalid-feedback">{formState.errors.text?.message}</div>
                         </div>
                         <div className="col-6">
