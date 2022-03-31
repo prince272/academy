@@ -30,9 +30,8 @@ function DocumentEditor({ value, onChange }) {
                     ["outdent", "indent"],
                     ["align", "horizontalRule", "list", "table"],
                     ["link", "image", "video", "audio", "math"],
-                    ["fullScreen", "showBlocks", "codeView"],
-                    ["save"]],
-                    height: 360
+                    ["fullScreen", "showBlocks", "codeView"]],
+                    height: 250
                 }} />
             <style jsx>
                 {`

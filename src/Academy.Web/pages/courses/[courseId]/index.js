@@ -185,7 +185,7 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                                     </Dropdown.Toggle>
 
                                                     <Dropdown.Menu style={{ margin: 0 }}>
-                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}`} passHref><Dropdown.Item>View</Dropdown.Item></Link>
+                                                        <Link href={`/courses/${courseId}/learn/${section.id}/${lesson.id}`} passHref><Dropdown.Item>Learn</Dropdown.Item></Link>
                                                         <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
                                                         <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
                                                         <Dropdown.Item href="#" onClick={() => { toggler.toggle(`lesson_${lesson.id}`); }}>{toggler.in(`lesson_${lesson.id}`) ? 'Hide' : 'Show'} Questions</Dropdown.Item>
@@ -586,7 +586,7 @@ const CoursePage = withRemount(({ remount }) => {
                     </div>
 
                     {course.certificateTemplate && (
-                        <div className="col-12 col-md-9 align-self-end">
+                        <div className="col-12 col-md-9 align-self-end pb-5">
                             <div className="card">
                                 <div className="card-body">
                                     <h1 className="h5 mb-3">Certification</h1>

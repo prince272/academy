@@ -593,6 +593,7 @@ namespace Academy.Server.Controllers
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var section = new Section();
+            section.Index = -1;
             section.CourseId = course.Id; // Set the owner of the section.
             section.Title = form.Title;
 
@@ -675,6 +676,7 @@ namespace Academy.Server.Controllers
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var lesson = new Lesson();
+            lesson.Index = -1;
             lesson.SectionId = section.Id;  // Set the owner of the lesson.
             lesson.Title = form.Title;
             lesson.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
@@ -786,6 +788,7 @@ namespace Academy.Server.Controllers
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             var question = new Question();
+            question.Index = -1;
             question.LessonId = lesson.Id; // Set the owner of the question.
             question.Text = await documentProcessor.ProcessHtmlDocumentAsync(form.Text);
             question.Type = form.Type;

@@ -43,6 +43,7 @@ import 'highlight.js/styles/github-dark.css';
 const Highlight = ({ content }) => {
 
     const ref = useRef();
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         const nodes = ref.current.querySelectorAll('pre code');
@@ -50,13 +51,20 @@ const Highlight = ({ content }) => {
         for (let i = 0; i < nodes.length; i++) {
             hljs.highlightElement(nodes[i]);
         }
+
+        setMounted(true);
     });
 
     function br2nl(str) {
         return str.replace(/<br\s*\/?>/mg, "\n");
     }
 
-    return (<div ref={ref} dangerouslySetInnerHTML={{ __html: br2nl(content) }} />);
+    return (
+        <>
+            {!mounted ? <Loader message={"Loading content..."} /> : <></>}
+            <div style={{ display: mounted ? 'block' : 'none' }} ref={ref} dangerouslySetInnerHTML={{ __html: br2nl(content) }} />
+        </>
+    );
 };
 
 const LessonView = (props) => {
