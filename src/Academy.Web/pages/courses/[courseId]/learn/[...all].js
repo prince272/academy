@@ -105,12 +105,13 @@ const LessonView = (props) => {
                     </Nav>
                 </div>
             )}
-            <Tab.Content className={`row justify-content-center g-0 h-100 pt-4`}>
+            <Tab.Content className={`row justify-content-center g-0 h-100`}>
                 {tabs.map(tab => {
 
                     if (tab.key == 'document') {
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5 text-break">
+                                <div className="h3 my-3">{lesson.title}</div>
                                 <Highlight content={lesson.document || '<div></div>'} />
                             </Tab.Pane>
                         );
@@ -120,6 +121,7 @@ const LessonView = (props) => {
 
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-8 col-lg-7 col-xl-6">
+                                <div className="h3 my-3">{lesson.title}</div>
                                 <div className={`root ${media.type == 'audio' ? 'd-flex align-items-center justify-content-center h-100' : ''}`}>
                                     <Plyr
                                         source={
@@ -180,7 +182,7 @@ LessonView.displayName = 'LessonView';
 const QuestionView = (props) => {
     const client = useClient();
     const dialog = useDialog();
-    const { question, setCurrentView, moveForward, submitting } = props;
+    const { lesson, question, setCurrentView, moveForward, submitting } = props;
     const appSettings = useAppSettings();
 
     useEffect(() => {
@@ -249,7 +251,8 @@ const QuestionView = (props) => {
     return (
         <div className="row justify-content-center g-0">
             <div className="col-12 col-md-7 col-lg-6 col-xl-5">
-                <div className="w-100 text-break my-3" dangerouslySetInnerHTML={{ __html: question.text }} />
+                <div className="h3 my-3">{lesson.title}</div>
+                <div className="w-100 text-break my-3">{question.text}</div>
                 <DragDropContext onDragEnd={handleReorder}>
                     <Droppable droppableId={`question`} direction="vertical" type="lesson">
                         {(provided) => (
@@ -399,6 +402,7 @@ const LearnPage = withRemount(({ remount }) => {
             newViews.push({ ...lesson, _id: _.uniqueId(), _type: 'lesson' });
             lesson.questions.forEach((question, questionIndex) => {
                 newViews.push({
+                    lesson,
                     ...question,
                     title: `Question ${questionIndex + 1} of ${lesson.questions.length}`,
                     _id: _.uniqueId(),
@@ -624,7 +628,7 @@ const LearnPage = withRemount(({ remount }) => {
 
                             <div className="h6 text-center mb-0 mx-2 w-100">
                                 <ResponsiveEllipsis className="overflow-hidden"
-                                    text={currentView.title || ''}
+                                    text={section.title || ''}
                                     maxLine='1'
                                     ellipsis='...'
                                     trimRight
@@ -641,7 +645,7 @@ const LearnPage = withRemount(({ remount }) => {
 
             <div key={currentView._id} className="py-2 px-3 flex-grow-1" style={{ overflowY: "auto" }}>
                 {currentView._type == 'lesson' && <LessonView key={currentView.id} {...{ course, lesson: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
-                {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, question: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
+                {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, lesson: currentView.lesson, question: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
             </div>
 
             <div className="p-3">
