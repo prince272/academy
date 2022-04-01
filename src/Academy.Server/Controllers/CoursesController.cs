@@ -984,7 +984,7 @@ namespace Academy.Server.Controllers
                             LessonId = question.LessonId,
                             Index = question.Index,
                             Id = question.Id,
-                            Text = section.Id == sectionId ? question.Text : null,
+                            Text = question.Text,
                             Type = question.Type
                         }).ToListAsync();
 

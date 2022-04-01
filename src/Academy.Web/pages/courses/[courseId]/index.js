@@ -325,11 +325,23 @@ const SectionList = ({ course, setCourse, toggler, permitted }) => {
     const courseId = course.id;
     const client = useClient();
 
-    useEffect(() => {
-        toggler.set(course.sections.map((section, index) => ({
+    useEffect(async () => {
+
+        await toggler.set(course.sections.map((section, index) => ({
             id: `section_${section.id}`,
             value: section.status == 'started'
-        })))
+        })));
+
+        const lesson = course.sections.flatMap(section => section.lessons).find(lesson => lesson.status == 'started') ||
+            course.sections.flatMap(section => section.lessons).slice(-1)[0];
+
+        if (lesson != null) {
+            Scroll.scroller.scrollTo(`lesson_${lesson.id}`, {
+                delay: 50,
+                smooth: true,
+                offset: 50, // Scrolls to element + 50 pixels down the page
+            });
+        }
     }, []);
 
     const handleDragEnd = (reorder) => {
@@ -454,7 +466,7 @@ const CoursePage = withRemount(({ remount }) => {
 
     const dialog = useDialog();
 
-    const [toggles, setToggles] = useState([]);
+    const [toggles, setToggles] = withAsync(useState([]));
     const toggler = {
         in: (toggleId) => {
             return toggles.find(_toggle => _toggle.id == toggleId)?.value;
