@@ -28,7 +28,7 @@ import Image from 'next/image';
 import toast from 'react-hot-toast';
 import Loader from '../components/Loader';
 import { SvgAppWordmark, SvgFacebookLogo, SvgInstagramLogo, SvgLinkedinLogo, SvgTwitterLogo, SvgYoutubeLogo, SvgBitCube, SvgBitCubes } from '../resources/images/icons';
-import { BsPersonFill } from 'react-icons/bs';
+import { BsPersonFill, BsHeartFill } from 'react-icons/bs';
 import { useAppSettings } from '../utils/appSettings';
 import { useEventDispatcher } from '../utils/eventDispatcher';
 import { useDialog } from '../utils/dialog';
@@ -86,18 +86,13 @@ const Header = () => {
           </Navbar.Brand>
         </Link>
 
-        {client.user && (
-          <>
-            <Nav.Item className=" me-2 order-md-3">
-              <button className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
-                setExpanded(false);
-                dialog.open({}, BitInfoDialog);
-              }}>
-                <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{client.user.bits}</div></div>
-              </button>
-            </Nav.Item>
-          </>
-        )}
+        <Nav.Item className="ms-auto me-2 order-md-3">
+          <button type="button" className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
+            setExpanded(false);
+            router.replace({ pathname: `${ModalPathPrefix}/sponsor` })
+          }}><span className="svg-icon svg-icon-sm d-inline-block text-danger me-2 heart"><BsHeartFill /></span>Sponsor</button>
+        </Nav.Item>
+
         <Navbar.Toggle className="ms-0" />
 
         <Navbar.Collapse className="flex-grow-0">
@@ -129,6 +124,14 @@ const Header = () => {
             </Nav.Item>
             {client.user ? (
               <>
+                <Nav.Item className="">
+                  <button className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
+                    setExpanded(false);
+                    dialog.open({}, BitInfoDialog);
+                  }}>
+                    <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{client.user.bits}</div></div>
+                  </button>
+                </Nav.Item>
                 <Nav.Item>
                   <Dropdown>
                     <Dropdown.Toggle variant="outline-secondary" className="border-0 px-2 py-1">

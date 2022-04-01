@@ -95,6 +95,8 @@ const useClientProvider = () => {
     let [user, setUser] = withAsync(useState(null));
     let [userContext, setUserContext] = withAsync(useState(null));
 
+    const disablePopup = true;
+
     const httpClient = createHttpClient({
         headers: (() => {
             const accessToken = userContext?.access_token;
@@ -217,9 +219,12 @@ const useClientProvider = () => {
                 eventDispatcher.emit('signinComplete', state);
             }
             catch (silentError) {
+                
                 console.error("Silent authentication error: ", silentError);
 
                 try {
+                    if (disablePopup) throw new Error('Popup authentication disabled.');
+
                     const context = await userManager.signinPopup({ state });
                     await loadUserContext(context);
                     eventDispatcher.emit('signinComplete', state);
@@ -270,6 +275,8 @@ const useClientProvider = () => {
             eventDispatcher.emit('signoutStart', state);
 
             try {
+                if (disablePopup) throw new Error('Popup authentication disabled.');
+
                 await userManager.signoutPopup({ state });
                 unloadUserContext();
                 eventDispatcher.emit('signoutComplete', state);
