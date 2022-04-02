@@ -67,7 +67,7 @@ const DocumentViewer = withRemount(({ document, remount }) => {
     return (
         <>
             {loading ? <Loader {...loading} /> : <></>}
-            <div style={{ display: !loading ? 'block' : 'none' }} ref={ref} dangerouslySetInnerHTML={{ __html: content?.replace(/<br\s*\/?>/mg, "\n") }} />
+            <div style={{ display: !loading ? 'block' : 'none' }} ref={ref} dangerouslySetInnerHTML={{ __html: content }} />
         </>
     );
 });

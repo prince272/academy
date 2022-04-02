@@ -86,7 +86,7 @@ const Header = () => {
           </Navbar.Brand>
         </Link>
 
-        <Nav.Item className="ms-auto me-2 order-md-3">
+        <Nav.Item className="me-2">
           <button type="button" className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
             setExpanded(false);
             router.replace({ pathname: `${ModalPathPrefix}/sponsor` })

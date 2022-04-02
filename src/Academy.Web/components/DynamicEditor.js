@@ -1,47 +1,36 @@
 import React from 'react';
-import SunEditor, { buttonList } from 'suneditor-react';
-import 'suneditor/dist/css/suneditor.min.css'; // Import Sun Editor's CSS File
-
-// Import codeMirror
-import CodeMirror from 'codemirror';
-import 'codemirror/mode/htmlmixed/htmlmixed';
-import 'codemirror/lib/codemirror.css';
-
-import katex from 'katex';
-import 'katex/dist/katex.min.css';
-
+import "froala-editor/css/froala_editor.pkgd.min.css";
+import "froala-editor/css/froala_style.css";
+import "froala-editor/js/plugins.pkgd.min.js";
+import FroalaEditor from "react-froala-wysiwyg";
 function DocumentEditor({ value, onChange }) {
 
     return (
         <div>
-            <SunEditor
-                setAllPlugins={true}
-                defaultValue={value}
-                onChange={onChange}
-                setDefaultStyle="font-family: Inter; font-size: 1rem;"
-                setOptions={{
-                    katex: katex, // window.katex,
-                    codeMirror: CodeMirror,
-                    buttonList: [["undo", "redo"],
-                    ["font", "fontSize", "formatBlock"],
-                    ["bold", "underline", "italic", "strike", "subscript", "superscript"],
-                    ["removeFormat"], "/",
-                    ["fontColor", "hiliteColor"],
-                    ["outdent", "indent"],
-                    ["align", "horizontalRule", "list", "table"],
-                    ["link", "image", "video", "audio", "math"],
-                    ["fullScreen", "showBlocks", "codeView"]],
-                    height: 250
+            <FroalaEditor
+                model={value}
+                tag="textarea"
+                onModelChange={onChange} config={{
+                    events: {
+                        "image.beforeUpload": function (files) {
+                            var editor = this;
+                            if (files.length) {
+                                // Create a File Reader.
+                                var reader = new FileReader();
+                                // Set the reader to insert images when they are loaded.
+                                reader.onload = function (e) {
+                                    var result = e.target.result;
+                                    editor.image.insert(result, null, null, editor.image.get());
+                                };
+                                // Read image as base64.
+                                reader.readAsDataURL(files[0]);
+                            }
+                            editor.popups.hideAll();
+                            // Stop default upload chain.
+                            return false;
+                        }
+                    }
                 }} />
-            <style jsx>
-                {`
-          div > :global(.sun-editor, .sun-editor .sun-editor-editable) {
-            font-family: inherit;
-            font-size: inherit;
-          }
-
-         `}
-            </style>
         </div>
     );
 }
