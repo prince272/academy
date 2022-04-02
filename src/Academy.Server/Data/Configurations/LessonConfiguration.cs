@@ -10,6 +10,7 @@ namespace Academy.Server.Data.Configurations
         public void Configure(EntityTypeBuilder<Lesson> builder)
         {
             builder.Property(_ => _.Media).HasJsonValueConversion();
+            builder.Property(_ => _.Document).HasJsonValueConversion();
         }
     }
 }

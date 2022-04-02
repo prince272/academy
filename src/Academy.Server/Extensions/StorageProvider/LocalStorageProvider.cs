@@ -69,8 +69,9 @@ namespace Academy.Server.Extensions.StorageProvider
             var position = stream.Position;
 
             string sourcePath = GetSourcePath(path);
-            using var sourceStream = File.Open(sourcePath, FileMode.CreateNew, FileAccess.Write);
-            sourceStream.Seek(0, SeekOrigin.Begin);
+            using var sourceStream = File.Open(sourcePath, FileMode.OpenOrCreate, FileAccess.Write);
+            sourceStream.SetLength(0);
+            sourceStream.Seek(0, SeekOrigin.End);
             await stream.CopyToAsync(sourceStream);
 
             stream.Position = position;

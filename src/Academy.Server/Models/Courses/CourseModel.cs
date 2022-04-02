@@ -87,7 +87,7 @@ namespace Academy.Server.Models.Courses
 
         public string Title { get; set; }
 
-        public string Document { get; set; }
+        public MediaModel Document { get; set; }
 
         public MediaModel Media { get; set; }
 

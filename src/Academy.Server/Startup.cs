@@ -395,6 +395,8 @@ namespace Academy.Server
                 await context.Response.WriteAsJsonAsync(response.Value);
             }));
 
+            app.UseCors();
+
             app.UseStatusCodePages(_ => _.Run(async context =>
             {
                 var response = Result.Failed(context.Response.StatusCode);
@@ -416,7 +418,6 @@ namespace Academy.Server
             app.UseStaticFiles();
 
             app.UseRouting();
-            app.UseCors();
             app.UseResponseCaching();
 
             app.UseAuthentication();

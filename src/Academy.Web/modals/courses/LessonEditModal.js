@@ -45,10 +45,17 @@ const LessonEditModal = withRemount((props) => {
                 return;
             }
 
-            form.reset({
+            let formData = {
                 ...result.data,
                 mediaId: result.data.media?.id,
-            });
+            };
+
+            if (result.data.document != null) {
+                try { formData = { ...formData, document: (await client.get(result.data.document.url, { throwIfError: true }))?.data }; }
+                catch (ex) { }
+            }
+
+            form.reset(formData);
 
             setLoading(null);
         }

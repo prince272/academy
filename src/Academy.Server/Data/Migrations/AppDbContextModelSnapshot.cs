@@ -134,7 +134,7 @@ namespace Academy.Server.Data.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -749,7 +749,9 @@ namespace Academy.Server.Data.Migrations
                 {
                     b.HasOne("Academy.Server.Data.Entities.User", null)
                         .WithMany("CourseProgresses")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Academy.Server.Data.Entities.Lesson", b =>

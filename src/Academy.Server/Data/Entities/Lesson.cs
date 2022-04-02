@@ -14,7 +14,7 @@ namespace Academy.Server.Data.Entities
 
         public string Title { get; set; }
 
-        public string Document { get; set; }
+        public Media Document { get; set; }
 
         public Media Media { get; set; }
 

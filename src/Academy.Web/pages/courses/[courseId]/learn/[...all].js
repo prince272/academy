@@ -40,31 +40,84 @@ import parse, { domToReact } from 'html-react-parser';
 import hljs from "highlight.js";
 import 'highlight.js/styles/github-dark.css';
 
-const Highlight = ({ content }) => {
+const DocumentViewer = withRemount(({ document, remount }) => {
 
     const ref = useRef();
-    const [mounted, setMounted] = useState(false);
+    const client = useClient();
 
-    useEffect(() => {
-        const nodes = ref.current.querySelectorAll('pre code');
+    const [loading, setLoading] = useState({});
+    const [content, setContent] = withAsync(useState(null));
 
-        for (let i = 0; i < nodes.length; i++) {
-            hljs.highlightElement(nodes[i]);
+    useEffect(async () => {
+
+        try {
+            await setContent((await client.get(document.url, { throwIfError: true })).data);
+            const nodes = ref.current.querySelectorAll('pre code');
+            for (let i = 0; i < nodes.length; i++) { hljs.highlightElement(nodes[i]); }
+        }
+        catch (ex) {
+            setLoading({ status: 'error', message: 'Unable to load document.', remount });
+            return;
         }
 
-        setMounted(true);
-    });
+        setLoading(null);
 
-    function br2nl(str) {
-        return str.replace(/<br\s*\/?>/mg, "\n");
-    }
+    }, [document]);
 
     return (
         <>
-            {!mounted ? <Loader message={"Loading content..."} /> : <></>}
-            <div style={{ display: mounted ? 'block' : 'none' }} ref={ref} dangerouslySetInnerHTML={{ __html: br2nl(content) }} />
+            {loading ? <Loader {...loading} /> : <></>}
+            <div style={{ display: !loading ? 'block' : 'none' }} ref={ref} dangerouslySetInnerHTML={{ __html: content?.replace(/<br\s*\/?>/mg, "\n") }} />
         </>
     );
+});
+
+const MediaViewer = ({ media }) => {
+
+    return (
+        <div className={`root ${media.type == 'audio' ? 'd-flex align-items-center justify-content-center h-100' : ''}`}>
+            <Plyr
+                source={
+                    {
+                        /* https://github.com/sampotts/plyr#the-source-setter */
+                        type: media.type,
+                        title: media.name,
+                        sources: [
+                            {
+                                src: media.url,
+                                type: media.contentType,
+                            },
+                        ],
+                    }
+                }
+                options={
+                    {
+                        /* https://github.com/sampotts/plyr#options */
+                        controls: [
+                            'play-large', // The large play button in the center
+                            'play', // Play/pause playback
+                            'progress', // The progress bar and scrubber for playback and buffering
+                            'current-time', // The current time of playback
+                            'duration', // The full duration of the media
+                            'mute', // Toggle mute
+                            'volume', // Volume control
+                            'captions', // Toggle captions
+                            'settings', // Settings menu
+                            'pip', // Picture-in-picture (currently Safari only)
+                            'airplay', // Airplay (currently Safari only)
+                            'fullscreen' // Toggle fullscreen
+                        ]
+                    }
+                }
+                {
+                ...{
+                    /* Direct props for inner video tag (mdn.io/video) */
+                }
+                }
+            />
+            <style jsx>{`.root > :global(.plyr) {--plyr-color-main: var(--bs-primary) !important;border-radius: .3125rem;}`}</style>
+        </div>
+    )
 };
 
 const LessonView = (props) => {
@@ -105,14 +158,14 @@ const LessonView = (props) => {
                     </Nav>
                 </div>
             )}
-            <Tab.Content className={`row justify-content-center g-0 h-100`}>
+            <Tab.Content className={`row justify-content-center g-0`}>
                 {tabs.map(tab => {
 
                     if (tab.key == 'document') {
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5 text-break">
                                 <div className="h3 my-3">{lesson.title}</div>
-                                <Highlight content={lesson.document || '<div></div>'} />
+                                <DocumentViewer document={lesson.document} />
                             </Tab.Pane>
                         );
                     }
@@ -122,48 +175,7 @@ const LessonView = (props) => {
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-8 col-lg-7 col-xl-6">
                                 <div className="h3 my-3">{lesson.title}</div>
-                                <div className={`root ${media.type == 'audio' ? 'd-flex align-items-center justify-content-center h-100' : ''}`}>
-                                    <Plyr
-                                        source={
-                                            {
-                                                /* https://github.com/sampotts/plyr#the-source-setter */
-                                                type: media.type,
-                                                title: media.name,
-                                                sources: [
-                                                    {
-                                                        src: media.url,
-                                                        type: media.contentType,
-                                                    },
-                                                ],
-                                            }
-                                        }
-                                        options={
-                                            {
-                                                /* https://github.com/sampotts/plyr#options */
-                                                controls: [
-                                                    'play-large', // The large play button in the center
-                                                    'play', // Play/pause playback
-                                                    'progress', // The progress bar and scrubber for playback and buffering
-                                                    'current-time', // The current time of playback
-                                                    'duration', // The full duration of the media
-                                                    'mute', // Toggle mute
-                                                    'volume', // Volume control
-                                                    'captions', // Toggle captions
-                                                    'settings', // Settings menu
-                                                    'pip', // Picture-in-picture (currently Safari only)
-                                                    'airplay', // Airplay (currently Safari only)
-                                                    'fullscreen' // Toggle fullscreen
-                                                ]
-                                            }
-                                        }
-                                        {
-                                        ...{
-                                            /* Direct props for inner video tag (mdn.io/video) */
-                                        }
-                                        }
-                                    />
-                                    <style jsx>{`.root > :global(.plyr) {--plyr-color-main: var(--bs-primary) !important;border-radius: .3125rem;}`}</style>
-                                </div>
+                                <MediaViewer media={lesson.media} />
                             </Tab.Pane>
                         );
                     }

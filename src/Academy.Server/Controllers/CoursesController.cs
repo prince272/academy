@@ -169,7 +169,7 @@ namespace Academy.Server.Controllers
 
             var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async courseId =>
             {
-                var courseModel = await GetCourseModel(courseId);
+                var courseModel = await GetCourseModel(courseId, true);
                 if (courseModel == null) throw new ArgumentException();
                 return courseModel;
             });
@@ -649,7 +649,7 @@ namespace Academy.Server.Controllers
         [HttpGet("/courses/{courseId}/sections/{sectionId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId)
         {
-            var courseModel = (await GetCourseModel(courseId, sectionId));
+            var courseModel = (await GetCourseModel(courseId));
             if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var sectionModel = courseModel.Sections.FirstOrDefault(_ => _.Id == sectionId);
@@ -679,10 +679,10 @@ namespace Academy.Server.Controllers
             lesson.Index = -1;
             lesson.SectionId = section.Id;  // Set the owner of the lesson.
             lesson.Title = form.Title;
-            lesson.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
             lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
-            lesson.Duration = await sharedService.CalculateDurationAsync(lesson);
 
+            await sharedService.WriteDocmentAsync(lesson, form.Document);
+            sharedService.CalculateDuration(lesson);
             await unitOfWork.CreateAsync(lesson);
 
             return Result.Succeed(data: lesson.Id);
@@ -711,11 +711,10 @@ namespace Academy.Server.Controllers
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             lesson.Title = form.Title;
-            lesson.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
             lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
 
-            // Calculate lesson duration.
-            lesson.Duration = await sharedService.CalculateDurationAsync(lesson);
+            await sharedService.WriteDocmentAsync(lesson, form.Document);
+            sharedService.CalculateDuration(lesson);
 
             await unitOfWork.UpdateAsync(lesson);
 
@@ -753,7 +752,7 @@ namespace Academy.Server.Controllers
         [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId)
         {
-            var courseModel = (await GetCourseModel(courseId, sectionId));
+            var courseModel = (await GetCourseModel(courseId));
             if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var sectionModel = courseModel.Sections.FirstOrDefault(_ => _.Id == sectionId);
@@ -797,7 +796,7 @@ namespace Academy.Server.Controllers
             await UpdateAnswers(question, form);
 
             // Calculate lesson duration.
-            lesson.Duration = await sharedService.CalculateDurationAsync(lesson);
+            sharedService.CalculateDuration(lesson);
             await unitOfWork.UpdateAsync(lesson);
 
             return Result.Succeed(data: question.Id);
@@ -833,7 +832,7 @@ namespace Academy.Server.Controllers
             await UpdateAnswers(question, form);
 
             // Calculate lesson duration.
-            lesson.Duration = await sharedService.CalculateDurationAsync(lesson);
+            sharedService.CalculateDuration(lesson);
             await unitOfWork.UpdateAsync(lesson);
 
             return Result.Succeed();
@@ -925,7 +924,7 @@ namespace Academy.Server.Controllers
         [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions/{questionId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId, int questionId)
         {
-            var courseModel = (await GetCourseModel(courseId, sectionId));
+            var courseModel = (await GetCourseModel(courseId));
             if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var sectionModel = courseModel.Sections.FirstOrDefault(_ => _.Id == sectionId);
@@ -941,7 +940,7 @@ namespace Academy.Server.Controllers
         }
 
         [NonAction]
-        private async Task<CourseModel> GetCourseModel(int courseId, int? sectionId = null)
+        private async Task<CourseModel> GetCourseModel(int courseId, bool single = true)
         {
             var course = await unitOfWork.Query<Course>()
                 .AsNoTracking()
@@ -954,6 +953,13 @@ namespace Academy.Server.Controllers
                 .AsNoTracking()
                 .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
                 .Where(_ => _.CourseId == course.Id)
+                .Select(section => new Section
+                 {
+                     CourseId = section.CourseId,
+                     Index = section.Index,
+                     Id = section.Id,
+                     Title = single ? section.Title : null
+                 })
                 .ToListAsync();
 
             foreach (var section in course.Sections)
@@ -967,8 +973,8 @@ namespace Academy.Server.Controllers
                         SectionId = lesson.SectionId,
                         Index = lesson.Index,
                         Id = lesson.Id,
-                        Title = lesson.Title,
-                        Document = section.Id == sectionId ? lesson.Document : null,
+                        Title = single ? lesson.Title : null,
+                        Document = lesson.Document,
                         Media = lesson.Media,
                         Duration = lesson.Duration
                     }).ToListAsync();
@@ -984,7 +990,7 @@ namespace Academy.Server.Controllers
                             LessonId = question.LessonId,
                             Index = question.Index,
                             Id = question.Id,
-                            Text = question.Text,
+                            Text = single ? question.Text : null,
                             Type = question.Type
                         }).ToListAsync();
 
@@ -999,7 +1005,7 @@ namespace Academy.Server.Controllers
                                 QuestionId = answer.QuestionId,
                                 Index = answer.Index,
                                 Id = answer.Id,
-                                Text = section.Id == sectionId ? answer.Text : null,
+                                Text = single ? answer.Text : null,
                                 Checked = answer.Checked,
                             }).ToListAsync();
                     }

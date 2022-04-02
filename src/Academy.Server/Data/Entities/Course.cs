@@ -104,6 +104,9 @@ namespace Academy.Server.Data.Entities
         Music,
 
         [Display(Name = "Languages")]
-        Languages
+        Languages,
+
+        [Display(Name = "Fashion Design")]
+        Fashion,
     }
 }

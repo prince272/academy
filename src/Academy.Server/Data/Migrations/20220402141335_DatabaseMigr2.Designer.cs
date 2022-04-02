@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Academy.Server.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220304205258_Database_1")]
-    partial class Database_1
+    [Migration("20220402141335_DatabaseMigr2")]
+    partial class DatabaseMigr2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -83,6 +83,9 @@ namespace Academy.Server.Data.Migrations
                     b.Property<DateTimeOffset?>("Published")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int>("State")
+                        .HasColumnType("int");
+
                     b.Property<int>("Subject")
                         .HasColumnType("int");
 
@@ -100,6 +103,47 @@ namespace Academy.Server.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Course");
+                });
+
+            modelBuilder.Entity("Academy.Server.Data.Entities.CourseProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTimeOffset?>("Completed")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Inputs")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LessonId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("QuestionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Solve")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CourseProgress");
                 });
 
             modelBuilder.Entity("Academy.Server.Data.Entities.Lesson", b =>
@@ -181,9 +225,6 @@ namespace Academy.Server.Data.Migrations
                         .HasPrecision(18, 6)
                         .HasColumnType("decimal(18,6)");
 
-                    b.Property<string>("CheckoutUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTimeOffset?>("Completed")
                         .HasColumnType("datetimeoffset");
 
@@ -191,6 +232,9 @@ namespace Academy.Server.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ExtensionData")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExternalUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
@@ -204,6 +248,9 @@ namespace Academy.Server.Data.Migrations
 
                     b.Property<DateTimeOffset>("Issued")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Mode")
+                        .HasColumnType("int");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
@@ -447,11 +494,6 @@ namespace Academy.Server.Data.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<string>("Progresses")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("[]");
 
                     b.Property<DateTimeOffset>("Registered")
                         .HasColumnType("datetimeoffset");
@@ -705,6 +747,15 @@ namespace Academy.Server.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Academy.Server.Data.Entities.CourseProgress", b =>
+                {
+                    b.HasOne("Academy.Server.Data.Entities.User", null)
+                        .WithMany("CourseProgresses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Academy.Server.Data.Entities.Lesson", b =>
                 {
                     b.HasOne("Academy.Server.Data.Entities.Section", "Section")
@@ -843,6 +894,8 @@ namespace Academy.Server.Data.Migrations
             modelBuilder.Entity("Academy.Server.Data.Entities.User", b =>
                 {
                     b.Navigation("Certificates");
+
+                    b.Navigation("CourseProgresses");
 
                     b.Navigation("UserRoles");
                 });

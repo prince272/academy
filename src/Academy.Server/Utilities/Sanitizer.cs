@@ -25,7 +25,7 @@ namespace Academy.Server.Utilities
             //Strip formatting
             text = stripFormattingRegex.Replace(text, string.Empty);
 
-            return text;
+            return text.Trim();
         }
 
         public static string SanitizeHtml(string html)
@@ -34,19 +34,16 @@ namespace Academy.Server.Utilities
             sanitizer.AllowedAttributes.Add("class");
             sanitizer.AllowedSchemes.Add("data");
 
-            html = sanitizer.Sanitize(html);
-
-            if (string.IsNullOrWhiteSpace(StripHtml(html)))
-                return null;
+            html = sanitizer.Sanitize(html).Trim();
 
             return html;
         }
 
-        public static long GetHtmlReadingDuration(string html)
+        public static long GetTextReadingDuration(string text)
         {
-            if (html == null) throw new ArgumentNullException(nameof(html));
+            if (text == null) throw new ArgumentNullException(nameof(text));
 
-            static int ConutWords(string text)
+            var wordCount = ((Func<int>)(() =>
             {
                 int wordCount = 0, index = 0;
 
@@ -68,9 +65,7 @@ namespace Academy.Server.Utilities
                 }
 
                 return wordCount;
-            }
-
-            var wordCount = ConutWords(Regex.Replace(StripHtml(html), @"\s+", " "));
+            }))();
 
             // Slow = 100 wpm, Average = 130 wpm, Fast = 160 wpm. 
             var wordsPerMinute = 100;

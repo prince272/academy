@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Academy.Server.Data.Migrations
 {
-    public partial class Database_1 : Migration
+    public partial class DatabaseMigr1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -39,7 +39,6 @@ namespace Academy.Server.Data.Migrations
                     Bits = table.Column<int>(type: "int", nullable: false),
                     Balance = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: false),
                     Avatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Progresses = table.Column<string>(type: "nvarchar(max)", nullable: true, defaultValue: "[]"),
                     ExtensionData = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -114,6 +113,7 @@ namespace Academy.Server.Data.Migrations
                     TransactionId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Reason = table.Column<int>(type: "int", nullable: false),
                     ReferenceId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Mode = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false),
                     Gateway = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -124,7 +124,7 @@ namespace Academy.Server.Data.Migrations
                     Completed = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     ExtensionData = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UAString = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CheckoutUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExternalUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RedirectUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -296,6 +296,7 @@ namespace Academy.Server.Data.Migrations
                     Created = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     Updated = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     Published = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    State = table.Column<int>(type: "int", nullable: false),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CertificateTemplate = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Cost = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: false),
@@ -306,6 +307,33 @@ namespace Academy.Server.Data.Migrations
                     table.PrimaryKey("PK_Course", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Course_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CourseProgress",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    CourseId = table.Column<int>(type: "int", nullable: false),
+                    SectionId = table.Column<int>(type: "int", nullable: false),
+                    LessonId = table.Column<int>(type: "int", nullable: false),
+                    QuestionId = table.Column<int>(type: "int", nullable: true),
+                    Completed = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    Inputs = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Solve = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CourseProgress", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CourseProgress_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -367,13 +395,19 @@ namespace Academy.Server.Data.Migrations
                     SectionId = table.Column<int>(type: "int", nullable: false),
                     Index = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Document = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DocumentId = table.Column<int>(type: "int", nullable: true),
                     Media = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Duration = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Lesson", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Lesson_Media_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "Media",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Lesson_Section_SectionId",
                         column: x => x.SectionId,
@@ -476,6 +510,11 @@ namespace Academy.Server.Data.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CourseProgress_UserId",
+                table: "CourseProgress",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DeviceCodes_DeviceCode",
                 schema: "isgrants",
                 table: "DeviceCodes",
@@ -487,6 +526,11 @@ namespace Academy.Server.Data.Migrations
                 schema: "isgrants",
                 table: "DeviceCodes",
                 column: "Expiration");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Lesson_DocumentId",
+                table: "Lesson",
+                column: "DocumentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Lesson_SectionId",
@@ -553,11 +597,11 @@ namespace Academy.Server.Data.Migrations
                 name: "Certificate");
 
             migrationBuilder.DropTable(
-                name: "DeviceCodes",
-                schema: "isgrants");
+                name: "CourseProgress");
 
             migrationBuilder.DropTable(
-                name: "Media");
+                name: "DeviceCodes",
+                schema: "isgrants");
 
             migrationBuilder.DropTable(
                 name: "Payment");
@@ -580,6 +624,9 @@ namespace Academy.Server.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Lesson");
+
+            migrationBuilder.DropTable(
+                name: "Media");
 
             migrationBuilder.DropTable(
                 name: "Section");

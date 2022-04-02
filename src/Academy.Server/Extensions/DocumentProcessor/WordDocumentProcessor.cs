@@ -105,17 +105,17 @@ namespace Academy.Server.Extensions.DocumentProcessor
 
         public async Task<string> ProcessHtmlDocumentAsync(string html)
         {
-            if (html == null) return null;
+            if (html == null)
+                return null;
 
             html = Sanitizer.SanitizeHtml(html);
-
-            if (html == null) return null;
 
             var document = new HtmlDocument();
             document.OptionEmptyCollection = true;
             document.LoadHtml(html);
 
-            foreach (var imgNode in document.DocumentNode.SelectNodes("//img"))
+            var imgNodes = document.DocumentNode.SelectNodes("//img");
+            foreach (var imgNode in imgNodes)
             {
                 var imgSrcValue = imgNode.GetAttributeValue("src", null);
 
@@ -128,8 +128,8 @@ namespace Academy.Server.Extensions.DocumentProcessor
                             var match = Regex.Match(imgSrcValue, @"data:image/(?<type>.+?),(?<data>.+)");
                             var dataExtension = match.Groups["type"].Value.Split(";")[0].ToLowerInvariant();
                             var base64Data = match.Groups["data"].Value;
-                            var binData = Convert.FromBase64String(base64Data);
-                            var imageStream = new MemoryStream(binData);
+
+                            using var imageStream = new MemoryStream(Convert.FromBase64String(base64Data));
                             var imageMediaName = $"image{Compute.GenerateNumber(12)}.{dataExtension}";
                             var imageMediaPath = MediaConstants.GetPath("html", MediaType.Image, imageMediaName);
                             var imageMediaUrl = storageProvider.GetUrl(imageMediaPath);
@@ -145,6 +145,9 @@ namespace Academy.Server.Extensions.DocumentProcessor
             }
 
             html = document.DocumentNode.WriteTo();
+
+            if (string.IsNullOrEmpty(Sanitizer.StripHtml(html)) && !imgNodes.Any())
+                return null;
 
             return html;
         }
