@@ -348,7 +348,7 @@ namespace Academy.Server
 
             services.AddSmtpEmailSender(options =>
             {
-                options.Hostname = "mail5017.site4now.net";
+                options.Hostname = "mail5018.site4now.net";
                 options.Port = 465;
                 options.UseServerCertificateValidation = true;
                 options.SecureSocketOptionsId = 2;

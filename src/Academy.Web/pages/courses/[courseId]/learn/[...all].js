@@ -398,16 +398,12 @@ const LearnPage = withRemount(({ remount }) => {
             return;
         }
 
-        setLoading({ message: 'Preparing lessons...' });
-        result = await client.get(`/courses/${courseId}/sections/${sectionId}`);
+        section = await setSection(course.sections.find(_section => _section.id == sectionId));
 
-        if (result.error) {
-            const error = result.error;
-            setLoading({ ...error, message: 'Unable to start lesson.', fallback: modal.close, remount });
+        if (!section) {
+            setLoading({ status: 404, message: 'Unable to load lesson.', fallback: modal.close, remount });
             return;
         }
-
-        section = await setSection(result.data);
 
         const newViews = [];
         section.lessons.forEach(lesson => {

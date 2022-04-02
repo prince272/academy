@@ -87,7 +87,7 @@ const createModal = (accountType) => {
                     return;
                 }
 
-                toast.success(`Your ${noCase(accountType)} has been ${accountAction == 'change' ? (action + 'd') : (action)}.`, { id: componentId });
+                toast.success(`Your ${noCase(accountType)} has been ${accountAction == 'change' ? (accountAction + 'd') : (accountAction)}.`, { id: componentId });
                 modal.close();
             })();
         };

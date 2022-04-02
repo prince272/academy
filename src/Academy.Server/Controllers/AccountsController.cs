@@ -212,12 +212,12 @@ namespace Academy.Server.Controllers
             if (ValidationHelper.PhoneOrEmail(form.Username))
             {
                 form.Code = await userManager.GenerateChangePhoneNumberTokenAsync(user, form.Username);
-                await smsSender.SendAsync(user.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/ChangeAccount", (user, form)));
+                await smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ChangeAccount", (user, form)));
             }
             else
             {
                 form.Code = await userManager.GenerateChangeEmailTokenAsync(user, form.Username);
-                await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = user.Email },
+                await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = form.Username },
                     subject: subject, body: await viewRenderer.RenderToStringAsync("Email/ChangeAccount", (user, form)));
             }
 

@@ -395,19 +395,13 @@ namespace Academy.Server.Data.Migrations
                     SectionId = table.Column<int>(type: "int", nullable: false),
                     Index = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DocumentId = table.Column<int>(type: "int", nullable: true),
+                    Document = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Media = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Duration = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Lesson", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Lesson_Media_DocumentId",
-                        column: x => x.DocumentId,
-                        principalTable: "Media",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Lesson_Section_SectionId",
                         column: x => x.SectionId,
@@ -528,11 +522,6 @@ namespace Academy.Server.Data.Migrations
                 column: "Expiration");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Lesson_DocumentId",
-                table: "Lesson",
-                column: "DocumentId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Lesson_SectionId",
                 table: "Lesson",
                 column: "SectionId");
@@ -604,6 +593,9 @@ namespace Academy.Server.Data.Migrations
                 schema: "isgrants");
 
             migrationBuilder.DropTable(
+                name: "Media");
+
+            migrationBuilder.DropTable(
                 name: "Payment");
 
             migrationBuilder.DropTable(
@@ -624,9 +616,6 @@ namespace Academy.Server.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Lesson");
-
-            migrationBuilder.DropTable(
-                name: "Media");
 
             migrationBuilder.DropTable(
                 name: "Section");

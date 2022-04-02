@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Academy.Server.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220402115705_DatabaseMigr1")]
+    [Migration("20220402182032_DatabaseMigr1")]
     partial class DatabaseMigr1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -153,8 +153,8 @@ namespace Academy.Server.Data.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("DocumentId")
-                        .HasColumnType("int");
+                    b.Property<string>("Document")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Duration")
                         .HasColumnType("bigint");
@@ -172,8 +172,6 @@ namespace Academy.Server.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DocumentId");
 
                     b.HasIndex("SectionId");
 
@@ -760,17 +758,11 @@ namespace Academy.Server.Data.Migrations
 
             modelBuilder.Entity("Academy.Server.Data.Entities.Lesson", b =>
                 {
-                    b.HasOne("Academy.Server.Data.Entities.Media", "Document")
-                        .WithMany()
-                        .HasForeignKey("DocumentId");
-
                     b.HasOne("Academy.Server.Data.Entities.Section", "Section")
                         .WithMany("Lessons")
                         .HasForeignKey("SectionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Document");
 
                     b.Navigation("Section");
                 });

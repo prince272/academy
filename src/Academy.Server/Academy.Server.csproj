@@ -36,8 +36,4 @@
 		<PackageReference Include="Syncfusion.DocIORenderer.Net.Core" Version="19.4.0.40" />
 		<PackageReference Include="Syncfusion.EJ2.PdfViewer.AspNet.Core.Windows" Version="19.4.0.42" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="logs\" />
-	</ItemGroup>
 </Project>
