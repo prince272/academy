@@ -317,6 +317,7 @@ namespace Academy.Server
 
                 options.LoginPath = "/accounts/signin";
                 options.LogoutPath = "/accounts/signout";
+                options.ReturnUrlParameter = "returnUrl";
 
 
                 // Not creating a new object since ASP.NET Identity has created

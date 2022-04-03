@@ -115,8 +115,10 @@ const useClientProvider = () => {
 
             if (!userManagerRef.current) {
                 clientSettings = clientSettings || await (async () => {
-                    clientSettings = await setClientSettings((await httpClient.get(`/clients/${clientId}`, { throwIfError: true })).data);
-                    return clientSettings;
+                    return {
+                        ...await setClientSettings((await httpClient.get(`/clients/${clientId}`, { throwIfError: true })).data),
+                        authority: process.env.NEXT_PUBLIC_CLIENT_API
+                    };
                 })();
 
                 const userManager = new UserManager({
@@ -219,7 +221,7 @@ const useClientProvider = () => {
                 eventDispatcher.emit('signinComplete', state);
             }
             catch (silentError) {
-                
+
                 console.error("Silent authentication error: ", silentError);
 
                 try {
