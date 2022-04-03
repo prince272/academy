@@ -117,7 +117,6 @@ const useClientProvider = () => {
                 clientSettings = clientSettings || await (async () => {
                     return {
                         ...await setClientSettings((await httpClient.get(`/clients/${clientId}`, { throwIfError: true })).data),
-                        authority: process.env.NEXT_PUBLIC_CLIENT_API
                     };
                 })();
 
