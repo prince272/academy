@@ -17,7 +17,7 @@ const handleProxyInit = (proxy) => {
 export default (req, res) => {
 
     return httpProxyMiddleware(req, res, {
-        target: process.env.NEXT_PUBLIC_SERVER_URL,
+        target: process.env.NEXT_PUBLIC_SERVER_API,
         onProxyInit: handleProxyInit,
         agent: new https.Agent({ rejectUnauthorized: false }),
         pathRewrite: [{

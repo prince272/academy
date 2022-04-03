@@ -77,7 +77,7 @@ const MediaUploader = ({ value, onChange, extensions, length, layout }) => {
                 chunkUploads={true}
                 chunkForce={true}
                 server={{
-                    url: process.env.NEXT_PUBLIC_SERVER_URL,
+                    url: process.env.NEXT_PUBLIC_CLIENT_API,
                     process: {
                         url: '/medias/upload',
                         withCredentials: true,

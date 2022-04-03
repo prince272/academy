@@ -17,7 +17,7 @@ const createHttpClient = (defaultConfig) => {
     const serverSide = typeof window === 'undefined';
 
     defaultConfig = Object.assign({}, {
-        baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
+        baseURL: process.env.NEXT_PUBLIC_CLIENT_API,
         paramsSerializer: params => {
             return queryString.stringify(params)
         },
@@ -115,7 +115,7 @@ const useClientProvider = () => {
 
             if (!userManagerRef.current) {
                 clientSettings = clientSettings || await (async () => {
-                    clientSettings = await setClientSettings((await httpClient.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/clients/${clientId}`, { throwIfError: true })).data);
+                    clientSettings = await setClientSettings((await httpClient.get(`/clients/${clientId}`, { throwIfError: true })).data);
                     return clientSettings;
                 })();
 
@@ -154,7 +154,7 @@ const useClientProvider = () => {
     };
 
     const loadUserContext = async (context) => {
-        const currentUser = (await httpClient.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/accounts/profile`, { throwIfError: true })).data.data;
+        const currentUser = (await httpClient.get(`/accounts/profile`, { throwIfError: true })).data.data;
         await setUser(currentUser);
         await setUserContext(context);
     };
@@ -200,7 +200,7 @@ const useClientProvider = () => {
 
         user: user,
         reloadUser: async () => {
-            const currentUser = (await httpClient.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/accounts/profile`, { throwIfError: true })).data.data;
+            const currentUser = (await httpClient.get(`/accounts/profile`, { throwIfError: true })).data.data;
             await setUser(currentUser);
         },
         updateUser: (state) => {
