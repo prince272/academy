@@ -171,6 +171,7 @@ namespace Academy.Server.Controllers
             {
                 var courseModel = await GetCourseModel(courseId, true);
                 if (courseModel == null) throw new ArgumentException();
+                courseModel.Sections = null;
                 return courseModel;
             });
 
