@@ -86,7 +86,7 @@ const MediaUploader = ({ value, onChange, extensions, length, layout }) => {
                                 'Upload-Name': file.name,
                                 'Upload-Size': file.size,
                                 'Accept-Extensions': extensions,
-                                ...(!accessToken ? {} : { 'Authorization': `Bearer ${accessToken}` })
+                                'Authorization': accessToken ? `Bearer ${accessToken}` : ''
                             }
                             return headers;
                         },

@@ -43,15 +43,14 @@ const AboutPage = () => {
                                     <p><b>It's more cost-effective than traditional education:</b> Unlike in-person education methods, Academy tends to be more affordable. You can also save money from the commute and class materials. In other words, the monetary investment is less, but the results can be better than other options.</p>
                                 </li>
                             </ul>
-                            <h3>People involved</h3>
+                            <h3>Creator</h3>
                             <h5>Prince Owusu <small className="text-muted"><i>CEO &amp; Founder, Academy of Ours</i></small></h5>
                             <div className="d-flex mb-3">
                                 <div className="flex-shrink-0">
                                     <Image src={'/img/prince-owusu-profile.png'} width={128} height={128} className="img-thumbnail" />
                                 </div>
                                 <div className="flex-grow-1 ms-3">
-                                    The person who designed and built Academy of Ours. He's a programmer and web developer who enjoys a diverse array of hobbies, including building web apps, working with big data, and reverse engineering.
-                                    He will be the one that answers all your questions and will assist you if you should run into any trouble.
+                                    The person who designed and built Academy of Ours. I'm a programmer and web developer who enjoys a diverse array of hobbies, including building web apps, working with big data, and reverse engineering. I have written and developed this site so that students may learn courses related education easily. No one is perfect in this world and nothing is eternally best. But we can try to be better. I hope it will help you a lot.
                                 </div>
                             </div>
                             <ul>

@@ -101,7 +101,7 @@ const useClientProvider = () => {
         headers: (() => {
             const accessToken = userContext?.access_token;
             const headers = {
-                ...(!accessToken ? {} : { 'Authorization': `Bearer ${accessToken}` })
+                'Authorization': accessToken ? `Bearer ${accessToken}` : ''
             }
             return headers;
         })(),
