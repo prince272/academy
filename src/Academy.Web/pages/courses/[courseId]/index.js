@@ -339,7 +339,7 @@ const SectionList = ({ course, setCourse, toggler, permitted }) => {
             Scroll.scroller.scrollTo(`lesson_${lesson.id}`, {
                 delay: 50,
                 smooth: true,
-                offset: 0, // Scrolls to element + 50 pixels down the page
+                offset: -60, // Scrolls to element + 50 pixels down the page
             });
         }
     }, []);
