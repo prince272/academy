@@ -1,6 +1,7 @@
 ﻿using Humanizer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,10 +22,10 @@ namespace Academy.Server.Utilities
 
         public static ObjectResult Failed(int statusCode, params Error[] errors)
         {
-            return Failed(statusCode, null, errors);
+            return Failed(statusCode, null, null, errors);
         }
 
-        public static ObjectResult Failed(int status, string message = null, params Error[] errors)
+        public static ObjectResult Failed(int status, string message = null, ResultReason? reason = null, params Error[] errors)
         {
             if (message == null)
             {
@@ -39,11 +40,18 @@ namespace Academy.Server.Utilities
                 {
                     Status = status,
                     Message = message,
+                    Reason = reason,
                     Details = errors.ToDictionary(error => error.Code, error => error.Description)
                 }
             };
             return new ObjectResult(result) { StatusCode = status };
         }
+    }
+
+    public enum ResultReason
+    {
+        DuplicateUsername,
+        ConfirmUsername
     }
 
     public class Error
@@ -65,11 +73,8 @@ namespace Academy.Server.Utilities
 
         public int Status { get; set; }
 
-        public string Message { get; set; }
-    }
+        public ResultReason? Reason { get; set; }
 
-    public enum Errors
-    {
-        ConfirmUsername
+        public string Message { get; set; }
     }
 }

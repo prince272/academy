@@ -40,6 +40,8 @@ import parse, { domToReact } from 'html-react-parser';
 import hljs from "highlight.js";
 import 'highlight.js/styles/github-dark.css';
 
+import { NextSeo } from 'next-seo';
+
 const DocumentViewer = withRemount(({ document, remount }) => {
 
     const ref = useRef();
@@ -428,7 +430,7 @@ const LearnPage = withRemount(({ remount }) => {
         if (!client.loading && !client.user) {
             const location = window.location;
             router.replace(`/courses/${courseId}`);
-            router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: { returnUrl: location.href } });
+            router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: { returnUrl: location.href } });
         }
     }, [client.loading, client.user]);
 

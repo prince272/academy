@@ -23,7 +23,7 @@ namespace Academy.Server.Models.Accounts
 
             RuleFor(_ => _.LastName).NotEmpty();
 
-            RuleFor(_ => _.Username).NewUsername(serviceProvider);
+            RuleFor(_ => _.Username).NewUsername();
 
             RuleFor(_ => _.Password).NewPassword();
         }

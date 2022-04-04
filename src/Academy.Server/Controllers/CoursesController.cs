@@ -241,7 +241,7 @@ namespace Academy.Server.Controllers
 
             if (courseModel.Price > 0 && !courseModel.Purchased)
             {
-                return Result.Failed(StatusCodes.Status400BadRequest, "Payment is required to take this course.");
+                return Result.Failed(StatusCodes.Status400BadRequest, message: "Payment is required to take this course.");
             }
 
             var sectionModel = courseModel.Sections.FirstOrDefault(_ => _.Id == sectionId);

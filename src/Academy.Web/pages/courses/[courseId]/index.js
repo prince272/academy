@@ -548,6 +548,7 @@ const CoursePage = withRemount(({ remount }) => {
 
     return (
         <>
+            <NextSeo title="Courses" />
             <div className="bg-dark position-absolute w-100" style={{ height: "350px" }}></div>
             <div className="container position-relative zi-1 h-100">
                 <div className="row justify-content-center h-100">

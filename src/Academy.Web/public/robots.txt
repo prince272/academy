@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://academyofours.com
+
+# Sitemaps
+Sitemap: https://academyofours.com/sitemap.xml

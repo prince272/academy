@@ -43,7 +43,7 @@ const SignInModal = (props) => {
             if (result.error) {
                 const error = result.error;
 
-                if (error.details.confirmUsername) {
+                if (error.reason == 'confirmUsername') {
                     router.replace({ pathname: `${ModalPathPrefix}/accounts/confirm`, query: cleanObject({ returnUrl, provider, inputs: JSON.stringify(inputs) }) });
                 }
                 else {
@@ -66,7 +66,7 @@ const SignInModal = (props) => {
             <Modal.Body as={Form} onSubmit={preventDefault(() => submit())}>
                 <div className="text-center mb-5">
                     <h4>Sign into account</h4>
-                    <p>Don&apos;t have an account yet? <Link href={{ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl, provider }) }}><a>Sign up here</a></Link></p>
+                    <p>Don&apos;t have an account yet? <Link href={{ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl, provider }) }}><a>Create an account here</a></Link></p>
                 </div>
                 <div className="row g-3">
                     {(provider == 'username') && (

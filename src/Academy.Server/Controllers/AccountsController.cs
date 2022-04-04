@@ -63,9 +63,18 @@ namespace Academy.Server.Controllers
                 user.PhoneNumber = form.Username;
 
                 if (!form.Username.StartsWith("+233"))
-                    return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Username), "This phone number is not allowed."));
+                    return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Username), "'Phone number' is not allowed."));
+
+                if (await userManager.Users.AnyAsync(user => user.PhoneNumber == form.Username))
+                    return Result.Failed(StatusCodes.Status400BadRequest, reason: ResultReason.DuplicateUsername, errors: new[] { new Error(nameof(form.Username), "'Phone number' is already registered.") });
             }
-            else user.Email = form.Username;
+            else
+            {
+                if (await userManager.Users.AnyAsync(user => user.Email == form.Username))
+                    return Result.Failed(StatusCodes.Status400BadRequest, reason: ResultReason.DuplicateUsername, errors: new[] { new Error(nameof(form.Username), "'Email' is already registered.") });
+
+                user.Email = form.Username;
+            }
 
             user.FirstName = form.FirstName;
             user.LastName = form.LastName;
@@ -89,7 +98,7 @@ namespace Academy.Server.Controllers
             var user = await userManager.FindByUsernameAsync(form.Username);
             if (user == null)
             {
-                return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Username), $"'{(ValidationHelper.PhoneOrEmail(form.Username) ? "Phone number" : "Email")}' does not exist."));
+                return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Username), $"'{(ValidationHelper.PhoneOrEmail(form.Username) ? "Phone number" : "Email")}' is not registered."));
             }
 
             var result = await signInManager.CheckPasswordSignInAsync(user, form.Password, true);
@@ -98,8 +107,8 @@ namespace Academy.Server.Controllers
             {
                 if (!user.EmailConfirmed && !user.PhoneNumberConfirmed)
                 {
-                    var error = new Error(Errors.ConfirmUsername, $"'{(ValidationHelper.PhoneOrEmail(form.Username) ? "Phone number" : "Email")}' is not confirmed.");
-                    return Result.Failed(StatusCodes.Status400BadRequest, error);
+                    var error = new Error(nameof(form.Username), $"'{(ValidationHelper.PhoneOrEmail(form.Username) ? "Phone number" : "Email")}' is not confirmed.");
+                    return Result.Failed(StatusCodes.Status400BadRequest, reason: ResultReason.ConfirmUsername, errors: new[] { error });
                 }
 
                 await signInManager.SignInAsync(user, true);

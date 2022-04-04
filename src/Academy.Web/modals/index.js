@@ -155,7 +155,7 @@ const useModalProvider = () => {
                 // Todo: navigations with state parameter would have it's value as null since redirecting
                 // to sign in does not carry the state along.
                 if (currentRoute.authenticate && !client.user) {
-                    router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: { returnUrl: currentRoute.url } });
+                    router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: { returnUrl: currentRoute.url } });
                 }
                 else {
                     const ModalBody = currentRoute.modal;

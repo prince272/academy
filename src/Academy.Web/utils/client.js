@@ -17,7 +17,7 @@ const createHttpClient = (defaultConfig) => {
     const serverSide = typeof window === 'undefined';
 
     defaultConfig = Object.assign({}, {
-        baseURL: process.env.NEXT_PUBLIC_CLIENT_API,
+        baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
         paramsSerializer: params => {
             return queryString.stringify(params)
         },

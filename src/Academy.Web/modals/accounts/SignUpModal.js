@@ -32,8 +32,7 @@ const SignUpModal = (props) => {
 
             let result = await client.post('/accounts/signup', inputs);
 
-            if (result.error) {
-                
+            if (result.error && result.error.reason != 'duplicateUsername') {
 
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));

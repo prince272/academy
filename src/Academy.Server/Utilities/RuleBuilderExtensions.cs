@@ -10,9 +10,8 @@ namespace Academy.Server.Utilities
 {
     public static class RuleBuilderExtensions
     {
-        public static IRuleBuilderOptions<T, string> NewUsername<T>(this IRuleBuilder<T, string> ruleBuilder, IServiceProvider serviceProvider)
+        public static IRuleBuilderOptions<T, string> NewUsername<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
             // source: https://github.com/deanilvincent/check-password-strength
             var options = ruleBuilder
                 .NotEmpty()
@@ -20,14 +19,7 @@ namespace Academy.Server.Utilities
                 .Must((model, value) =>
                  ValidationHelper.TryFormatPhone(value, out string _) ||
                  ValidationHelper.TryFormatEmail(value, out string _))
-                .WithMessage((model, value) => $"'{(ValidationHelper.PhoneOrEmail(value) ? "Phone number" : "Email")}' is not valid.")
-                .MustAsync(async (value, cancellationToken) =>
-                {
-                    var predicate = await userManager.Users.AnyAsync(user => user.Email == value, cancellationToken);
-                    predicate = predicate || await userManager.Users.AnyAsync(user => user.PhoneNumber == value, cancellationToken);
-                    return !predicate;
-                })
-                .WithMessage((model, value) => $"'{(ValidationHelper.PhoneOrEmail(value) ? "Phone number" : "Email")}' already exists.");
+                .WithMessage((model, value) => $"'{(ValidationHelper.PhoneOrEmail(value) ? "Phone number" : "Email")}' is not valid.");
             return options;
         }
 
