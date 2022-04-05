@@ -280,6 +280,8 @@ const SectionItem = ({ course, section, toggler, permitted }) => {
                             </div>
 
                             <div className="p-2 d-flex align-items-center hstack gap-2">
+                                {section.status == 'started' && <div className="badge bg-primary">Started</div>}
+                                {section.status == 'completed' && <div className="badge bg-sucess">Completed</div>}
                                 {(permitted) && (
                                     <div>
                                         <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Options</Tooltip>}>
