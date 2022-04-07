@@ -18,6 +18,8 @@ import { BsChevronBarLeft, BsGripVertical, BsThreeDots, BsTrash } from 'react-ic
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import _ from 'lodash';
 
+import TextareaAutosize from 'react-textarea-autosize';
+
 const QuestionEditModal = withRemount((props) => {
     const { route, modal, updateModalProps, remount } = props;
     const router = useRouter();
@@ -139,7 +141,7 @@ const QuestionEditModal = withRemount((props) => {
                     <div className={`row g-3 ${action == 'delete' ? 'd-none' : ''}`}>
                         <div className="col-12">
                             <label className="form-label">Question</label>
-                            <input {...form.register("text")} className={`form-control  ${formState.errors.text ? 'is-invalid' : ''}`} />
+                            <TextareaAutosize {...form.register("text")} className={`form-control ${formState.errors.text ? 'is-invalid' : ''}`} rows={1} />
                             <div className="invalid-feedback">{formState.errors.text?.message}</div>
                         </div>
                         <div className="col-6">

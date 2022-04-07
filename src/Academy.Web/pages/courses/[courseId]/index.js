@@ -282,6 +282,7 @@ const SectionItem = ({ course, section, toggler, permitted }) => {
                             <div className="p-2 d-flex align-items-center hstack gap-2">
                                 {section.status == 'started' && <div className="badge bg-primary">Started</div>}
                                 {section.status == 'completed' && <div className="badge bg-success">Completed</div>}
+                                {section.status == 'locked' && <div className="badge bg-secondary text-dark">Locked</div>}
                                 {(permitted) && (
                                     <div>
                                         <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Options</Tooltip>}>
