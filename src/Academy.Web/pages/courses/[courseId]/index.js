@@ -162,7 +162,7 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                     <div className="small text-body d-flex align-items-center">
                                         {
                                             [
-                                                (lesson.media != null) ? (<span key="1">{lesson.media.type == 'video' ? <BsFilm size="1rem" /> : lesson.media.type == 'audio' ? <BsMusicNoteBeamed size="1rem" /> : <></>} {pascalCase(lesson.media.type)}</span>) : null,
+                                                (lesson.media?.url || lesson.externalMediaUrl) ? (<span key="1"><BsFilm size="1rem" /> Media</span>): null,
                                                 ((permitted || lesson.questions.length > 0) ? (<span key="2" className="text-body"><BsJournalRichtext size="1rem" /> {lesson.questions.length} {lesson.questions.length > 1 ? 'Questions' : 'Question'}</span>) : null),
                                             ].filter(curr => curr).reduce((prev, curr, index) => index == 0 ? curr : [prev, (<span key="0" className="mx-2">·</span>), curr], false)
                                         }

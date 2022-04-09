@@ -134,6 +134,11 @@ const LessonEditModal = withRemount((props) => {
                                 }} />
                             <div className="invalid-feedback">{formState.errors.mediaId?.message}</div>
                         </div>
+                        <div className="col-12">
+                            <label className="form-label">External media url</label>
+                            <input {...form.register("externalMediaUrl")} className={`form-control  ${formState.errors.externalMediaUrl ? 'is-invalid' : ''}`} />
+                            <div className="invalid-feedback">{formState.errors.externalMediaUrl?.message}</div>
+                        </div>
                     </div>
                     {action == 'delete' && <p className="mb-0">Are you sure you want to {action} this lesson?</p>}
                 </>

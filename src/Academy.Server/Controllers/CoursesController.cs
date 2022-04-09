@@ -713,6 +713,7 @@ namespace Academy.Server.Controllers
 
             lesson.Title = form.Title;
             lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
+            lesson.ExternalMediaUrl = form.ExternalMediaUrl;
 
             await sharedService.WriteDocmentAsync(lesson, form.Document);
             sharedService.CalculateDuration(lesson);
@@ -977,6 +978,7 @@ namespace Academy.Server.Controllers
                         Title = single ? lesson.Title : null,
                         Document = lesson.Document,
                         Media = lesson.Media,
+                        ExternalMediaUrl = lesson.ExternalMediaUrl,
                         Duration = lesson.Duration
                     }).ToListAsync();
 

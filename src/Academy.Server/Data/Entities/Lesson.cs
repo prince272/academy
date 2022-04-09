@@ -18,7 +18,7 @@ namespace Academy.Server.Data.Entities
 
         public Media Media { get; set; }
 
-        // public string ExternalMediaUrl { get; set; }
+        public string ExternalMediaUrl { get; set; }
 
         public long Duration { get; set; }
 

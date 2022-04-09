@@ -79,5 +79,20 @@ namespace Academy.Server.Utilities
             }).WithMessage("'{PropertyName}' is not allowed.");
             return options;
         }
+
+        public static IRuleBuilderOptions<T, string> Url<T>(this IRuleBuilder<T, string> ruleBuilder)
+        {
+            var options = ruleBuilder
+                .Must((model, value) =>
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    return true;
+
+                Uri uriResult;
+                bool result = Uri.TryCreate(value, UriKind.Absolute, out uriResult);
+                return result;
+            }).WithMessage("'{PropertyName}' is not valid.");
+            return options;
+        }
     }
 }

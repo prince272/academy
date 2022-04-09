@@ -91,6 +91,8 @@ namespace Academy.Server.Models.Courses
 
         public MediaModel Media { get; set; }
 
+        public string ExternalMediaUrl { get; set; }
+
         public long Duration { get; set; }
 
         public CourseStatus Status { get; set; }

@@ -22,8 +22,8 @@ const ResponsiveEllipsis = responsiveHOC()(LinesEllipsisLoose);
 
 import { SvgBitCube, SvgBitCubes } from '../../../../resources/images/icons';
 
-import Plyr from 'plyr-react';
-import 'plyr-react/dist/plyr.css';
+import ReactPlayer from 'react-player/lazy';
+
 import _ from 'lodash';
 import { useClient } from '../../../../utils/client';
 import { useDialog } from '../../../../utils/dialog';
@@ -39,8 +39,7 @@ import parse, { domToReact } from 'html-react-parser';
 
 import hljs from "highlight.js";
 import 'highlight.js/styles/github-dark.css';
-
-import { NextSeo } from 'next-seo';
+import { AspectRatio } from 'react-aspect-ratio';
 
 const DocumentViewer = withRemount(({ document, remount }) => {
 
@@ -74,54 +73,6 @@ const DocumentViewer = withRemount(({ document, remount }) => {
     );
 });
 
-const MediaViewer = ({ media }) => {
-
-    return (
-        <div className={`root ${media.type == 'audio' ? 'd-flex align-items-center justify-content-center h-100' : ''}`}>
-            <Plyr
-                source={
-                    {
-                        /* https://github.com/sampotts/plyr#the-source-setter */
-                        type: media.type,
-                        title: media.name,
-                        sources: [
-                            {
-                                src: media.url,
-                                type: media.contentType,
-                            },
-                        ],
-                    }
-                }
-                options={
-                    {
-                        /* https://github.com/sampotts/plyr#options */
-                        controls: [
-                            'play-large', // The large play button in the center
-                            'play', // Play/pause playback
-                            'progress', // The progress bar and scrubber for playback and buffering
-                            'current-time', // The current time of playback
-                            'duration', // The full duration of the media
-                            'mute', // Toggle mute
-                            'volume', // Volume control
-                            'captions', // Toggle captions
-                            'settings', // Settings menu
-                            'pip', // Picture-in-picture (currently Safari only)
-                            'airplay', // Airplay (currently Safari only)
-                            'fullscreen' // Toggle fullscreen
-                        ]
-                    }
-                }
-                {
-                ...{
-                    /* Direct props for inner video tag (mdn.io/video) */
-                }
-                }
-            />
-            <style jsx>{`.root > :global(.plyr) {--plyr-color-main: var(--bs-primary) !important;border-radius: .3125rem;}`}</style>
-        </div>
-    )
-};
-
 const LessonView = (props) => {
     const { lesson, setCurrentView } = props;
 
@@ -137,10 +88,8 @@ const LessonView = (props) => {
             tabs.push({ lesson, key: 'document', title: 'Document', icon: <span className="align-text-bottom"><BsJournalRichtext size="1rem" /></span> });
         }
 
-        if (lesson.media != null) {
-            const media = lesson.media;
-
-            tabs.push({ lesson, key: media.type, title: pascalCase(media.type), icon: <span className="align-text-bottom">{media.type == 'video' ? <BsFilm size="1rem" /> : media.type == 'audio' ? <BsMusicNoteBeamed size="1rem" /> : <></>}</span> });
+        if (lesson.media?.url || lesson.externalMediaUrl) {
+            tabs.push({ lesson, key: 'media', title: 'Media', icon: <span className="align-text-bottom">{<BsFilm size="1rem" />}</span> });
         }
         return tabs;
     }, []);
@@ -171,13 +120,14 @@ const LessonView = (props) => {
                             </Tab.Pane>
                         );
                     }
-                    else if (tab.key == 'video' || tab.key == 'audio') {
-                        const media = lesson.media;
-
+                    else if (tab.key == 'media') {
+                        const mediaUrl = lesson.media?.url || lesson.externalMediaUrl;
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-8 col-lg-7 col-xl-6">
                                 <div className="h3 my-3">{lesson.title}</div>
-                                <MediaViewer media={lesson.media} />
+                                <AspectRatio ratio="1280/720">
+                                    <ReactPlayer url={mediaUrl} controls={true} width="100%" height="100%" />
+                                </AspectRatio>
                             </Tab.Pane>
                         );
                     }
@@ -613,7 +563,6 @@ const LearnPage = withRemount(({ remount }) => {
             const lastSection = course.sections.slice(-1)[0];
 
             if ((lastSection && lastSection.id == sectionId) && course.certificateTemplate) {
-                await sleep(2000);
                 router.replace({ pathname: `/courses/${courseId}`, query: { certificate: true } });
             }
             else {
