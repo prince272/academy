@@ -125,9 +125,11 @@ const LessonView = (props) => {
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-8 col-lg-7 col-xl-6">
                                 <div className="h3 my-3">{lesson.title}</div>
-                                <AspectRatio ratio="1280/720">
-                                    <ReactPlayer url={mediaUrl} controls={true} width="100%" height="100%" />
-                                </AspectRatio>
+                                <div className="bg-dark">
+                                    <AspectRatio ratio="1280/720">
+                                        <ReactPlayer url={mediaUrl} controls={true} width="100%" height="100%" />
+                                    </AspectRatio>
+                                </div>
                             </Tab.Pane>
                         );
                     }

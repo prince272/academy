@@ -52,7 +52,9 @@ const LessonEditModal = withRemount((props) => {
 
             if (result.data.document != null) {
                 try { formData = { ...formData, document: (await client.get(result.data.document.url, { throwIfError: true }))?.data }; }
-                catch (ex) { }
+                catch (ex) {
+                    formData = { ...formData, document: null };
+                 }
             }
 
             form.reset(formData);

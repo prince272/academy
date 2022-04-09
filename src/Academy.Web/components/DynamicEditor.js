@@ -8,7 +8,7 @@ function DocumentEditor({ value, onChange }) {
     return (
         <div>
             <FroalaEditor
-                model={value}
+                model={value || ''}
                 tag="textarea"
                 onModelChange={onChange} config={{
                     events: {
