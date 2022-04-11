@@ -568,15 +568,18 @@ const LearnPage = withRemount(({ remount }) => {
                         });
                         return;
                     }
+
+                    lock.release();
                 }
+            }
+            else {
+                lock.release();
             }
 
             const currentViewIndex = views.findIndex(view => view._id == currentView._id);
             const nextView = views[currentViewIndex + 1];
 
             if (nextView != null) {
-                lock.release();
-
                 setCurrentView(nextView);
             }
             else {
