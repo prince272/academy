@@ -13,6 +13,8 @@ import { useAppSettings } from '../utils/appSettings';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
 import Mounted from '../components/Mounted';
 
+import parsePhoneNumber from 'libphonenumber-js';
+
 const ScrollLeftArrow = (() => {
   const {
     isFirstItemVisible,
@@ -113,13 +115,21 @@ const HomePage = () => {
         <div className="position-relative">
           <div className="container content-space-2">
             <div className="row justify-content-center">
-              <div className="col-lg-10 text-center">
-                <span className="d-block mb-4 h6 text-warning">Are you ready to start your journey with us?</span>
-                <h2 className="mb-4 display-3 fw-bold text-white">Having the patience to specialize academically will pay off in the long run.</h2>
-                <div>
-                  <Link href="/courses">
-                    <a type="button" className="btn btn-white ">Start Learning</a>
-                  </Link>
+              <div className="col-lg-10">
+                <div className="border rounded bg-white d-inline-flex p-1 mb-3">
+                  <Image src={'/img/prince-owusu-profile.png'} width={128} height={128} className="img-thumbnail" />
+                </div>
+                <div className="h3 fw-bold text-white">Prince Owusu</div>
+                <div className="mb-3 text-white text-start">I'm a programmer and web developer with a wide range of interests, including web app development, data analysis, and reverse engineering. This site was built and developed so that teachers may add courses for students to study. In our world, no one is perfect, and nothing is always the best. We may, however, strive to be better. I hope that this platform will be of great help to you.</div>
+                <div className="text-white text-start">
+                  <ul>
+                    <li>
+                      <p>By email: <a className="text-white" href={`mailto:${appSettings.company.emails.support}`}>{appSettings.company.emails.support}</a></p>
+                    </li>
+                    <li>
+                      <p>By phone number: {((phoneNumber) => (<a className="text-white" href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>

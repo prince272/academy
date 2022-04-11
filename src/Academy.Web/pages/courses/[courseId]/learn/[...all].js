@@ -117,7 +117,7 @@ const LessonView = (props) => {
                     if (tab.key == 'document') {
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5 text-break">
-                                <div className="h3 my-3">{lesson.title}</div>
+                                <div className="h3 mt-3 mb-2">{lesson.title}</div>
                                 <DocumentViewer document={lesson.document} />
                             </Tab.Pane>
                         );
@@ -126,7 +126,7 @@ const LessonView = (props) => {
                         const mediaUrl = lesson.media?.url || lesson.externalMediaUrl;
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-8 col-lg-7 col-xl-6">
-                                <div className="h3 my-3">{lesson.title}</div>
+                                <div className="h3 mt-3 mb-2">{lesson.title}</div>
                                 <div className="bg-dark">
                                     <AspectRatio ratio="1280/720">
                                         <ReactPlayer url={mediaUrl} controls={true} width="100%" height="100%" />
@@ -219,7 +219,7 @@ const QuestionView = (props) => {
     return (
         <div className="row justify-content-center g-0">
             <div className="col-12 col-md-7 col-lg-6 col-xl-5">
-                <div className="h3 my-3">{lesson.title}</div>
+                <div className="h3 mt-3 mb-2">{lesson.title}</div>
                 <div className="w-100 text-break my-3">{question.text}</div>
                 <DragDropContext onDragEnd={handleReorder}>
                     <Droppable droppableId={`question`} direction="vertical" type="lesson">

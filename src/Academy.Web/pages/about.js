@@ -50,7 +50,7 @@ const AboutPage = () => {
                                     <Image src={'/img/prince-owusu-profile.png'} width={128} height={128} className="img-thumbnail" />
                                 </div>
                                 <div className="flex-grow-1 ms-3">
-                                    The person who designed and built Academy of Ours. I'm a programmer and web developer who enjoys a diverse array of hobbies, including building web apps, working with big data, and reverse engineering. I have written and developed this site so that students may learn courses related education easily. No one is perfect in this world and nothing is eternally best. But we can try to be better. I hope it will help you a lot.
+                                    I'm a programmer and web developer who enjoys a diverse array of hobbies, including building web apps, working with big data, and reverse engineering. I have written and developed this site so that students may learn courses related education easily. No one is perfect in this world and nothing is eternally best. But we can try to be better. I hope it will help you a lot.
                                 </div>
                             </div>
                             <ul>
