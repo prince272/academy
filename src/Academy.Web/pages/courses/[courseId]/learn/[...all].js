@@ -117,7 +117,6 @@ const LessonView = (props) => {
                     if (tab.key == 'document') {
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5 text-break">
-                                <div className="h3 my-3">{lesson.title}</div>
                                 <DocumentViewer document={lesson.document} />
                             </Tab.Pane>
                         );
