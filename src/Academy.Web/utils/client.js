@@ -90,7 +90,7 @@ const useClientProvider = () => {
     const [loading, setLoading] = useState(true);
     let [clientSettings, setClientSettings] = withAsync(useSessionState(null, `client-${clientId}`));
 
-    const userManagerLocker = useMemo(() => new AsyncLocker());
+    const asyncLocker = useMemo(() => new AsyncLocker());
     const userManagerRef = useRef(null);
     let [user, setUser] = withAsync(useState(null));
     let [userContext, setUserContext] = withAsync(useState(null));
@@ -109,7 +109,7 @@ const useClientProvider = () => {
     });
 
     const loadUserManager = async () => {
-        const lock = userManagerLocker.createLock();
+        const lock = asyncLocker.createLock();
         try {
             await lock.promise;
 

@@ -4,7 +4,7 @@ const PrivacyPage = () => {
 
     return (
         <>
-            <NextSeo title="Privacy Policy" />
+            <NextSeo title="Privacy Policy" description="This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You." />
             <div className="bg-primary">
                 <div className="container py-10 d-flex justify-content-center text-center">
                     <div>

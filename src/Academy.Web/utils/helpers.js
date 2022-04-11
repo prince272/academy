@@ -132,6 +132,13 @@ export class AsyncLocker {
     }
 }
 
+export function CreateLock() {
+    let lock = {};
+    lock.delay = MakeQuerablePromise(new Promise(resolve => lock.release = resolve));
+    return lock;
+};
+
+
 // Download data URL file
 // source: https://stackoverflow.com/questions/3916191/download-data-url-file
 export function downloadFromUrl(dataUrl, filename) {

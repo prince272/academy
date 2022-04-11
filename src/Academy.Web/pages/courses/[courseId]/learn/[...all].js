@@ -41,6 +41,8 @@ import hljs from "highlight.js";
 import 'highlight.js/styles/github-dark.css';
 import { AspectRatio } from 'react-aspect-ratio';
 
+import { CreateLock } from '../../../../utils/helpers';
+
 const DocumentViewer = withRemount(({ document, remount }) => {
 
     const ref = useRef();
@@ -321,6 +323,16 @@ const LearnPage = withRemount(({ remount }) => {
 
     const confetti = useConfetti();
 
+    const mountedRef = useRef(false);
+
+    useEffect(() => {
+        mountedRef.current = true;
+
+        return () => {
+            mountedRef.current = false;
+        };
+    }, []);
+
     const load = async () => {
         setLoading({});
 
@@ -403,173 +415,186 @@ const LearnPage = withRemount(({ remount }) => {
     };
 
     const moveForward = async (solve) => {
+        try {
+            setSubmitting(true);
 
-        if (currentView._type == 'lesson') {
+            const lock = CreateLock();
 
-            client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.id}/progress`, {}).then(result => {
+            if (currentView._type == 'lesson') {
 
-                if (result.error) {
-                    const error = result.error;
-                    toast.error(error.message, { id: componentId });
-                    return;
-                }
-
-                client.updateUser({ bits: result.data.bits });
-            });
-        }
-        else if (currentView._type == 'question') {
-
-            if (!currentView._submitted || solve) {
-                let _inputs = currentView._inputs;
-                const answers = JSON.parse(protection.decrypt(appSettings.company.name, currentView.secret));
-
-                const comparator = (a, b) => {
-                    return a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' })
-                };
-
-                const sequenceEqual = (a, b) => {
-                    if (a === b) return true;
-                    if (a == null || b == null) return false;
-                    if (a.length !== b.length) return false;
-
-                    // If you don't care about the order of the elements inside
-                    // the array, you should sort both arrays here.
-                    // Please note that calling sort on an array will modify that array.
-                    // you might want to clone your array first.
-
-                    for (var i = 0; i < a.length; ++i) {
-                        if (a[i] !== b[i]) return false;
-                    }
-                    return true;
-                };
-
-                if (solve) {
-                    setSubmitting(true);
-                    let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/questions/${currentView.id}/solve`);
+                client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.id}/progress`, {}).then(result => {
 
                     if (result.error) {
                         const error = result.error;
                         toast.error(error.message, { id: componentId });
-                        setSubmitting(false);
                         return;
                     }
 
-                    _inputs = (() => {
+                    client.updateUser({ bits: result.data.bits });
+                }).finally(() => {
+                    lock.release();
+                });
+            }
+            else if (currentView._type == 'question') {
+
+                if (!currentView._submitted || solve) {
+                    let _inputs = currentView._inputs;
+                    const answers = JSON.parse(protection.decrypt(appSettings.company.name, currentView.secret));
+
+                    const comparator = (a, b) => {
+                        return a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' })
+                    };
+
+                    const sequenceEqual = (a, b) => {
+                        if (a === b) return true;
+                        if (a == null || b == null) return false;
+                        if (a.length !== b.length) return false;
+
+                        // If you don't care about the order of the elements inside
+                        // the array, you should sort both arrays here.
+                        // Please note that calling sort on an array will modify that array.
+                        // you might want to clone your array first.
+
+                        for (var i = 0; i < a.length; ++i) {
+                            if (a[i] !== b[i]) return false;
+                        }
+                        return true;
+                    };
+
+                    if (solve) {
+                        let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/questions/${currentView.id}/solve`);
+
+                        if (result.error) {
+                            const error = result.error;
+                            toast.error(error.message, { id: componentId });
+                            return;
+                        }
+
+                        _inputs = (() => {
+                            if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
+                                const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
+                                return checkedIds;
+                            }
+                            else if (currentView.type == 'reorder') {
+                                const checkedIds = answers.map(answer => answer.id.toString());
+                                return checkedIds;
+                            }
+                            else {
+                                return [];
+                            }
+                        })();
+
+                        client.updateUser({ bits: result.data.bits });
+                    }
+
+                    client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { id: currentView.id, inputs: _inputs }).then(result => {
+
+                        if (result.error) {
+                            const error = result.error;
+                            toast.error(error.message, { id: componentId });
+                            return;
+                        }
+
+                        client.updateUser({ bits: result.data.bits });
+                    }).finally(() => {
+                        lock.release();
+                    });
+
+                    const _correct = (() => {
                         if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
                             const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
-                            return checkedIds;
+                            const inputIds = _inputs.map(inputId => inputId.toString()).sort(comparator);
+                            return sequenceEqual(checkedIds, inputIds);
                         }
                         else if (currentView.type == 'reorder') {
                             const checkedIds = answers.map(answer => answer.id.toString());
-                            return checkedIds;
+                            const inputIds = _inputs.map(inputId => inputId.toString());
+                            return sequenceEqual(checkedIds, inputIds);
                         }
                         else {
-                            return [];
+                            return false;
                         }
                     })();
 
-                    client.updateUser({ bits: result.data.bits });
-                    setSubmitting(false);
-                }
+                    let _alert = _correct ?
+                        {
+                            type: 'success',
+                            message: _.sample(['Correct answer, Continue!', `Well done, ${client.user.firstName}!`])
+                        } :
+                        {
+                            type: 'error',
+                            message: _.sample(['Wrong answer, Please try again!', `Hmm, think again, ${client.user.firstName}!`, `Give it another try, ${client.user.firstName}!`])
+                        };
 
-                client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { id: currentView.id, inputs: _inputs }).then(result => {
+                    if (_correct) confetti.fire();
 
-                    if (result.error) {
-                        const error = result.error;
-                        toast.error(error.message, { id: componentId });
-                        return;
-                    }
-
-                    client.updateUser({ bits: result.data.bits });
-                });
-
-                const _correct = (() => {
                     if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
-                        const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
-                        const inputIds = _inputs.map(inputId => inputId.toString()).sort(comparator);
-                        return sequenceEqual(checkedIds, inputIds);
+                        setCurrentView({
+                            ...currentView,
+                            answers: currentView.answers.map(answer => ({
+                                ...answer,
+                                [_correct ? 'checked' : undefined]: answers.find(a => a.id == answer.id).checked,
+                                correct: answers.find(a => a.id == answer.id).checked
+                            })),
+                            _inputs,
+                            _correct,
+                            _alert,
+                            _submitted: true,
+                        });
                     }
                     else if (currentView.type == 'reorder') {
-                        const checkedIds = answers.map(answer => answer.id.toString());
-                        const inputIds = _inputs.map(inputId => inputId.toString());
-                        return sequenceEqual(checkedIds, inputIds);
+                        setCurrentView({
+                            ...currentView,
+                            answers: _correct ? currentView.answers.sort(function (a, b) {
+                                return answers.findIndex(answer => answer.id == a.id) - answers.findIndex(answer => answer.id == b.id);
+                            }) : currentView.answers,
+                            _inputs,
+                            _correct,
+                            _alert,
+                            _submitted: true,
+                        });
                     }
-                    else {
-                        return false;
-                    }
-                })();
 
-                let _alert = _correct ?
-                    {
-                        type: 'success',
-                        message: _.sample(['Correct answer, Continue!', `Well done, ${client.user.firstName}!`])
-                    } :
-                    {
-                        type: 'error',
-                        message: _.sample(['Wrong answer, Please try again!', `Hmm, think again, ${client.user.firstName}!`, `Give it another try, ${client.user.firstName}!`])
-                    };
-
-                if (_correct) confetti.fire();
-
-                if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
-                    setCurrentView({
-                        ...currentView,
-                        answers: currentView.answers.map(answer => ({
-                            ...answer,
-                            [_correct ? 'checked' : undefined]: answers.find(a => a.id == answer.id).checked,
-                            correct: answers.find(a => a.id == answer.id).checked
-                        })),
-                        _inputs,
-                        _correct,
-                        _alert,
-                        _submitted: true,
-                    });
-                }
-                else if (currentView.type == 'reorder') {
-                    setCurrentView({
-                        ...currentView,
-                        answers: _correct ? currentView.answers.sort(function (a, b) {
-                            return answers.findIndex(answer => answer.id == a.id) - answers.findIndex(answer => answer.id == b.id);
-                        }) : currentView.answers,
-                        _inputs,
-                        _correct,
-                        _alert,
-                        _submitted: true,
-                    });
-                }
-
-                return;
-            }
-            else {
-                if (!currentView._correct) {
-                    setCurrentView({
-                        ...currentView,
-                        answers: _.shuffle(currentView.answers).map(answer => ({ ...answer, checked: false, correct: false, })),
-                        _inputs: null,
-                        _correct: false,
-                        _alert: null,
-                        _submitted: false,
-                    });
                     return;
                 }
+                else {
+                    if (!currentView._correct) {
+                        setCurrentView({
+                            ...currentView,
+                            answers: _.shuffle(currentView.answers).map(answer => ({ ...answer, checked: false, correct: false, })),
+                            _inputs: null,
+                            _correct: false,
+                            _alert: null,
+                            _submitted: false,
+                        });
+                        return;
+                    }
+                }
             }
-        }
 
-        const currentViewIndex = views.findIndex(view => view._id == currentView._id);
-        const nextView = views[currentViewIndex + 1];
+            const currentViewIndex = views.findIndex(view => view._id == currentView._id);
+            const nextView = views[currentViewIndex + 1];
 
-        if (nextView != null) {
-            setCurrentView(nextView);
-        }
-        else {
-            const lastSection = course.sections.slice(-1)[0];
+            if (nextView != null) {
+                lock.release();
 
-            if ((lastSection && lastSection.id == sectionId) && course.certificateTemplate) {
-                router.replace({ pathname: `/courses/${courseId}`, query: { certificate: true } });
+                setCurrentView(nextView);
             }
             else {
-                router.replace(`/courses/${courseId}`);
+                await lock.delay;
+
+                const lastSection = course.sections.slice(-1)[0];
+
+                if ((lastSection && lastSection.id == sectionId) && course.certificateTemplate) {
+                    router.replace({ pathname: `/courses/${courseId}`, query: { certificate: true } });
+                }
+                else {
+                    router.replace(`/courses/${courseId}`);
+                }
             }
+        }
+        finally {
+            if (mountedRef.current) setSubmitting(false);
         }
     };
 

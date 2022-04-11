@@ -9,7 +9,7 @@ const TeachingPage = () => {
 
     return (
         <>
-            <NextSeo title="Become a teacher" />
+            <NextSeo title="Become a teacher" description="Becoming a teacher lets you take part in shaping the next generation." />
             <section className="bg-white">
                 <div className="container content-space-1">
                     <div className="row align-items-center text-center">

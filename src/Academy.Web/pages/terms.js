@@ -4,7 +4,7 @@ const TermsPage = () => {
 
     return (
         <>
-            <NextSeo title="Terms of Service" />
+            <NextSeo title="Terms of Service" description={"These terms and conditions outline the rules and regulations for the use of Academy of Ours's Website, located at https://www.academyofours.com."} />
             <div className="bg-primary">
                 <div className="container py-10 d-flex justify-content-center text-center">
                     <div>
@@ -18,7 +18,7 @@ const TermsPage = () => {
 
                     <div className="card-body p-lg-10">
                         <div>
-                            <p>These terms and conditions outline the rules and regulations for the use of Academy of Ours's Website, located at https://www.academyofours.com/.</p>
+                            <p>These terms and conditions outline the rules and regulations for the use of Academy of Ours's Website, located at https://www.academyofours.com.</p>
 
                             <p>By accessing this website we assume you accept these terms and conditions. Do not continue to use Academy of Ours if you do not agree to take all of the terms and conditions stated on this page.</p>
 

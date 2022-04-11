@@ -15,7 +15,7 @@ const Contact = () => {
 
     return (
         <>
-            <NextSeo title="Contact Us" />
+            <NextSeo title="Contact Us" description="Got a question? Want to learn more? Get in touch." />
             <div className="bg-primary">
                 <div className="container py-10 d-flex justify-content-center text-center">
                     <div className="zi-1">
