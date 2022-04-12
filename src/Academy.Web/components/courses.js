@@ -6,7 +6,7 @@ import { useClient } from '../utils/client';
 import { withRemount } from '../utils/hooks';
 import Loader from '../components/Loader';
 import { AspectRatio } from 'react-aspect-ratio';
-import { BsCardImage, BsThreeDots, BsPlus, BsBookHalf, BsClockFill } from 'react-icons/bs';
+import { BsCardImage, BsThreeDots, BsPlus, BsBookHalf, BsClockFill, BsPersonFill } from 'react-icons/bs';
 
 import ResponsiveEllipsis from 'react-lines-ellipsis/lib/loose';
 
@@ -18,7 +18,7 @@ import * as moment from 'moment';
 import momentDurationFormatSetup from 'moment-duration-format';
 momentDurationFormatSetup(moment);
 
-import { DialogProvider } from '../utils/dialog';
+import { formatNumber } from '../utils/helpers';
 import { pascalCase } from 'change-case';
 
 const CourseItem = ({ course }) => {
@@ -56,7 +56,12 @@ const CourseItem = ({ course }) => {
                 </div>
                 <div className="hstack gap-3 justify-content-between">
                     <div className="text-primary">{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
-                    <div><span className="text-primary"><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
+
+                    <div className="hstack">
+                        <div><span className="text-primary"><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
+                        <span className="mx-2">·</span>
+                        <div><span className="text-primary"><BsPersonFill /></span> {formatNumber(course.students)}</div>
+                    </div>
                 </div>
                 {permitted && (
                     <div className="position-absolute top-0 end-0 zi-2">
