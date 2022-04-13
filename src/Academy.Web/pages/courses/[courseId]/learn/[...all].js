@@ -237,9 +237,7 @@ const QuestionView = (props) => {
                                                             <div className="px-2 py-1 d-flex align-items-center hstack gap-2">
 
                                                                 <div className={`${question.type != 'reorder' ? 'd-none' : ''}`}>
-                                                                    <div className="btn btn-outline-secondary btn-sm btn-icon btn-no-focus border-0">
-                                                                        <span className="svg-icon svg-icon-xs d-inline-block" ><BsGripVertical /></span>
-                                                                    </div>
+                                                                    <span className="svg-icon svg-icon-xs d-inline-block" ><BsGripVertical /></span>
                                                                 </div>
 
                                                             </div>
