@@ -263,15 +263,8 @@ const QuestionView = (props) => {
                 </DragDropContext>
                 <div className="d-flex justify-content-end mb-3">
                     {!question._correct && (
-                        <button className="btn btn-secondary" disabled={submitting} onClick={async () => {
-                            const confirmed = await dialog.confirm({
-                                title: 'Find the answer',
-                                body: <>Use your bits to find the answer. (You have <span className="svg-icon svg-icon-xs d-inline-block me-1"><SvgBitCube /></span>{client.user.bits})</>
-                            });
-
-                            if (confirmed) {
-                                moveForward(true);
-                            }
+                        <button className="btn btn-secondary" disabled={submitting} onClick={() => {
+                            moveForward(true);
                         }}>
                             <div className="position-relative d-flex align-items-center justify-content-center">
                                 <div className={`${submitting ? 'invisible' : ''}`}>Seek answer <span className="svg-icon svg-icon-xs d-inline-block me-1"><SvgBitCube /></span>{appSettings.course.bitRules.seekAnswer.value}</div>
