@@ -14,7 +14,7 @@ import { pascalCase } from 'change-case';
 
 import Loader from '../../../../components/Loader';
 
-import { BsArrowLeft, BsCheckCircleFill, BsFilm, BsGripVertical, BsJournalRichtext, BsLightbulb, BsLightbulbFill, BsMusicNoteBeamed, BsXCircle, BsXCircleFill, BsXLg } from 'react-icons/bs';
+import { BsArrowLeft, BsCheckCircleFill, BsFilm, BsGripVertical, BsJournalRichtext, BsXCircleFill, BsXLg } from 'react-icons/bs';
 
 import LinesEllipsisLoose from 'react-lines-ellipsis/lib/loose'
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
@@ -111,13 +111,13 @@ const LessonView = (props) => {
                     </Nav>
                 </div>
             )}
-            <Tab.Content className={`row justify-content-center g-0`}>
+            <Tab.Content className={`row justify-content-center g-0 small`}>
                 {tabs.map(tab => {
 
                     if (tab.key == 'document') {
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5 text-break">
-                                <div className="h3 mt-3 mb-2">{lesson.title}</div>
+                                <div className="h4 mt-3 mb-2">{lesson.title}</div>
                                 <DocumentViewer document={lesson.document} />
                             </Tab.Pane>
                         );
@@ -126,7 +126,7 @@ const LessonView = (props) => {
                         const mediaUrl = lesson.media?.url || lesson.externalMediaUrl;
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-8 col-lg-7 col-xl-6">
-                                <div className="h3 mt-3 mb-2">{lesson.title}</div>
+                                <div className="h4 mt-3 mb-2">{lesson.title}</div>
                                 <div className="bg-dark">
                                     <AspectRatio ratio="1280/720">
                                         <ReactPlayer url={mediaUrl} controls={true} width="100%" height="100%" />
@@ -219,7 +219,7 @@ const QuestionView = (props) => {
     return (
         <div className="row justify-content-center g-0">
             <div className="col-12 col-md-7 col-lg-6 col-xl-5">
-                <div className="h3 mt-3 mb-2">{lesson.title}</div>
+                <div className="h4 mt-3 mb-2">{lesson.title}</div>
                 <div className="w-100 text-break my-3">{question.text}</div>
                 <DragDropContext onDragEnd={handleReorder}>
                     <Droppable droppableId={`question`} direction="vertical" type="lesson">
@@ -641,7 +641,7 @@ const LearnPage = withRemount(({ remount }) => {
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
                         <div className="d-flex gap-3 justify-content-end w-100">
-                            <button className={`btn btn-primary  px-5 w-100 w-sm-auto`} type="button" disabled={submitting || (currentView._type == 'question' && !(currentView._inputs && currentView._inputs.length))} onClick={() => moveForward()}>
+                            <button className={`btn btn-primary px-5 w-100 w-sm-auto`} type="button" disabled={submitting || (currentView._type == 'question' && !(currentView._inputs && currentView._inputs.length))} onClick={() => moveForward()}>
                                 <div className="position-relative d-flex align-items-center justify-content-center">
                                     <div><div>{currentView._type == 'question' ? (currentView._submitted ? (currentView._correct ? 'Continue' : 'Try again') : 'Check answer') : ('Continue')}</div></div>
                                 </div>
