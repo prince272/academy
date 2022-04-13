@@ -70,7 +70,7 @@ const DocumentViewer = withRemount(({ document, remount }) => {
     return (
         <>
             {loading ? <Loader {...loading} /> : <></>}
-            <div style={{ display: !loading ? 'block' : 'none' }} ref={ref} dangerouslySetInnerHTML={{ __html: content }} />
+            <div className="small" style={{ display: !loading ? 'block' : 'none' }} ref={ref} dangerouslySetInnerHTML={{ __html: content }} />
         </>
     );
 });
@@ -111,7 +111,7 @@ const LessonView = (props) => {
                     </Nav>
                 </div>
             )}
-            <Tab.Content className={`row justify-content-center g-0 small`}>
+            <Tab.Content className={`row justify-content-center g-0`}>
                 {tabs.map(tab => {
 
                     if (tab.key == 'document') {
@@ -220,7 +220,7 @@ const QuestionView = (props) => {
         <div className="row justify-content-center g-0">
             <div className="col-12 col-md-7 col-lg-6 col-xl-5">
                 <div className="h4 mt-3 mb-2">{lesson.title}</div>
-                <div className="w-100 text-break my-3">{question.text}</div>
+                <div className="w-100 text-break my-3 small">{question.text}</div>
                 <DragDropContext onDragEnd={handleReorder}>
                     <Droppable droppableId={`question`} direction="vertical" type="lesson">
                         {(provided) => (
@@ -230,13 +230,13 @@ const QuestionView = (props) => {
                                     return (
                                         <Draggable key={answer.id} draggableId={`answer_${answer.id}`} index={answer.index}>
                                             {(provided) => (
-                                                <div ref={provided.innerRef} {...provided.draggableProps} className="pb-3">
+                                                <div ref={provided.innerRef} {...provided.draggableProps}  {...provided.dragHandleProps} className="pb-3">
                                                     <div className={`card shadow-sm bg-white text-body ${answer.checked ? `${question._submitted ? (answer.correct ? 'border-success bg-soft-success' : 'border-danger bg-soft-danger') : 'border-primary bg-soft-primary'}` : `btn-outline-primary`}`}
                                                         style={{ borderLeftWidth: "5px", borderColor: "transparent" }} onClick={() => handleSelect(answer.index)}>
                                                         <div className="d-flex justify-content-between align-items-stretch border-bottom-0" style={{ minHeight: "52px" }}>
                                                             <div className="px-2 py-1 d-flex align-items-center hstack gap-2">
 
-                                                                <div {...provided.dragHandleProps} className={`${question.type != 'reorder' ? 'd-none' : ''}`}>
+                                                                <div className={`${question.type != 'reorder' ? 'd-none' : ''}`}>
                                                                     <div className="btn btn-outline-secondary btn-sm btn-icon btn-no-focus border-0">
                                                                         <span className="svg-icon svg-icon-xs d-inline-block" ><BsGripVertical /></span>
                                                                     </div>
@@ -245,7 +245,7 @@ const QuestionView = (props) => {
                                                             </div>
 
                                                             <div className="d-flex align-items-center flex-grow-1 cursor-default py-3 pe-3">
-                                                                <div className="flex-grow-1">
+                                                                <div className="flex-grow-1 small">
                                                                     <div>{answer.text}</div>
                                                                 </div>
                                                             </div>
