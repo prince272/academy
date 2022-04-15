@@ -8,7 +8,7 @@ namespace Academy.Server.Models.Courses
     {
         public string Text { get; set; }
 
-        public QuestionType Type { get; set; }
+        public AnswerType AnswerType { get; set; }
 
         public List<QuestionAnswerEditModel> Answers { get; } = new List<QuestionAnswerEditModel>();
     }

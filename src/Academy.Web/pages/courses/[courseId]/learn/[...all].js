@@ -160,19 +160,19 @@ const QuestionView = (props) => {
         const newQuestion = {
             ...question, answers,
             _submitted: false,
-            _inputs: question.type == 'reorder' ? answers.map(answer => answer.id) : []
+            _inputs: question.answerType == 'reorder' ? answers.map(answer => answer.id) : []
         };
         setCurrentView(newQuestion);
     }, []);
 
     const handleSelect = (index) => {
 
-        if (question.type == 'selectSingle' || question.type == 'selectMultiple') {
+        if (question.answerType == 'selectSingle' || question.answerType == 'selectMultiple') {
 
             const answers = (({
                 'selectSingle': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : false })),
                 'selectMultiple': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : answer.checked })),
-            })[question.type] || null).map((answer, answerIndex) => ({ ...answer, index: answerIndex }));
+            })[question.answerType] || null).map((answer, answerIndex) => ({ ...answer, index: answerIndex }));
 
             setCurrentView({
                 ...question,
@@ -236,7 +236,7 @@ const QuestionView = (props) => {
                                                         <div className="d-flex justify-content-between align-items-stretch border-bottom-0" style={{ minHeight: "52px" }}>
                                                             <div className="px-2 py-1 d-flex align-items-center hstack gap-2">
 
-                                                                <div className={`${question.type != 'reorder' ? 'd-none' : ''}`}>
+                                                                <div className={`${question.answerType != 'reorder' ? 'd-none' : ''}`}>
                                                                     <span className="svg-icon svg-icon-xs d-inline-block" ><BsGripVertical /></span>
                                                                 </div>
 
@@ -462,11 +462,11 @@ const LearnPage = withRemount(({ remount }) => {
                         }
 
                         _inputs = (() => {
-                            if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
+                            if (currentView.answerType == 'selectSingle' || currentView.answerType == 'selectMultiple') {
                                 const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
                                 return checkedIds;
                             }
-                            else if (currentView.type == 'reorder') {
+                            else if (currentView.answerType == 'reorder') {
                                 const checkedIds = answers.map(answer => answer.id.toString());
                                 return checkedIds;
                             }
@@ -492,12 +492,12 @@ const LearnPage = withRemount(({ remount }) => {
                     });
 
                     const _correct = (() => {
-                        if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
+                        if (currentView.answerType == 'selectSingle' || currentView.answerType == 'selectMultiple') {
                             const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
                             const inputIds = _inputs.map(inputId => inputId.toString()).sort(comparator);
                             return sequenceEqual(checkedIds, inputIds);
                         }
-                        else if (currentView.type == 'reorder') {
+                        else if (currentView.answerType == 'reorder') {
                             const checkedIds = answers.map(answer => answer.id.toString());
                             const inputIds = _inputs.map(inputId => inputId.toString());
                             return sequenceEqual(checkedIds, inputIds);
@@ -519,7 +519,7 @@ const LearnPage = withRemount(({ remount }) => {
 
                     if (_correct) confetti.fire();
 
-                    if (currentView.type == 'selectSingle' || currentView.type == 'selectMultiple') {
+                    if (currentView.answerType == 'selectSingle' || currentView.answerType == 'selectMultiple') {
                         setCurrentView({
                             ...currentView,
                             answers: currentView.answers.map(answer => ({
@@ -533,7 +533,7 @@ const LearnPage = withRemount(({ remount }) => {
                             _submitted: true,
                         });
                     }
-                    else if (currentView.type == 'reorder') {
+                    else if (currentView.answerType == 'reorder') {
                         setCurrentView({
                             ...currentView,
                             answers: _correct ? currentView.answers.sort(function (a, b) {

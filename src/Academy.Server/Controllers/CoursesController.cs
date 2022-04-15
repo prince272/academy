@@ -792,7 +792,7 @@ namespace Academy.Server.Controllers
             question.Index = -1;
             question.LessonId = lesson.Id; // Set the owner of the question.
             question.Text = form.Text;
-            question.Type = form.Type;
+            question.AnswerType = form.AnswerType;
 
             await unitOfWork.CreateAsync(question);
             await UpdateAnswers(question, form);
@@ -828,7 +828,7 @@ namespace Academy.Server.Controllers
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             question.Text = form.Text;
-            question.Type = form.Type;
+            question.AnswerType = form.AnswerType;
 
             await unitOfWork.UpdateAsync(question);
             await UpdateAnswers(question, form);
@@ -994,7 +994,7 @@ namespace Academy.Server.Controllers
                             Index = question.Index,
                             Id = question.Id,
                             Text = single ? question.Text : null,
-                            Type = question.Type
+                            AnswerType = question.AnswerType
                         }).ToListAsync();
 
                     foreach (var question in lesson.Questions)
