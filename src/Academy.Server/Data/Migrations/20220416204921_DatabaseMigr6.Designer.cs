@@ -4,14 +4,16 @@ using Academy.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Academy.Server.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220416204921_DatabaseMigr6")]
+    partial class DatabaseMigr6
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,16 +60,6 @@ namespace Academy.Server.Data.Migrations
                     b.Property<int>("AnswerType")
                         .HasColumnType("int");
 
-                    b.Property<string>("Answers")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("[]");
-
-                    b.Property<string>("Checks")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("[]");
-
                     b.Property<string>("Document")
                         .HasColumnType("nvarchar(max)");
 
@@ -94,6 +86,32 @@ namespace Academy.Server.Data.Migrations
                     b.HasIndex("LessonId");
 
                     b.ToTable("Content");
+                });
+
+            modelBuilder.Entity("Academy.Server.Data.Entities.ContentAnswer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool>("Checked")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ContentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Index")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentId");
+
+                    b.ToTable("ContentAnswer");
                 });
 
             modelBuilder.Entity("Academy.Server.Data.Entities.Course", b =>
@@ -158,11 +176,6 @@ namespace Academy.Server.Data.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Checks")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("[]");
-
                     b.Property<DateTimeOffset?>("Completed")
                         .HasColumnType("datetimeoffset");
 
@@ -171,6 +184,9 @@ namespace Academy.Server.Data.Migrations
 
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Inputs")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("LessonId")
                         .HasColumnType("int");
@@ -728,6 +744,17 @@ namespace Academy.Server.Data.Migrations
                     b.Navigation("Lesson");
                 });
 
+            modelBuilder.Entity("Academy.Server.Data.Entities.ContentAnswer", b =>
+                {
+                    b.HasOne("Academy.Server.Data.Entities.Content", "Content")
+                        .WithMany("Answers")
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Content");
+                });
+
             modelBuilder.Entity("Academy.Server.Data.Entities.Course", b =>
                 {
                     b.HasOne("Academy.Server.Data.Entities.User", "User")
@@ -834,6 +861,11 @@ namespace Academy.Server.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Academy.Server.Data.Entities.Content", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("Academy.Server.Data.Entities.Course", b =>

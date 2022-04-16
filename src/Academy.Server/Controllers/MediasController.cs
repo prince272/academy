@@ -83,22 +83,7 @@ namespace Academy.Server.Controllers
             if (media == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var inputStream = (Stream)new MemoryStream(await IOHelper.ConvertToBytesAsync(Request.Body));
-            var outputStream = await storageProvider.WriteAsync(media.Path, inputStream, offset, media.Size);
-            if (outputStream != null)
-            {
-                try
-                {
-                    if (media.Type == MediaType.Video || media.Type == MediaType.Audio)
-                    {
-                        media.Duration = -1;
-                        await unitOfWork.UpdateAsync(media);
-                    }
-                }
-                finally
-                {
-                    await outputStream.DisposeAsync();
-                }
-            }
+            await storageProvider.WriteAsync(media.Path, inputStream, offset, media.Size);
 
             return Result.Succeed();
         }

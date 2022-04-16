@@ -18,8 +18,6 @@ namespace Academy.Server.Data.Entities
 
         public string ContentType { get; set; }
 
-        public long? Duration { get; set; }
-
         public int? Width { get; set; }
 
         public int? Height { get; set; }

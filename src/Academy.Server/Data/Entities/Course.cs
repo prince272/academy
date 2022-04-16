@@ -59,15 +59,13 @@ namespace Academy.Server.Data.Entities
 
         public int LessonId { get; set; }
 
-        public int? QuestionId { get; set; }
+        public int ContentId { get; set; }
 
         public DateTimeOffset? Completed { get; set; }
 
         public CourseStatus Status { get; set; }
 
-        public string[] Inputs { get; set; }
-
-        public bool Solve { get; set; }
+        public string[] Checks { get; set; }
     }
 
     public enum CourseStatus

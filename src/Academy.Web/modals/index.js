@@ -19,7 +19,7 @@ import WithdrawModal from './accounts/WithdrawModal';
 // courses
 import CourseEditModal from './courses/CourseEditModal';
 import LessonEditModal from './courses/LessonEditModal';
-import QuestionEditModal from './courses/QuestionEditModal';
+import ContentEditModal from './courses/ContentEditModal';
 import SectionEditModal from './courses/SectionEditModal';
 
 // home
@@ -121,8 +121,8 @@ const useModalProvider = () => {
                 authenticate: true,
             },
             {
-                pattern: [`${ModalPathPrefix}/courses/:courseId/sections/:sectionId/lessons/:lessonId/questions/:action(add)`, `${ModalPathPrefix}/courses/:courseId/sections/:sectionId/lessons/:lessonId/questions/:questionId/:action(edit|delete)`],
-                modal: QuestionEditModal,
+                pattern: [`${ModalPathPrefix}/courses/:courseId/sections/:sectionId/lessons/:lessonId/contents/:action(add)`, `${ModalPathPrefix}/courses/:courseId/sections/:sectionId/lessons/:lessonId/contents/:contentId/:action(edit|delete)`],
+                modal: ContentEditModal,
                 authenticate: true,
             },
             {

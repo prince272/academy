@@ -7,7 +7,7 @@ import { NextSeo } from 'next-seo';
 
 import ResponsiveEllipsis from 'react-lines-ellipsis/lib/loose';
 
-import { BsGripVertical, BsCardImage, BsChevronDown, BsChevronRight, BsPersonFill, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsFilm, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill, BsCart, BsCart2, BsBasket2, BsCart4, BsCart3 } from 'react-icons/bs';
+import { BsGripVertical, BsCardImage, BsChevronDown, BsChevronRight, BsPersonFill, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsQuestionCircle, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill, BsCart, BsCart2, BsBasket2, BsCart4, BsCart3 } from 'react-icons/bs';
 import { Collapse, Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import Link from 'next/link';
 import { useClient } from '../../../utils/client';
@@ -29,13 +29,13 @@ import { useDialog } from '../../../utils/dialog';
 import CertificateViewDialog from '../../../modals/courses/CertificateViewDialog';
 import { useEventDispatcher } from '../../../utils/eventDispatcher';
 
-const QuestionItem = ({ course, section, lesson, question, permitted }) => {
+const ContentItem = ({ course, section, lesson, content, permitted }) => {
     const courseId = course.id;
     const client = useClient();
     const router = useRouter();
 
     return (
-        <Draggable draggableId={`question_${question.id}`} index={question.index}>
+        <Draggable draggableId={`content_${content.id}`} index={content.index}>
             {(provided) => (
                 <div ref={provided.innerRef} {...provided.draggableProps} className="pb-3">
                     <div className="card border-0 shadow-sm">
@@ -53,7 +53,7 @@ const QuestionItem = ({ course, section, lesson, question, permitted }) => {
                             <div className="d-flex align-items-center flex-grow-1 cursor-default">
                                 <div className="flex-grow-1">
                                     <ResponsiveEllipsis className="overflow-hidden"
-                                        text={`${question.index + 1}. ${stripHtml(question.text)}`}
+                                        text={`${content.index + 1}. ${stripHtml(content.text)}`}
                                         maxLine="1"
                                         ellipsis="..."
                                         trimRight
@@ -64,10 +64,10 @@ const QuestionItem = ({ course, section, lesson, question, permitted }) => {
                             <div className="px-2 py-1 d-flex align-items-center hstack gap-2" style={{ minHeight: "37px" }}>
                                 {client.user && (
                                     <>
-                                        {question.status == 'completed' && (
+                                        {content.status == 'completed' && (
                                             <div>
-                                                <div className={`text-${(question.correct ? 'success' : 'danger')} d-flex justify-content-center align-items-center`} style={{ height: "32px", width: "32px" }}>
-                                                    <span className="svg-icon svg-icon-sm d-inline-block" >{question.correct ? <BsCheck2 /> : <BsX />}</span>
+                                                <div className={`text-${(content.correct ? 'success' : 'danger')} d-flex justify-content-center align-items-center`} style={{ height: "32px", width: "32px" }}>
+                                                    <span className="svg-icon svg-icon-sm d-inline-block" >{content.correct ? <BsCheck2 /> : <BsX />}</span>
                                                 </div>
                                             </div>
                                         )}
@@ -83,8 +83,8 @@ const QuestionItem = ({ course, section, lesson, question, permitted }) => {
                                                     </Dropdown.Toggle>
 
                                                     <Dropdown.Menu style={{ margin: 0 }}>
-                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/questions/${question.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
-                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/questions/${question.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
+                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/contents/${content.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
+                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/contents/${content.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
                                                     </Dropdown.Menu>
                                                 </Dropdown>
                                             )}
@@ -100,17 +100,17 @@ const QuestionItem = ({ course, section, lesson, question, permitted }) => {
     );
 };
 
-const QuestionList = ({ course, section, lesson, permitted }) => {
+const ContentList = ({ course, section, lesson, permitted }) => {
     const courseId = course.id;
     const client = useClient();
 
     return (
         <div className="px-2 py-2">
-            <Droppable droppableId={`question_${lesson.id}`} direction="vertical" type="question">
+            <Droppable droppableId={`content_${lesson.id}`} direction="vertical" type="content">
                 {(provided) => (
                     <div ref={provided.innerRef} {...provided.droppableProps}>
-                        {lesson.questions.map((question, questionIndex) => {
-                            return (<QuestionItem key={question.id} {...{ course, section, lesson, question: { ...question, index: questionIndex }, permitted }} />);
+                        {lesson.contents.map((content, contentIndex) => {
+                            return (<ContentItem key={content.id} {...{ course, section, lesson, content: { ...content, index: contentIndex }, permitted }} />);
                         })}
                         {provided.placeholder}
                     </div>
@@ -118,8 +118,8 @@ const QuestionList = ({ course, section, lesson, permitted }) => {
             </Droppable>
             {(permitted) && (
                 <div className="d-flex flex-column text-center justify-content-center">
-                    <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/questions/add`}>
-                        <a className="btn btn-outline-secondary btn-no-focus border-0 w-100 border-top-0"><span className="svg-icon svg-icon-xs d-inline-block me-1" ><BsPlus /></span>Add question</a>
+                    <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/contents/add`}>
+                        <a className="btn btn-outline-secondary btn-no-focus border-0 w-100 border-top-0"><span className="svg-icon svg-icon-xs d-inline-block me-1" ><BsPlus /></span>Add content</a>
                     </Link>
                 </div>
             )}
@@ -160,11 +160,16 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                         </div>
                                     </div>
                                     <div className="small text-body d-flex align-items-center">
-                                        {
-                                            [
-                                                (lesson.media?.url || lesson.externalMediaUrl) ? (<span key="1"><BsFilm size="1rem" /> Media</span>): null,
-                                                ((permitted || lesson.questions.length > 0) ? (<span key="2" className="text-body"><BsJournalRichtext size="1rem" /> {lesson.questions.length} {lesson.questions.length > 1 ? 'Questions' : 'Question'}</span>) : null),
-                                            ].filter(curr => curr).reduce((prev, curr, index) => index == 0 ? curr : [prev, (<span key="0" className="mx-2">·</span>), curr], false)
+                                        {(() => {
+                                            const explanations = lesson.contents.filter(_content => _content.type == 'explanation');
+                                            const questions = lesson.contents.filter(_content => _content.type == 'question');
+                                            return (
+                                                [
+                                                    (permitted || explanations.length > 0) ? (<span key="1"><BsJournalRichtext size="1rem" /> {explanations.length}</span>) : null,
+                                                    ((permitted || questions.length > 0) ? (<span key="2" className="text-body"><BsQuestionCircle size="1rem" /> {questions.length}</span>) : null),
+                                                ].filter(curr => curr).reduce((prev, curr, index) => index == 0 ? curr : [prev, (<span key="0" className="mx-2">·</span>), curr], false)
+                                            );
+                                        })()
                                         }
                                     </div>
                                 </div>
@@ -188,28 +193,17 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                                         <Link href={`/courses/${courseId}/learn/${section.id}/${lesson.id}`} passHref><Dropdown.Item>Learn</Dropdown.Item></Link>
                                                         <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
                                                         <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/lessons/${lesson.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
-                                                        <Dropdown.Item href="#" onClick={() => { toggler.toggle(`lesson_${lesson.id}`); }}>{toggler.in(`lesson_${lesson.id}`) ? 'Hide' : 'Show'} Questions</Dropdown.Item>
                                                     </Dropdown.Menu>
                                                 </Dropdown>
                                             )}
                                         </OverlayTrigger>
                                     </div>
                                 )}
-
-                                <div className="d-none">
-                                    <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>{toggler.in(`lesson_${lesson.id}`) ? 'Collapse' : 'Expand'} </Tooltip>}>
-                                        <div className="btn btn-outline-secondary btn-sm btn-icon btn-no-focus border-0" onClick={() => toggler.toggle(`lesson_${lesson.id}`)}>
-                                            <span className="svg-icon svg-icon-xs d-inline-block" >
-                                                {toggler.in(`lesson_${lesson.id}`) ? <BsChevronDown /> : <BsChevronRight />}
-                                            </span>
-                                        </div>
-                                    </OverlayTrigger>
-                                </div>
                             </div>
                         </div>
-                        <Collapse in={toggler.in(`lesson_${lesson.id}`)} mountOnEnter={true} unmountOnExit={true}>
+                        <Collapse in={permitted} mountOnEnter={true} unmountOnExit={true}>
                             <div>
-                                <QuestionList {...{ course, section, lesson, permitted }} />
+                                <ContentList {...{ course, section, lesson, permitted }} />
                             </div>
                         </Collapse>
                     </Scroll.Element>
@@ -404,7 +398,7 @@ const SectionList = ({ course, setCourse, toggler, permitted }) => {
                 return { ...course, sections };
             });
         }
-        else if (type == 'question') {
+        else if (type == 'content') {
 
             setCourse(course => {
                 const sections = _.cloneDeep(course.sections);
@@ -412,23 +406,23 @@ const SectionList = ({ course, setCourse, toggler, permitted }) => {
                 const sourceLesson = sections.flatMap(section => section.lessons).find(lesson => lesson.id == source.id);
                 const destinationLesson = sections.flatMap(section => section.lessons).find(lesson => lesson.id == destination.id);
 
-                const sourceQuestions = sourceLesson.questions;
-                const destinationQuestions = destinationLesson.questions;
+                const sourceContents = sourceLesson.contents;
+                const destinationContents = destinationLesson.contents;
 
                 if (sourceLesson == destinationLesson) {
-                    arrayMove(sourceQuestions, source.index, destination.index);
-                    sourceQuestions.forEach((question, questionIndex) => { question.index = questionIndex; });
+                    arrayMove(sourceContents, source.index, destination.index);
+                    sourceContents.forEach((content, contentIndex) => { content.index = contentIndex; });
                 }
                 else {
 
-                    arrayTransfer(sourceQuestions, source.index, destination.index, destinationQuestions);
-                    sourceQuestions.forEach((question, questionIndex) => {
-                        question.lessonId = sourceLesson.id;
-                        question.index = questionIndex;
+                    arrayTransfer(sourceContents, source.index, destination.index, destinationContents);
+                    sourceContents.forEach((content, contentIndex) => {
+                        content.lessonId = sourceLesson.id;
+                        content.index = contentIndex;
                     });
-                    destinationQuestions.forEach((question, questionIndex) => {
-                        question.lessonId = destinationLesson.id;
-                        question.index = questionIndex;
+                    destinationContents.forEach((content, contentIndex) => {
+                        content.lessonId = destinationLesson.id;
+                        content.index = contentIndex;
                     });
                 }
 

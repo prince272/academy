@@ -5,7 +5,7 @@ namespace Academy.Server.Extensions.StorageProvider
 {
     public interface IStorageProvider
     {
-        Task<Stream> WriteAsync(string path, Stream stream, long offset, long length);
+        Task WriteAsync(string path, Stream stream, long offset, long length);
 
         Task WriteAsync(string path, Stream stream);
 

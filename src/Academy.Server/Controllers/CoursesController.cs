@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -63,7 +64,7 @@ namespace Academy.Server.Controllers
             course.Subject = form.Subject;
             course.Description = form.Description;
             course.Created = DateTimeOffset.UtcNow;
-           
+
             course.State = course.State == CourseState.Rejected ? (user.HasRoles(RoleConstants.Admin) ? form.State : course.State) : form.State;
             course.Published = course.State == CourseState.Visible ? course.Published ?? DateTimeOffset.UtcNow : null;
 
@@ -126,9 +127,9 @@ namespace Academy.Server.Controllers
         }
 
         [HttpGet("/courses/{courseId}")]
-        public async Task<IActionResult> Read(int courseId)
+        public async Task<IActionResult> Read(int courseId, int? sectionId = null, int? lessonId = null)
         {
-            var courseModel = await GetCourseModel(courseId);
+            var courseModel = await GetCourseModel(courseId, sectionId, lessonId);
             if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             return Result.Succeed(data: courseModel);
@@ -169,7 +170,7 @@ namespace Academy.Server.Controllers
 
             var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async courseId =>
             {
-                var courseModel = await GetCourseModel(courseId, true);
+                var courseModel = await GetCourseModel(courseId);
                 if (courseModel == null) throw new ArgumentException();
                 courseModel.Sections = null;
                 return courseModel;
@@ -214,12 +215,12 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/progress")]
-        public async Task<IActionResult> Progresss(int courseId, int sectionId, int lessonId, [FromBody] QuestionProgressModel form)
+        [HttpPost("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}/progress")]
+        public async Task<IActionResult> Progresss(int courseId, int sectionId, int lessonId, int contentId, [FromBody] ContentProgressModel form)
         {
             var user = await HttpContext.Request.GetCurrentUserAsync();
 
-            var progress = user.CourseProgresses.FirstOrDefault(_ => _.CourseId == courseId && _.SectionId == sectionId && _.LessonId == lessonId && _.QuestionId == form.Id);
+            var progress = user.CourseProgresses.FirstOrDefault(_ => _.CourseId == courseId && _.SectionId == sectionId && _.LessonId == lessonId && _.ContentId == contentId);
             if (progress == null)
             {
                 progress = new CourseProgress()
@@ -228,9 +229,9 @@ namespace Academy.Server.Controllers
                     CourseId = courseId,
                     SectionId = sectionId,
                     LessonId = lessonId,
-                    QuestionId = form.Id,
+                    ContentId = contentId,
                     Status = CourseStatus.Completed,
-                    Inputs = form.Inputs
+                    Checks = form.Inputs
                 };
 
                 await unitOfWork.CreateAsync(progress);
@@ -250,30 +251,34 @@ namespace Academy.Server.Controllers
             var lessonModel = sectionModel.Lessons.FirstOrDefault(_ => _.Id == lessonId);
             if (lessonModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            if (lessonModel.Status == CourseStatus.Completed && (progress.QuestionId == null && progress.Completed == null))
-            {
-                user.Bits += appSettings.Course.BitRules[CourseBitRuleType.CompleteLesson].Value;
-                progress.Completed = DateTimeOffset.UtcNow;
-                    await unitOfWork.UpdateAsync(progress);
-            }
+            var contentModel = lessonModel.Contents.FirstOrDefault(_ => _.Id == contentId);
+            if (contentModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            if (form.Id != null)
+            if (contentModel.Status == CourseStatus.Completed && (progress.Completed == null))
             {
-                var questionModel = lessonModel.Questions.FirstOrDefault(_ => _.Id == form.Id);
-                if (questionModel == null) return Result.Failed(StatusCodes.Status404NotFound);
-
-                if (questionModel.Status == CourseStatus.Completed && (progress.QuestionId != null && progress.Completed == null))
+                if (contentModel.Type == ContentType.Explanation)
                 {
-                    user.Bits += questionModel.Correct.Value ? 
-                        appSettings.Course.BitRules[CourseBitRuleType.AnswerCorrectly].Value :
-                        appSettings.Course.BitRules[CourseBitRuleType.AnswerWrongly].Value;
-
-                    progress.Completed = DateTimeOffset.UtcNow;
-                    await unitOfWork.UpdateAsync(progress);
+                    user.Bits += appSettings.Course.BitRules[CourseBitRuleType.CompleteLesson].Value;
                 }
+                else if (contentModel.Type == ContentType.Question)
+                {
+                    if (form.Solve)
+                    {
+                        var remainingBits = user.Bits + appSettings.Course.BitRules[CourseBitRuleType.SeekAnswer].Value;
+                        user.Bits = remainingBits;
+                    }
+                    else
+                    {
+                        user.Bits += contentModel.Correct.Value ?
+                            appSettings.Course.BitRules[CourseBitRuleType.AnswerCorrectly].Value :
+                            appSettings.Course.BitRules[CourseBitRuleType.AnswerWrongly].Value;
+                    }
+                }
+
+                progress.Completed = DateTimeOffset.UtcNow;
+                await unitOfWork.UpdateAsync(progress);
             }
 
-            await unitOfWork.UpdateAsync(user);
             return Result.Succeed(new { user.Bits });
         }
 
@@ -440,44 +445,44 @@ namespace Academy.Server.Controllers
                     await unitOfWork.Context.SaveChangesAsync();
                 }
             }
-            else if (form.Type == CourseReorderType.Question)
+            else if (form.Type == CourseReorderType.Content)
             {
                 var sourceLesson = sections.SelectMany(_ => _.Lessons).First(lesson => lesson.Id == source.Id);
                 var destinationLesson = sections.SelectMany(_ => _.Lessons).First(lesson => lesson.Id == destination.Id);
 
-                var sourceQuestions = sourceLesson.Questions.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index).ToList();
-                var destinationQuestions = destinationLesson.Questions.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index).ToList();
+                var sourceContents = sourceLesson.Contents.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index).ToList();
+                var destinationContents = destinationLesson.Contents.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index).ToList();
 
                 if (sourceLesson == destinationLesson)
                 {
-                    sourceQuestions.Move(source.Index, destination.Index);
+                    sourceContents.Move(source.Index, destination.Index);
 
-                    sourceQuestions.ForEach((question, questionIndex) =>
+                    sourceContents.ForEach((content, contentIndex) =>
                     {
-                        unitOfWork.Context.Attach(question);
+                        unitOfWork.Context.Attach(content);
 
-                        question.Index = questionIndex;
+                        content.Index = contentIndex;
                     });
 
                     await unitOfWork.Context.SaveChangesAsync();
                 }
                 else
                 {
-                    sourceQuestions.Transfer(source.Index, destination.Index, destinationQuestions);
+                    sourceContents.Transfer(source.Index, destination.Index, destinationContents);
 
-                    sourceQuestions.ForEach((question, questionIndex) =>
+                    sourceContents.ForEach((content, contentIndex) =>
                     {
-                        unitOfWork.Context.Attach(question);
+                        unitOfWork.Context.Attach(content);
 
-                        question.LessonId = sourceLesson.Id;
-                        question.Index = questionIndex;
+                        content.LessonId = sourceLesson.Id;
+                        content.Index = contentIndex;
                     });
-                    destinationQuestions.ForEach((question, questionIndex) =>
+                    destinationContents.ForEach((content, contentIndex) =>
                     {
-                        unitOfWork.Context.Attach(question);
+                        unitOfWork.Context.Attach(content);
 
-                        question.LessonId = destinationLesson.Id;
-                        question.Index = questionIndex;
+                        content.LessonId = destinationLesson.Id;
+                        content.Index = contentIndex;
                     });
 
                     await unitOfWork.Context.SaveChangesAsync();
@@ -680,10 +685,7 @@ namespace Academy.Server.Controllers
             lesson.Index = -1;
             lesson.SectionId = section.Id;  // Set the owner of the lesson.
             lesson.Title = form.Title;
-            lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
 
-            await sharedService.WriteDocmentAsync(lesson, form.Document);
-            sharedService.CalculateDuration(lesson);
             await unitOfWork.CreateAsync(lesson);
 
             return Result.Succeed(data: lesson.Id);
@@ -694,8 +696,7 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Edit(int courseId, int sectionId, int lessonId, [FromBody] LessonEditModel form)
         {
             var lesson = await unitOfWork.Query<Lesson>().AsSingleQuery()
-                .Include(_ => _.Questions.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
-                .ThenInclude(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .Include(_ => _.Contents.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
                 .Include(_ => _.Section).ThenInclude(_ => _.Course)
                 .FirstOrDefaultAsync(_ => _.Id == lessonId);
 
@@ -712,11 +713,6 @@ namespace Academy.Server.Controllers
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             lesson.Title = form.Title;
-            lesson.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
-            lesson.ExternalMediaUrl = form.ExternalMediaUrl;
-
-            await sharedService.WriteDocmentAsync(lesson, form.Document);
-            sharedService.CalculateDuration(lesson);
 
             await unitOfWork.UpdateAsync(lesson);
 
@@ -728,8 +724,7 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Delete(int courseId, int sectionId, int lessonId)
         {
             var lesson = await unitOfWork.Query<Lesson>().AsSingleQuery()
-                .Include(_ => _.Questions.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
-                .ThenInclude(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .Include(_ => _.Contents.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
                 .Include(_ => _.Section).ThenInclude(_ => _.Course)
                 .FirstOrDefaultAsync(_ => _.Id == lessonId);
 
@@ -767,12 +762,11 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions")]
-        public async Task<IActionResult> Create(int courseId, int sectionId, int lessonId, [FromBody] QuestionEditModel form)
+        [HttpPost("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/contents")]
+        public async Task<IActionResult> Create(int courseId, int sectionId, int lessonId, [FromBody] ContentEditModel form)
         {
             var lesson = await unitOfWork.Query<Lesson>().AsSingleQuery()
-                .Include(_ => _.Questions.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
-                .ThenInclude(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+                .Include(_ => _.Contents.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
                 .Include(_ => _.Section).ThenInclude(_ => _.Course)
                 .FirstOrDefaultAsync(_ => _.Id == lessonId);
 
@@ -788,143 +782,101 @@ namespace Academy.Server.Controllers
             var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
-            var question = new Question();
-            question.Index = -1;
-            question.LessonId = lesson.Id; // Set the owner of the question.
-            question.Text = form.Text;
-            question.AnswerType = form.AnswerType;
+            var content = new Content();
+            content.Index = -1;
+            content.LessonId = lesson.Id; // Set the owner of the content.
+            content.Type = form.Type;
 
-            await unitOfWork.CreateAsync(question);
-            await UpdateAnswers(question, form);
+            content.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
+            content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
+            content.ExternalMediaUrl = form.ExternalMediaUrl;
 
-            // Calculate lesson duration.
-            sharedService.CalculateDuration(lesson);
-            await unitOfWork.UpdateAsync(lesson);
-
-            return Result.Succeed(data: question.Id);
-        }
-
-        [Authorize]
-        [HttpPut("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions/{questionId}")]
-        public async Task<IActionResult> Edit(int courseId, int sectionId, int lessonId, int questionId, [FromBody] QuestionEditModel form)
-        {
-            var question = await unitOfWork.Query<Question>().AsSingleQuery()
-                .Include(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
-                .Include(_ => _.Lesson).ThenInclude(_ => _.Section).ThenInclude(_ => _.Course)
-                .FirstOrDefaultAsync(_ => _.Id == questionId);
-            if (question == null) return Result.Failed(StatusCodes.Status404NotFound);
-
-            var lesson = question.LessonId == lessonId ? question.Lesson : null;
-            if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
-
-            var section = question.Lesson.SectionId == sectionId ? question.Lesson.Section : null;
-            if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
-
-            var course = question.Lesson.Section.CourseId == courseId ? question.Lesson.Section.Course : null;
-            if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
-
-            var user = await HttpContext.Request.GetCurrentUserAsync();
-            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
-            if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
-
-            question.Text = form.Text;
-            question.AnswerType = form.AnswerType;
-
-            await unitOfWork.UpdateAsync(question);
-            await UpdateAnswers(question, form);
-
-            // Calculate lesson duration.
-            sharedService.CalculateDuration(lesson);
-            await unitOfWork.UpdateAsync(lesson);
-
-            return Result.Succeed();
-        }
-
-        [NonAction]
-        private async Task UpdateAnswers(Question question, QuestionEditModel form)
-        {
-            var itemsToDelete = question.Answers.Where(item => !form.Answers.Any(entry => item.Id == entry.Id)).ToList();
-            await unitOfWork.DeleteAsync(itemsToDelete);
-
-            var itemsToAddOrUpdate = form.Answers.GroupJoin(question.Answers, _ => _.Id, _ => _.Id, (entry, items) => (entry, items.FirstOrDefault())).ToList();
-            foreach (var (entry, item) in itemsToAddOrUpdate)
+            content.Text = form.Text;
+            content.AnswerType = form.AnswerType;
+            content.Answers = form.Answers.Select(formAnswer => new ContentAnswer
             {
-                var entryIndex = itemsToAddOrUpdate.IndexOf((entry, item));
-                var answer = item;
+                Id = formAnswer.Id,
+                Text = formAnswer.Text,
+                Checked = formAnswer.Checked,
+            }).ToArray();
+            content.Checks = form.Answers.Where(_ => _.Checked).Select(_ => _.Id.ToString()).ToArray();
+            await unitOfWork.CreateAsync(content);
 
-                if (answer == null)
-                {
-                    answer = new QuestionAnswer();
-                    answer.QuestionId = question.Id;
-                    await unitOfWork.CreateAsync(answer);
-                }
-
-                answer.Index = entryIndex;
-                answer.Text = entry.Text;
-                answer.Checked = entry.Checked;
-                await unitOfWork.UpdateAsync(answer);
-            }
+            return Result.Succeed(data: content.Id);
         }
 
         [Authorize]
-        [HttpDelete("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions/{questionId}")]
-        public async Task<IActionResult> Delete(int courseId, int sectionId, int lessonId, int questionId)
+        [HttpPut("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}")]
+        public async Task<IActionResult> Edit(int courseId, int sectionId, int lessonId, int contentId, [FromBody] ContentEditModel form)
         {
-            var question = await unitOfWork.Query<Question>().AsSingleQuery()
-                .Include(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+            var content = await unitOfWork.Query<Content>().AsSingleQuery()
                 .Include(_ => _.Lesson).ThenInclude(_ => _.Section).ThenInclude(_ => _.Course)
-                .FirstOrDefaultAsync(_ => _.Id == questionId);
-            if (question == null) return Result.Failed(StatusCodes.Status404NotFound);
+                .FirstOrDefaultAsync(_ => _.Id == contentId);
+            if (content == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var lesson = question.LessonId == lessonId ? question.Lesson : null;
+            var lesson = content.LessonId == lessonId ? content.Lesson : null;
             if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var section = question.Lesson.SectionId == sectionId ? question.Lesson.Section : null;
+            var section = content.Lesson.SectionId == sectionId ? content.Lesson.Section : null;
             if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var course = question.Lesson.Section.CourseId == courseId ? question.Lesson.Section.Course : null;
+            var course = content.Lesson.Section.CourseId == courseId ? content.Lesson.Section.Course : null;
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.Request.GetCurrentUserAsync();
             var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
-            await unitOfWork.DeleteAsync(question);
+            content.Type = form.Type;
+
+            content.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
+            content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
+            content.ExternalMediaUrl = form.ExternalMediaUrl;
+
+            content.Text = form.Text;
+            content.AnswerType = form.AnswerType;
+            content.Answers = form.Answers.Select(formAnswer => new ContentAnswer
+            {
+                Id = formAnswer.Id,
+                Text = formAnswer.Text,
+                Checked = formAnswer.Checked,
+            }).ToArray();
+            content.Checks = form.Answers.Where(_ => _.Checked).Select(_ => _.Id.ToString()).ToArray();
+            await unitOfWork.UpdateAsync(content);
 
             return Result.Succeed();
         }
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions/{questionId}/solve")]
-        public async Task<IActionResult> Solve(int courseId, int sectionId, int lessonId, int questionId)
+        [HttpDelete("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}")]
+        public async Task<IActionResult> Delete(int courseId, int sectionId, int lessonId, int contentId)
         {
-            var question = await unitOfWork.Query<Question>().AsSingleQuery()
-                .Include(_ => _.Answers.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index))
+            var content = await unitOfWork.Query<Content>().AsSingleQuery()
                 .Include(_ => _.Lesson).ThenInclude(_ => _.Section).ThenInclude(_ => _.Course)
-                .FirstOrDefaultAsync(_ => _.Id == questionId);
-            if (question == null) return Result.Failed(StatusCodes.Status404NotFound);
+                .FirstOrDefaultAsync(_ => _.Id == contentId);
+            if (content == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var lesson = question.LessonId == lessonId ? question.Lesson : null;
+            var lesson = content.LessonId == lessonId ? content.Lesson : null;
             if (lesson == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var section = question.Lesson.SectionId == sectionId ? question.Lesson.Section : null;
+            var section = content.Lesson.SectionId == sectionId ? content.Lesson.Section : null;
             if (section == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var course = question.Lesson.Section.CourseId == courseId ? question.Lesson.Section.Course : null;
+            var course = content.Lesson.Section.CourseId == courseId ? content.Lesson.Section.Course : null;
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var user = await HttpContext.Request.GetCurrentUserAsync();
+            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher) && course.UserId == user.Id;
+            if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
-            var remainingBits = user.Bits + appSettings.Course.BitRules[CourseBitRuleType.SeekAnswer].Value;
-            user.Bits = remainingBits;
-            await unitOfWork.UpdateAsync(user);
+            await unitOfWork.DeleteAsync(content);
 
-            return Result.Succeed(new { user.Bits });
+            return Result.Succeed();
         }
 
         [Authorize]
-        [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/questions/{questionId}")]
-        public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId, int questionId)
+        [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}")]
+        public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId, int contentId)
         {
             var courseModel = (await GetCourseModel(courseId));
             if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
@@ -935,85 +887,62 @@ namespace Academy.Server.Controllers
             var lessonModel = sectionModel.Lessons.FirstOrDefault(_ => _.Id == lessonId);
             if (lessonModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var questionModel = lessonModel.Questions.FirstOrDefault(_ => _.Id == questionId);
-            if (questionModel == null) return Result.Failed(StatusCodes.Status404NotFound);
+            var contentModel = lessonModel.Contents.FirstOrDefault(_ => _.Id == contentId);
+            if (contentModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            return Result.Succeed(data: questionModel);
+            return Result.Succeed(data: contentModel);
         }
-
+        
         [NonAction]
-        private async Task<CourseModel> GetCourseModel(int courseId, bool single = true)
+        private async Task<CourseModel> GetCourseModel(int courseId, int? sectionId = null, int? lessonId = null, bool single = true)
         {
             var course = await unitOfWork.Query<Course>()
                 .AsNoTracking()
-                .Include(_ => _.User)
                 .FirstOrDefaultAsync(_ => _.Id == courseId);
 
             if (course == null) return null;
 
-            course.Sections = await unitOfWork.Query<Section>()
+            var ids = new int[] { course.Id };
+
+            var sections = await unitOfWork.Query<Section>()
                 .AsNoTracking()
-                .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
-                .Where(_ => _.CourseId == course.Id)
-                .Select(section => new Section
-                 {
-                     CourseId = section.CourseId,
-                     Index = section.Index,
-                     Id = section.Id,
-                     Title = single ? section.Title : null
-                 })
+                .Where(_ => ids.Contains(_.CourseId))
+                .ToListAsync(); ids = sections.Select(_ => _.Id).ToArray();
+
+            var lessons = await unitOfWork.Query<Lesson>()
+                .AsNoTracking()
+                .Where(_ => ids.Contains(_.SectionId))
+                .ToListAsync(); ids = lessons.Select(_ => _.Id).ToArray();
+
+            var contents = await unitOfWork.Query<Content>()
+                .AsTracking()
+                .Where(_ => ids.Contains(_.LessonId) && _.LessonId == lessonId)
                 .ToListAsync();
 
-            foreach (var section in course.Sections)
-            {
-                section.Lessons = await unitOfWork.Query<Lesson>()
-                    .AsNoTracking()
-                    .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
-                    .Where(_ => _.SectionId == section.Id)
-                    .Select(lesson => new Lesson
-                    {
-                        SectionId = lesson.SectionId,
-                        Index = lesson.Index,
-                        Id = lesson.Id,
-                        Title = single ? lesson.Title : null,
-                        Document = lesson.Document,
-                        Media = lesson.Media,
-                        ExternalMediaUrl = lesson.ExternalMediaUrl,
-                        Duration = lesson.Duration
-                    }).ToListAsync();
-
-                foreach (var lesson in section.Lessons)
+            contents.AddRange(await unitOfWork.Query<Content>()
+                .AsTracking()
+                .Where(_ => ids.Contains(_.LessonId) && _.LessonId != lessonId)
+                .Select(content => new Content
                 {
-                    lesson.Questions = await unitOfWork.Query<Question>()
-                        .AsNoTracking()
-                        .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
-                        .Where(_ => _.LessonId == lesson.Id)
-                        .Select(question => new Question
-                        {
-                            LessonId = question.LessonId,
-                            Index = question.Index,
-                            Id = question.Id,
-                            Text = single ? question.Text : null,
-                            AnswerType = question.AnswerType
-                        }).ToListAsync();
+                    LessonId = content.LessonId,
+                    Index = content.Index,
+                    Id = content.Id,
+                    Type = content.Type,
+                    AnswerType = content.AnswerType,
+                    Checks = content.Checks
+                })
+                .ToListAsync());
 
-                    foreach (var question in lesson.Questions)
-                    {
-                        question.Answers = await unitOfWork.Query<QuestionAnswer>()
-                            .AsNoTracking()
-                            .OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index)
-                            .Where(_ => _.QuestionId == question.Id)
-                            .Select(answer => new QuestionAnswer
-                            {
-                                QuestionId = answer.QuestionId,
-                                Index = answer.Index,
-                                Id = answer.Id,
-                                Text = single ? answer.Text : null,
-                                Checked = answer.Checked,
-                            }).ToListAsync();
-                    }
-                }
-            }
+            course.Sections = sections.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index).Where(_ => _.CourseId == course.Id).Select(section =>
+            {
+                section.Lessons = lessons.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index).Where(_ => _.SectionId == section.Id).Select(lesson =>
+                {
+                    lesson.Contents = contents.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index).Where(_ => _.LessonId == lesson.Id).Select(content => content).ToList();
+                    return lesson;
+                }).ToList();
+
+                return section;
+            }).ToList();
 
             CourseStatus GetStatus(CourseStatus[] statuses)
             {
@@ -1049,24 +978,20 @@ namespace Academy.Server.Controllers
             courseModel.Certificate = mapper.Map<CertificateModel>(courseCertificate);
             courseModel.Purchased = coursePurchased;
             courseModel.Students = courseStudents;
-            courseModel.Duration = course.Sections.SelectMany(_ => _.Lessons).Select(_ => _.Duration).Sum();
 
             var progresses = course.Sections.SelectMany(section => section.Lessons.SelectMany(lesson =>
             {
-                var progress = user?.CourseProgresses.FirstOrDefault(_ => _.CourseId == course.Id && _.SectionId == section.Id && _.LessonId == lesson.Id && _.QuestionId == null);
-                progress ??= new CourseProgress { CourseId = course.Id, SectionId = section.Id, LessonId = lesson.Id, QuestionId = null, Status = CourseStatus.Locked };
-
                 var progresses = new List<CourseProgress>();
-                progresses.Add(progress);
 
-                lesson.Questions.ForEach(question =>
+                lesson.Contents.ForEach(content =>
                 {
-                    progress = user?.CourseProgresses.FirstOrDefault(_ => _.CourseId == course.Id && _.SectionId == section.Id && _.LessonId == lesson.Id && _.QuestionId == question.Id);
-                    progress ??= new CourseProgress { CourseId = course.Id, SectionId = section.Id, LessonId = lesson.Id, QuestionId = question.Id, Status = CourseStatus.Locked };
+                    var progress = user?.CourseProgresses.FirstOrDefault(_ => _.CourseId == course.Id && _.SectionId == section.Id && _.LessonId == lesson.Id && _.ContentId == content.Id);
+                    progress ??= new CourseProgress { CourseId = course.Id, SectionId = section.Id, LessonId = lesson.Id, ContentId = content.Id, Status = CourseStatus.Locked };
                     progresses.Add(progress);
                 });
                 return progresses;
             })).ToArray();
+
             var progress = progresses.FirstOrDefault(_ => _.Status == CourseStatus.Locked);
             if (progress != null) progress.Status = CourseStatus.Started;
 
@@ -1076,26 +1001,29 @@ namespace Academy.Server.Controllers
                 sectionModel.Lessons = section.Lessons.Select(lesson =>
                 {
                     var lessonModel = mapper.Map<LessonModel>(lesson);
-                    lessonModel.Questions = lesson.Questions.Select(question =>
+                    lessonModel.Contents = lesson.Contents.Select(content =>
                     {
-                        var progress = progresses.First(_ => _.CourseId == course.Id && _.SectionId == section.Id && _.LessonId == lesson.Id && _.QuestionId == question.Id);
+                        var progress = progresses.First(_ => _.CourseId == course.Id && _.SectionId == section.Id && _.LessonId == lesson.Id && _.ContentId == content.Id);
 
-                        var questionModel = mapper.Map<QuestionModel>(question);
-                        questionModel.Answers = question.Answers.Select((answer) =>
+                        var contentModel = mapper.Map<ContentModel>(content);
+
+                        contentModel.Answers = permitted ? content.Answers : Protection.Encrypt(appSettings.Company.Name, JsonConvert.SerializeObject(content.Answers, JsonSerializerSettingsDefaults.Web));
+                        contentModel.Correct = progress.Status == CourseStatus.Completed ? ((Func<bool>)(() =>
                         {
-                            var answerModel = mapper.Map<QuestionAnswerModel>(answer);
-                            answerModel.Checked = (permitted) ? answer.Checked : null;
-                            return answerModel;
-                        }).ToArray();
-                        questionModel.Correct = progress.Status == CourseStatus.Completed ? question.CheckInputs(progress.Inputs) : null;
-                        questionModel.Secret = Protection.Encrypt(appSettings.Company.Name, Newtonsoft.Json.JsonConvert.SerializeObject(question.Answers.Select(_ => mapper.Map<QuestionAnswerModel>(_)), JsonSerializerSettingsDefaults.Web));
-                        questionModel.Status = progress.Status;
-                        return questionModel;
+                            if (content.AnswerType == AnswerType.SelectSingle || content.AnswerType == AnswerType.SelectMultiple)
+                                return content.Checks.OrderBy(_ => _).SequenceEqual((progress.Checks ?? Array.Empty<string>()).OrderBy(_ => _));
+
+                            else if (content.AnswerType == AnswerType.Reorder)
+                                return content.Checks.SequenceEqual(progress.Checks ?? Array.Empty<string>());
+
+                            else return false;
+                        }))() : null;
+                        contentModel.Status = progress.Status;
+                        return contentModel;
                     }).ToArray();
                     lessonModel.Status = GetStatus(progresses.Where(_ => _.CourseId == course.Id && _.SectionId == section.Id && _.LessonId == lesson.Id).Select(_ => _.Status).ToArray());
                     return lessonModel;
                 }).ToArray();
-                sectionModel.Duration = section.Lessons.Select(_ => _.Duration).Sum();
 
                 var statuses = progresses.Where(_ => _.CourseId == course.Id && _.SectionId == section.Id).Select(_ => _.Status).ToArray();
                 sectionModel.Status = GetStatus(statuses);

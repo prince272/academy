@@ -2,6 +2,7 @@
 using Academy.Server.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
 
 namespace Academy.Server.Data.Configurations
 {
@@ -10,7 +11,7 @@ namespace Academy.Server.Data.Configurations
         public void Configure(EntityTypeBuilder<Course> builder)
         {
             builder.Property(_ => _.Image).HasJsonValueConversion();
-            builder.Property(_ => _.CertificateTemplate).HasJsonValueConversion(); ;
+            builder.Property(_ => _.CertificateTemplate).HasJsonValueConversion();
         }
     }
 
@@ -18,7 +19,7 @@ namespace Academy.Server.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<CourseProgress> builder)
         {
-            builder.Property(_ => _.Inputs).HasJsonValueConversion();
+            builder.Property(_ => _.Checks).HasJsonValueConversion().HasDefaultValue(Array.Empty<string>());
         }
     }
 }

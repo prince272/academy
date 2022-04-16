@@ -21,7 +21,7 @@ namespace Academy.Server.Extensions.StorageProvider
             logger = serviceProvider.GetRequiredService<ILogger<LocalStorageProvider>>();
         }
 
-        public async Task<Stream> WriteAsync(string path, Stream stream, long offset, long length)
+        public async Task WriteAsync(string path, Stream stream, long offset, long length)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path));
@@ -50,11 +50,6 @@ namespace Academy.Server.Extensions.StorageProvider
             {
                 string sourcePath = GetSourcePath(path);
                 File.Move(tempPath, sourcePath, false);
-                return File.OpenRead(sourcePath);
-            }
-            else
-            {
-                return null;
             }
         }
 

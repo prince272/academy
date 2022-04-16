@@ -34,8 +34,6 @@ namespace Academy.Server.Models.Courses
 
         public CertificateModel Certificate { get; set; }
 
-        public long Duration { get; set; }
-
         public decimal Progress { get; set; }
 
         public SectionModel[] Sections { get; set; }
@@ -70,8 +68,6 @@ namespace Academy.Server.Models.Courses
 
         public decimal Progress { get; set; }
 
-        public long Duration { get; set; }
-
         public CourseStatus Status { get; set; }
 
         public LessonModel[] Lessons { get; set; }
@@ -87,20 +83,12 @@ namespace Academy.Server.Models.Courses
 
         public string Title { get; set; }
 
-        public MediaModel Document { get; set; }
-
-        public MediaModel Media { get; set; }
-
-        public string ExternalMediaUrl { get; set; }
-
-        public long Duration { get; set; }
-
         public CourseStatus Status { get; set; }
 
-        public QuestionModel[] Questions { get; set; }
+        public ContentModel[] Contents { get; set; }
     }
 
-    public class QuestionModel
+    public class ContentModel
     {
         public int LessonId { get; set; }
 
@@ -108,32 +96,23 @@ namespace Academy.Server.Models.Courses
 
         public int Id { get; set; }
 
+        public ContentType Type { get; set; }
+
+        public string Document { get; set; }
+
+        public MediaModel Media { get; set; }
+
+        public string ExternalMediaUrl { get; set; }
+
         public string Text { get; set; }
 
         public AnswerType AnswerType { get; set; }
 
         public CourseStatus Status { get; set; }
 
-        public long Duration { get; set; }
-
-        public string Secret { get; set; }
-
-        public QuestionAnswerModel[] Answers { get; set; }
+        public object Answers { get; set; }
 
         public bool? Correct { get; set; }
-    }
-
-    public class QuestionAnswerModel
-    {
-        public int QuestionId { get; set; }
-
-        public int Index { get; set; }
-
-        public int Id { get; set; }
-
-        public string Text { get; set; }
-
-        public bool? Checked { get; set; }
     }
 
     public class MediaModel
@@ -147,8 +126,6 @@ namespace Academy.Server.Models.Courses
         public string ContentType { get; set; }
 
         public long Size { get; set; }
-
-        public long? Duration { get; set; }
 
         public string Url { get; set; }
 
@@ -191,19 +168,11 @@ namespace Academy.Server.Models.Courses
         }
     }
 
-    public class QuestionModelProfile : Profile
+    public class ContentModelProfile : Profile
     {
-        public QuestionModelProfile()
+        public ContentModelProfile()
         {
-            CreateMap<Question, QuestionModel>();
-        }
-    }
-
-    public class QuestionAnswerModelProfile : Profile
-    {
-        public QuestionAnswerModelProfile()
-        {
-            CreateMap<QuestionAnswer, QuestionAnswerModel>();
+            CreateMap<Content, ContentModel>();
         }
     }
 

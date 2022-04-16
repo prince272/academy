@@ -7,16 +7,13 @@ import { useRouter } from 'next/router';
 import { pascalCase } from 'change-case';
 import { preventDefault } from '../../utils/helpers';
 import { withRemount } from '../../utils/hooks';
-import MediaUploader, { MediaExtensions } from '../../components/MediaUploader';
 
-import DocumentEditor from '../../components/DocumentEditor';
 import Loader from '../../components/Loader';
-import { useEventDispatcher } from '../../utils/eventDispatcher';
 import { useClient } from '../../utils/client';
-import _ from 'lodash';
+import { useEventDispatcher } from '../../utils/eventDispatcher';
 
 const LessonEditModal = withRemount((props) => {
-    const { route, modal, updateModalProps, remount } = props;
+    const { route, modal, remount } = props;
     const router = useRouter();
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
@@ -45,19 +42,7 @@ const LessonEditModal = withRemount((props) => {
                 return;
             }
 
-            let formData = {
-                ...result.data,
-                mediaId: result.data.media?.id,
-            };
-
-            if (result.data.document != null) {
-                try { formData = { ...formData, document: (await client.get(result.data.document.url, { throwIfError: true }))?.data }; }
-                catch (ex) {
-                    formData = { ...formData, document: null };
-                 }
-            }
-
-            form.reset(formData);
+            form.reset(result.data);
 
             setLoading(null);
         }
@@ -84,22 +69,12 @@ const LessonEditModal = withRemount((props) => {
                 setSubmitting(false);
                 return;
             }
-
+            
             eventDispatcher.emit(`editCourse`, (await client.get(`/courses/${courseId}`, { throwIfError: true })).data.data);
             toast.success(`Lesson ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`, { id: componentId });
             modal.close();
         })();
     };
-
-    useEffect(() => {
-        if (action == 'delete') {
-            updateModalProps({ size: 'md', contentClassName: '' });
-        }
-        else {
-            updateModalProps(LessonEditModal.getModalProps());
-        }
-
-    }, [action]);
 
     useEffect(() => {
         load();
@@ -119,27 +94,6 @@ const LessonEditModal = withRemount((props) => {
                             <label className="form-label">Title</label>
                             <input {...form.register("title")} className={`form-control  ${formState.errors.title ? 'is-invalid' : ''}`} />
                             <div className="invalid-feedback">{formState.errors.title?.message}</div>
-                        </div>
-                        <div className="col-12">
-                            <label className="form-label">Document</label>
-                            <FormController name="document" control={form.control}
-                                render={({ field }) => {
-                                    return (<DocumentEditor value={field.value} onChange={(value) => field.onChange(value)} />);
-                                }} />
-                            <div className="invalid-feedback">{formState.errors.document?.message}</div>
-                        </div>
-                        <div className="col-12">
-                            <label className="form-label">Media</label>
-                            <FormController name="mediaId" control={form.control}
-                                render={({ field }) => {
-                                    return (<MediaUploader length={1} value={field.value} onChange={(value) => field.onChange(value)} extensions={[MediaExtensions.VIDEO, MediaExtensions.AUDIO].join(', ')} />);
-                                }} />
-                            <div className="invalid-feedback">{formState.errors.mediaId?.message}</div>
-                        </div>
-                        <div className="col-12">
-                            <label className="form-label">External media url</label>
-                            <input {...form.register("externalMediaUrl")} className={`form-control  ${formState.errors.externalMediaUrl ? 'is-invalid' : ''}`} />
-                            <div className="invalid-feedback">{formState.errors.externalMediaUrl?.message}</div>
                         </div>
                     </div>
                     {action == 'delete' && <p className="mb-0">Are you sure you want to {action} this lesson?</p>}
@@ -161,12 +115,5 @@ const LessonEditModal = withRemount((props) => {
         </>
     );
 });
-
-LessonEditModal.getModalProps = () => {
-    return {
-        contentClassName: 'h-100',
-        size: 'lg',
-    };
-};
 
 export default LessonEditModal;

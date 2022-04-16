@@ -52,19 +52,10 @@ const DocumentViewer = withRemount(({ document, remount }) => {
     const [content, setContent] = withAsync(useState(null));
 
     useEffect(async () => {
-
-        try {
-            await setContent((await client.get(document.url, { throwIfError: true })).data);
-            const nodes = ref.current.querySelectorAll('pre code');
-            for (let i = 0; i < nodes.length; i++) { hljs.highlightElement(nodes[i]); }
-        }
-        catch (ex) {
-            setLoading({ status: 'error', message: 'Unable to load document.', remount });
-            return;
-        }
-
+        await setContent(document);
+        const nodes = ref.current.querySelectorAll('pre code');
+        for (let i = 0; i < nodes.length; i++) { hljs.highlightElement(nodes[i]); }
         setLoading(null);
-
     }, [document]);
 
     return (
@@ -75,29 +66,29 @@ const DocumentViewer = withRemount(({ document, remount }) => {
     );
 });
 
-const LessonView = (props) => {
-    const { lesson, setCurrentView } = props;
+const ExplanationView = (props) => {
+    const { lesson, content, setCurrentView, moveForward, submitting } = props;
 
     useEffect(() => {
-        const newLesson = { ...lesson, _submitted: false, _data: {} };
-        setCurrentView(newLesson);
+        const newContent = { ...content, _submitted: false, _data: {} };
+        setCurrentView(newContent);
     }, []);
 
     const tabs = useMemo(() => {
         const tabs = [];
 
-        if (lesson.document != null) {
-            tabs.push({ lesson, key: 'document', title: 'Document', icon: <span className="align-text-bottom"><BsJournalRichtext size="1rem" /></span> });
+        if (content.document != null) {
+            tabs.push({ key: 'document', title: 'Document', icon: <span className="align-text-bottom"><BsJournalRichtext size="1rem" /></span> });
         }
 
-        if (lesson.media?.url || lesson.externalMediaUrl) {
-            tabs.push({ lesson, key: 'media', title: 'Media', icon: <span className="align-text-bottom">{<BsFilm size="1rem" />}</span> });
+        if (content.media?.url || content.externalMediaUrl) {
+            tabs.push({ key: 'media', title: 'Media', icon: <span className="align-text-bottom">{<BsFilm size="1rem" />}</span> });
         }
         return tabs;
     }, []);
 
     return (
-        <Tab.Container id={`lesson_${lesson.id}`} defaultActiveKey={tabs[0]?.key}>
+        <Tab.Container id={`content_${content.id}`} defaultActiveKey={tabs[0]?.key}>
             {(tabs.length > 1) && (
                 <div className="position-absolute bottom-0 start-50 translate-middle-x zi-1 pb-4 mb-10">
                     <Nav variant="segment" className="shadow-sm flex-nowrap text-nowrap">
@@ -118,12 +109,12 @@ const LessonView = (props) => {
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5 text-break">
                                 <div className="h4 mt-3 mb-2">{lesson.title}</div>
-                                <DocumentViewer document={lesson.document} />
+                                <DocumentViewer document={content.document} />
                             </Tab.Pane>
                         );
                     }
                     else if (tab.key == 'media') {
-                        const mediaUrl = lesson.media?.url || lesson.externalMediaUrl;
+                        const mediaUrl = content.media?.url || content.externalMediaUrl;
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-8 col-lg-7 col-xl-6">
                                 <div className="h4 mt-3 mb-2">{lesson.title}</div>
@@ -145,37 +136,37 @@ const LessonView = (props) => {
         </Tab.Container>
     );
 };
-LessonView.displayName = 'LessonView';
+ExplanationView.displayName = 'ExplanationView';
 
-const QuestionView = (props) => {
+const ContentView = (props) => {
     const client = useClient();
     const dialog = useDialog();
-    const { lesson, question, setCurrentView, moveForward, submitting } = props;
+    const { lesson, content, setCurrentView, moveForward, submitting } = props;
     const appSettings = useAppSettings();
 
     useEffect(() => {
         // shuffle answers.
-        const answers = _.shuffle(question.answers).map((answer, answerIndex) => ({ ...answer, index: answerIndex, checked: false }));
+        const answers = _.shuffle(content.answers).map((answer, answerIndex) => ({ ...answer, index: answerIndex, checked: false }));
 
-        const newQuestion = {
-            ...question, answers,
+        const newContent = {
+            ...content, answers,
             _submitted: false,
-            _inputs: question.answerType == 'reorder' ? answers.map(answer => answer.id) : []
+            _inputs: content.answerType == 'reorder' ? answers.map(answer => answer.id) : []
         };
-        setCurrentView(newQuestion);
+        setCurrentView(newContent);
     }, []);
 
     const handleSelect = (index) => {
 
-        if (question.answerType == 'selectSingle' || question.answerType == 'selectMultiple') {
+        if (content.answerType == 'selectSingle' || content.answerType == 'selectMultiple') {
 
             const answers = (({
-                'selectSingle': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : false })),
-                'selectMultiple': question.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : answer.checked })),
-            })[question.answerType] || null).map((answer, answerIndex) => ({ ...answer, index: answerIndex }));
+                'selectSingle': content.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : false })),
+                'selectMultiple': content.answers.map((answer, answerIndex) => ({ ...answer, checked: answerIndex == index ? !answer.checked : answer.checked })),
+            })[content.answerType] || null).map((answer, answerIndex) => ({ ...answer, index: answerIndex }));
 
             setCurrentView({
-                ...question,
+                ...content,
                 answers,
                 _inputs: answers.filter(answer => answer.checked).map(answer => answer.id),
                 _correct: false,
@@ -202,12 +193,12 @@ const QuestionView = (props) => {
             return;
 
 
-        const answers = _.cloneDeep(question.answers);
+        const answers = _.cloneDeep(content.answers);
         arrayMove(answers, source.index, destination.index);
         answers.forEach((answer, answerIndex) => { answer.index = answerIndex; });
 
         setCurrentView({
-            ...question,
+            ...content,
             answers,
             _inputs: answers.map(answer => answer.id),
             _correct: false,
@@ -220,23 +211,23 @@ const QuestionView = (props) => {
         <div className="row justify-content-center g-0">
             <div className="col-12 col-md-7 col-lg-6 col-xl-5">
                 <div className="h4 mt-3 mb-2">{lesson.title}</div>
-                <div className="w-100 text-break my-3 small">{question.text}</div>
+                <div className="w-100 text-break my-3 small">{content.text}</div>
                 <DragDropContext onDragEnd={handleReorder}>
-                    <Droppable droppableId={`question`} direction="vertical" type="lesson">
+                    <Droppable droppableId={`content`} direction="vertical" type="lesson">
                         {(provided) => (
                             <div ref={provided.innerRef} {...provided.droppableProps}>
-                                {question.answers.map((answer, answerIndex) => {
+                                {content.answers.map((answer, answerIndex) => {
                                     answer.index = answerIndex;
                                     return (
                                         <Draggable key={answer.id} draggableId={`answer_${answer.id}`} index={answer.index}>
                                             {(provided) => (
                                                 <div ref={provided.innerRef} {...provided.draggableProps}  {...provided.dragHandleProps} className="pb-3">
-                                                    <div className={`card shadow-sm bg-white text-body ${answer.checked ? `${question._submitted ? (answer.correct ? 'border-success bg-soft-success' : 'border-danger bg-soft-danger') : 'border-primary bg-soft-primary'}` : `btn-outline-primary`}`}
+                                                    <div className={`card shadow-sm bg-white text-body ${answer.checked ? `${content._submitted ? (answer.correct ? 'border-success bg-soft-success' : 'border-danger bg-soft-danger') : 'border-primary bg-soft-primary'}` : `btn-outline-primary`}`}
                                                         style={{ borderLeftWidth: "5px", borderColor: "transparent" }} onClick={() => handleSelect(answer.index)}>
                                                         <div className="d-flex justify-content-between align-items-stretch border-bottom-0" style={{ minHeight: "52px" }}>
                                                             <div className="px-2 py-1 d-flex align-items-center hstack gap-2">
 
-                                                                <div className={`${question.answerType != 'reorder' ? 'd-none' : ''}`}>
+                                                                <div className={`${content.answerType != 'reorder' ? 'd-none' : ''}`}>
                                                                     <span className="svg-icon svg-icon-xs d-inline-block" ><BsGripVertical /></span>
                                                                 </div>
 
@@ -260,7 +251,7 @@ const QuestionView = (props) => {
                     </Droppable>
                 </DragDropContext>
                 <div className="d-flex justify-content-end mb-3">
-                    {!question._correct && (
+                    {!content._correct && (
                         <button className="btn btn-secondary" disabled={submitting} onClick={() => {
                             moveForward(true);
                         }}>
@@ -271,16 +262,16 @@ const QuestionView = (props) => {
                         </button>
                     )}
                 </div>
-                {question._submitted && (
-                    <div className={`alert alert-${question._alert.type == 'error' ? 'danger' : question._alert.type}`} role="alert">
+                {content._submitted && (
+                    <div className={`alert alert-${content._alert.type == 'error' ? 'danger' : content._alert.type}`} role="alert">
                         <div className="d-flex align-items-center">
                             <div className="flex-shrink-0">
                                 <span className="svg-icon svg-icon-sm text-white">
-                                    {question._alert.type == 'error' ? <BsXCircleFill /> : question._alert.type == 'success' ? <BsCheckCircleFill /> : <></>}
+                                    {content._alert.type == 'error' ? <BsXCircleFill /> : content._alert.type == 'success' ? <BsCheckCircleFill /> : <></>}
                                 </span>
                             </div>
                             <div className="flex-grow-1 ms-3">
-                                <div>{question._alert.message}</div>
+                                <div>{content._alert.message}</div>
                             </div>
                         </div>
                     </div>
@@ -289,7 +280,7 @@ const QuestionView = (props) => {
         </div>
     );
 };
-QuestionView.displayName = 'QuestionView';
+ContentView.displayName = 'ContentView';
 
 const LearnPage = withRemount(({ remount }) => {
     const router = useRouter();
@@ -327,7 +318,7 @@ const LearnPage = withRemount(({ remount }) => {
     const load = async () => {
         setLoading({});
 
-        let result = await client.get(`/courses/${courseId}`);
+        let result = await client.get(`/courses/${courseId}`, { params: { sectionId, lessonId } });
 
         if (result.error) {
             const error = result.error;
@@ -364,21 +355,27 @@ const LearnPage = withRemount(({ remount }) => {
 
         const newViews = [];
         section.lessons.forEach(lesson => {
-            newViews.push({ ...lesson, _id: _.uniqueId(), _type: 'lesson' });
-            lesson.questions.forEach((question, questionIndex) => {
+            lesson.contents.forEach((content, contentIndex) => {
+                const answers = Array.isArray(content.answers) ? content.answers : JSON.parse(protection.decrypt(appSettings.company.name, content.answers));
                 newViews.push({
                     lesson,
-                    ...question,
-                    title: `Question ${questionIndex + 1} of ${lesson.questions.length}`,
-                    _id: _.uniqueId(),
-                    _type: 'question'
+                    ...content,
+                    answers,
+                    predefinedAnswers: _.cloneDeep(answers)
                 })
             })
         });
 
-        setViews(newViews);
-        setCurrentView(newViews.find(newView => newView._type == 'lesson' && newView.id == lessonId));
-        setLoading(null);
+        const newView = newViews[0];
+
+        if (newView) {
+            setViews(newViews);
+            setCurrentView(newView);
+            setLoading(null);
+        }
+        else {
+            router.replace(`/courses/${courseId}`);
+        }
     };
 
     useEffect(() => {
@@ -394,7 +391,7 @@ const LearnPage = withRemount(({ remount }) => {
     }, []);
 
     const moveBackward = () => {
-        const currentViewIndex = views.findIndex(view => view._id == currentView._id);
+        const currentViewIndex = views.findIndex(view => view.id == currentView.id);
         const previousView = views[currentViewIndex - 1];
 
         if (previousView != null) {
@@ -411,9 +408,9 @@ const LearnPage = withRemount(({ remount }) => {
 
             const lock = CreateLock();
 
-            if (currentView._type == 'lesson') {
+            if (currentView.type == 'explanation') {
 
-                client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.id}/progress`, {}).then(result => {
+                client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/contents/${currentView.id}/progress`, {}).then(result => {
 
                     if (result.error) {
                         const error = result.error;
@@ -426,11 +423,10 @@ const LearnPage = withRemount(({ remount }) => {
                     lock.release();
                 });
             }
-            else if (currentView._type == 'question') {
+            else if (currentView.type == 'question') {
 
                 if (!currentView._submitted || solve) {
                     let _inputs = currentView._inputs;
-                    const answers = JSON.parse(protection.decrypt(appSettings.company.name, currentView.secret));
 
                     const comparator = (a, b) => {
                         return a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' })
@@ -453,7 +449,7 @@ const LearnPage = withRemount(({ remount }) => {
                     };
 
                     if (solve) {
-                        let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/questions/${currentView.id}/solve`);
+                        let result = await client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/contents/${currentView.id}/progress`, { solve: true });
 
                         if (result.error) {
                             const error = result.error;
@@ -463,11 +459,11 @@ const LearnPage = withRemount(({ remount }) => {
 
                         _inputs = (() => {
                             if (currentView.answerType == 'selectSingle' || currentView.answerType == 'selectMultiple') {
-                                const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
+                                const checkedIds = currentView.predefinedAnswers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
                                 return checkedIds;
                             }
                             else if (currentView.answerType == 'reorder') {
-                                const checkedIds = answers.map(answer => answer.id.toString());
+                                const checkedIds = currentView.predefinedAnswers.map(answer => answer.id.toString());
                                 return checkedIds;
                             }
                             else {
@@ -478,7 +474,7 @@ const LearnPage = withRemount(({ remount }) => {
                         client.updateUser({ bits: result.data.bits });
                     }
 
-                    client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/progress`, { id: currentView.id, inputs: _inputs }).then(result => {
+                    client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${currentView.lessonId}/contents/${currentView.id}/progress`, { inputs: _inputs }).then(result => {
 
                         if (result.error) {
                             const error = result.error;
@@ -493,12 +489,12 @@ const LearnPage = withRemount(({ remount }) => {
 
                     const _correct = (() => {
                         if (currentView.answerType == 'selectSingle' || currentView.answerType == 'selectMultiple') {
-                            const checkedIds = answers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
+                            const checkedIds = currentView.predefinedAnswers.filter(answer => answer.checked).map(answer => answer.id.toString()).sort(comparator);
                             const inputIds = _inputs.map(inputId => inputId.toString()).sort(comparator);
                             return sequenceEqual(checkedIds, inputIds);
                         }
                         else if (currentView.answerType == 'reorder') {
-                            const checkedIds = answers.map(answer => answer.id.toString());
+                            const checkedIds = currentView.predefinedAnswers.map(answer => answer.id.toString());
                             const inputIds = _inputs.map(inputId => inputId.toString());
                             return sequenceEqual(checkedIds, inputIds);
                         }
@@ -524,8 +520,8 @@ const LearnPage = withRemount(({ remount }) => {
                             ...currentView,
                             answers: currentView.answers.map(answer => ({
                                 ...answer,
-                                [_correct ? 'checked' : undefined]: answers.find(a => a.id == answer.id).checked,
-                                correct: answers.find(a => a.id == answer.id).checked
+                                [_correct ? 'checked' : undefined]: currentView.predefinedAnswers.find(a => a.id == answer.id).checked,
+                                correct: currentView.predefinedAnswers.find(a => a.id == answer.id).checked
                             })),
                             _inputs,
                             _correct,
@@ -537,7 +533,7 @@ const LearnPage = withRemount(({ remount }) => {
                         setCurrentView({
                             ...currentView,
                             answers: _correct ? currentView.answers.sort(function (a, b) {
-                                return answers.findIndex(answer => answer.id == a.id) - answers.findIndex(answer => answer.id == b.id);
+                                return currentView.predefinedAnswers.findIndex(answer => answer.id == a.id) - currentView.predefinedAnswers.findIndex(answer => answer.id == b.id);
                             }) : currentView.answers,
                             _inputs,
                             _correct,
@@ -568,7 +564,7 @@ const LearnPage = withRemount(({ remount }) => {
                 lock.release();
             }
 
-            const currentViewIndex = views.findIndex(view => view._id == currentView._id);
+            const currentViewIndex = views.findIndex(view => view.id == currentView.id);
             const nextView = views[currentViewIndex + 1];
 
             if (nextView != null) {
@@ -623,18 +619,18 @@ const LearnPage = withRemount(({ remount }) => {
                 </div>
             </div>
 
-            <div key={currentView._id} className="py-2 px-3 flex-grow-1" style={{ overflowY: "auto" }}>
-                {currentView._type == 'lesson' && <LessonView key={currentView.id} {...{ course, lesson: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
-                {currentView._type == 'question' && <QuestionView key={currentView.id}  {...{ course, lesson: currentView.lesson, question: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
+            <div key={currentView.id} className="py-2 px-3 flex-grow-1" style={{ overflowY: "auto" }}>
+                {currentView.type == 'explanation' && <ExplanationView key={currentView.id} {...{ course, lesson: currentView.lesson, content: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
+                {currentView.type == 'question' && <ContentView key={currentView.id} {...{ course, lesson: currentView.lesson, content: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
             </div>
 
             <div className="p-3">
                 <div className="row justify-content-center g-0 w-100 h-100">
                     <div className="col-12 col-md-8 col-lg-7 col-xl-6">
                         <div className="d-flex gap-3 justify-content-end w-100">
-                            <button className={`btn btn-primary px-5 w-100 w-sm-auto`} type="button" disabled={submitting || (currentView._type == 'question' && !(currentView._inputs && currentView._inputs.length))} onClick={() => moveForward()}>
+                            <button className={`btn btn-primary px-5 w-100 w-sm-auto`} type="button" disabled={submitting || (currentView.type == 'question' && !(currentView._inputs && currentView._inputs.length))} onClick={() => moveForward()}>
                                 <div className="position-relative d-flex align-items-center justify-content-center">
-                                    <div><div>{currentView._type == 'question' ? (currentView._submitted ? (currentView._correct ? 'Continue' : 'Try again') : 'Check answer') : ('Continue')}</div></div>
+                                    <div><div>{currentView.type == 'question' ? (currentView._submitted ? (currentView._correct ? 'Continue' : 'Try again') : 'Check answer') : ('Continue')}</div></div>
                                 </div>
                             </button>
                         </div>

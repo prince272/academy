@@ -20,6 +20,6 @@
     {
         Section,
         Lesson,
-        Question
+        Content
     }
 }
