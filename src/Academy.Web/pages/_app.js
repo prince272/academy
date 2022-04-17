@@ -376,6 +376,20 @@ export default function MyApp({ Component, pageProps, appSettings, error }) {
           locale: 'en_IE',
           url: process.env.NEXT_PUBLIC_CLIENT_URL,
           site_name: 'Academy Of Ours',
+          images: [
+            {
+              url: `${process.env.NEXT_PUBLIC_CLIENT_URL}/favicon/android-chrome-192x192.png`,
+              width: 192,
+              height: 192,
+              alt: "Academy of ours"
+            },
+            {
+              url: `${process.env.NEXT_PUBLIC_CLIENT_URL}/favicon/android-chrome-256x256.png`,
+              width: 256,
+              height: 256,
+              alt: "Academy of ours"
+            }
+          ]
         }}
       />
       {!error ? (
