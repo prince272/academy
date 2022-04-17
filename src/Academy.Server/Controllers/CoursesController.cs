@@ -787,7 +787,12 @@ namespace Academy.Server.Controllers
             content.LessonId = lesson.Id; // Set the owner of the content.
             content.Type = form.Type;
 
-            content.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
+            form.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
+
+            var title = form.Type == ContentType.Explanation ? Sanitizer.StripHtml(form.Document) : form.Type == ContentType.Question ? form.Question : null;
+
+            content.Summary = title?.Truncate(255, Truncator.FixedLength);
+            content.Document = form.Document;
             content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
             content.ExternalMediaUrl = form.ExternalMediaUrl;
 
@@ -829,7 +834,12 @@ namespace Academy.Server.Controllers
 
             content.Type = form.Type;
 
-            content.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
+            form.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
+
+            var title = form.Type == ContentType.Explanation ? Sanitizer.StripHtml(form.Document) : form.Type == ContentType.Question ? form.Question : null;
+
+            content.Summary = title?.Truncate(255, Truncator.FixedLength);
+            content.Document = form.Document;
             content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
             content.ExternalMediaUrl = form.ExternalMediaUrl;
 
@@ -878,7 +888,7 @@ namespace Academy.Server.Controllers
         [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId, int contentId)
         {
-            var courseModel = (await GetCourseModel(courseId));
+            var courseModel = (await GetCourseModel(courseId, sectionId, lessonId));
             if (courseModel == null) return Result.Failed(StatusCodes.Status404NotFound);
 
             var sectionModel = courseModel.Sections.FirstOrDefault(_ => _.Id == sectionId);

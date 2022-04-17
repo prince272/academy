@@ -13,6 +13,8 @@ namespace Academy.Server.Data.Entities
 
         public int Id { get; set; }
 
+        public string Summary { get; set; }
+
         public ContentType Type { get; set; }
 
         public string Document { get; set; }

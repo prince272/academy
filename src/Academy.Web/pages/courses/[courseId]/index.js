@@ -53,7 +53,7 @@ const ContentItem = ({ course, section, lesson, content, permitted }) => {
                             <div className="d-flex align-items-center flex-grow-1 cursor-default">
                                 <div className="flex-grow-1">
                                     <ResponsiveEllipsis className="overflow-hidden"
-                                        text={`${content.index + 1}. ${stripHtml(content.text)}`}
+                                        text={`${content.index + 1}. ${stripHtml(content.summary)}`}
                                         maxLine="1"
                                         ellipsis="..."
                                         trimRight
