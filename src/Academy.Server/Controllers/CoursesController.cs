@@ -791,7 +791,7 @@ namespace Academy.Server.Controllers
             content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
             content.ExternalMediaUrl = form.ExternalMediaUrl;
 
-            content.Text = form.Text;
+            content.Question = form.Question;
             content.AnswerType = form.AnswerType;
             content.Answers = form.Answers.Select(formAnswer => new ContentAnswer
             {
@@ -833,7 +833,7 @@ namespace Academy.Server.Controllers
             content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
             content.ExternalMediaUrl = form.ExternalMediaUrl;
 
-            content.Text = form.Text;
+            content.Question = form.Question;
             content.AnswerType = form.AnswerType;
             content.Answers = form.Answers.Select(formAnswer => new ContentAnswer
             {

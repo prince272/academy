@@ -177,8 +177,8 @@ const ContentEditModal = withRemount((props) => {
                             <>
                                 <div className="col-12">
                                     <label className="form-label">Question</label>
-                                    <TextareaAutosize {...form.register("text")} className={`form-control ${formState.errors.text ? 'is-invalid' : ''}`} rows={1} />
-                                    <div className="invalid-feedback">{formState.errors.text?.message}</div>
+                                    <TextareaAutosize {...form.register("question")} className={`form-control ${formState.errors.question ? 'is-invalid' : ''}`} rows={1} />
+                                    <div className="invalid-feedback">{formState.errors.question?.message}</div>
                                 </div>
                                 <div className="col-6">
                                     <label className="form-label">Answer type</label>

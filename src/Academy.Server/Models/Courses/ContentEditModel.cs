@@ -15,7 +15,7 @@ namespace Academy.Server.Models.Courses
 
         public string ExternalMediaUrl { get; set; }
 
-        public string Text { get; set; }
+        public string Question { get; set; }
 
         public AnswerType AnswerType { get; set; }
 
@@ -26,7 +26,7 @@ namespace Academy.Server.Models.Courses
     {
         public ContentEditValidator()
         {
-            RuleFor(_ => _.Text);
+            RuleFor(_ => _.Question);
             RuleFor(_ => _.ExternalMediaUrl).Url();
         }
     }

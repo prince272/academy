@@ -211,7 +211,7 @@ const ContentView = (props) => {
         <div className="row justify-content-center g-0">
             <div className="col-12 col-md-7 col-lg-6 col-xl-5">
                 <div className="h4 mt-3 mb-2">{lesson.title}</div>
-                <div className="w-100 text-break my-3 small">{content.text}</div>
+                <div className="w-100 text-break my-3 small">{content.question}</div>
                 <DragDropContext onDragEnd={handleReorder}>
                     <Droppable droppableId={`content`} direction="vertical" type="lesson">
                         {(provided) => (
