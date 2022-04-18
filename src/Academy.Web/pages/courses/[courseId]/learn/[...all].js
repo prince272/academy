@@ -296,6 +296,7 @@ const LearnPage = withRemount(({ remount }) => {
 
     let [course, setCourse] = withAsync(useState(null));
     let [section, setSection] = withAsync(useState(null));
+    let [lesson, setLesson] = withAsync(useState(null));
 
     const [views, setViews] = useState([]);
     const [currentView, setCurrentView] = useState(null);
@@ -353,16 +354,21 @@ const LearnPage = withRemount(({ remount }) => {
             return;
         }
 
+        lesson = await setLesson(section.lessons.find(_lesson => _lesson.id == lessonId));
+
+        if (!lesson) {
+            setLoading({ status: 404, message: 'Unable to load lesson.', fallback: modal.close, remount });
+            return;
+        }
+
         const newViews = [];
-        section.lessons.forEach(lesson => {
-            lesson.contents.forEach((content, contentIndex) => {
-                const answers = content.answers ? (Array.isArray(content.answers) ? content.answers : JSON.parse(protection.decrypt(appSettings.company.name, content.answers))) : content.answers;
-                newViews.push({
-                    lesson,
-                    ...content,
-                    answers,
-                    predefinedAnswers: _.cloneDeep(answers)
-                })
+        lesson.contents.forEach((content, contentIndex) => {
+            const answers = content.answers ? (Array.isArray(content.answers) ? content.answers : JSON.parse(protection.decrypt(appSettings.company.name, content.answers))) : content.answers;
+            newViews.push({
+                lesson,
+                ...content,
+                answers,
+                predefinedAnswers: _.cloneDeep(answers)
             })
         });
 
@@ -573,9 +579,9 @@ const LearnPage = withRemount(({ remount }) => {
             else {
                 await lock.delay;
 
-                const lastSection = course.sections.slice(-1)[0];
+                const lastLesson = course.sections.flatMap(_section => _section.lessons).slice(-1)[0];
 
-                if ((lastSection && lastSection.id == sectionId) && course.certificateTemplate) {
+                if ((lastLesson && lastLesson.id == lessonId) && course.certificateTemplate) {
                     router.replace({ pathname: `/courses/${courseId}`, query: { certificate: true } });
                 }
                 else {
