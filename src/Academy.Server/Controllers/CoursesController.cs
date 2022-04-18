@@ -791,7 +791,7 @@ namespace Academy.Server.Controllers
 
             var title = form.Type == ContentType.Explanation ? Sanitizer.StripHtml(form.Document) : form.Type == ContentType.Question ? form.Question : null;
 
-            content.Summary = title?.Truncate(255, Truncator.FixedLength);
+            content.Summary = title?.Truncate(128, Truncator.FixedLength);
             content.Document = form.Document;
             content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
             content.ExternalMediaUrl = form.ExternalMediaUrl;
@@ -838,7 +838,7 @@ namespace Academy.Server.Controllers
 
             var title = form.Type == ContentType.Explanation ? Sanitizer.StripHtml(form.Document) : form.Type == ContentType.Question ? form.Question : null;
 
-            content.Summary = title?.Truncate(255, Truncator.FixedLength);
+            content.Summary = title?.Truncate(128, Truncator.FixedLength);
             content.Document = form.Document;
             content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
             content.ExternalMediaUrl = form.ExternalMediaUrl;
@@ -937,6 +937,7 @@ namespace Academy.Server.Controllers
                     LessonId = content.LessonId,
                     Index = content.Index,
                     Id = content.Id,
+                    Summary = content.Summary,
                     Type = content.Type,
                     AnswerType = content.AnswerType,
                     Checks = content.Checks

@@ -356,7 +356,7 @@ const LearnPage = withRemount(({ remount }) => {
         const newViews = [];
         section.lessons.forEach(lesson => {
             lesson.contents.forEach((content, contentIndex) => {
-                const answers = Array.isArray(content.answers) ? content.answers : JSON.parse(protection.decrypt(appSettings.company.name, content.answers));
+                const answers = content.answers ? (Array.isArray(content.answers) ? content.answers : JSON.parse(protection.decrypt(appSettings.company.name, content.answers))) : content.answers;
                 newViews.push({
                     lesson,
                     ...content,
