@@ -1,4 +1,4 @@
-import '../styles/fonts/inter.css';
+import '../styles/fonts/fira-sans.css';
 import '../styles/theme.css';
 import '../styles/app.css';
 

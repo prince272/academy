@@ -279,7 +279,7 @@ namespace Academy.Server.Controllers
                 await unitOfWork.UpdateAsync(progress);
             }
 
-            return Result.Succeed(new { user.Bits });
+            return Result.Succeed(new { user.Bits, progress = courseModel.Progress });
         }
 
         [Authorize]
