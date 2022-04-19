@@ -174,7 +174,7 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                     </div>
                                 </div>
                                 <div className={`p-0 d-flex align-items-center rounded-pill text-white bg-${lesson.status == 'completed' ? 'success' : lesson.status == 'started' ? 'primary' : 'dark'}`}>
-                                    <div className={`rounded-pill d-flex justify-content-center align-items-center`} style={{ height: "32px", width: "32px" }}>
+                                    <div className={`rounded-pill d-flex justify-content-center align-items-center`} style={{ height: "28px", width: "28px" }}>
                                         <span className="svg-icon svg-icon-xs d-inline-block" >{lesson.status == 'completed' ? <BsCheck2 /> : lesson.status == 'started' ? (course.price > 0 && !course.purchased ? <BsCart3 /> : <BsPlayFill />) : <BsLockFill />}</span>
                                     </div>
                                 </div>
