@@ -110,7 +110,7 @@ namespace Academy.Server.Models.Courses
 
         public string Question { get; set; }
 
-        public AnswerType AnswerType { get; set; }
+        public AnswerType? AnswerType { get; set; }
 
         public CourseStatus Status { get; set; }
 
