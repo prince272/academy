@@ -19,7 +19,7 @@ namespace Academy.Server.Models.Courses
 
         public AnswerType? AnswerType { get; set; }
 
-        public ContentAnswerEditModel[] Answers { get; }
+        public ContentAnswerEditModel[] Answers { get; set; } 
     }
 
     public class ContentEditValidator : AbstractValidator<ContentEditModel>
