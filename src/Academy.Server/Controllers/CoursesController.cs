@@ -787,24 +787,52 @@ namespace Academy.Server.Controllers
             content.LessonId = lesson.Id; // Set the owner of the content.
             content.Type = form.Type;
 
-            form.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
-
-            var title = form.Type == ContentType.Explanation ? Sanitizer.StripHtml(form.Document) : form.Type == ContentType.Question ? form.Question : null;
-
-            content.Summary = title?.Truncate(128, Truncator.FixedLength);
-            content.Document = form.Document;
-            content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
-            content.ExternalMediaUrl = form.ExternalMediaUrl;
-
-            content.Question = form.Question;
-            content.AnswerType = form.AnswerType;
-            content.Answers = form.Answers.Select(formAnswer => new ContentAnswer
+            if (form.Type == ContentType.Explanation)
             {
-                Id = formAnswer.Id,
-                Text = formAnswer.Text,
-                Checked = formAnswer.Checked,
-            }).ToArray();
-            content.Checks = form.Answers.Where(_ => _.Checked).Select(_ => _.Id.ToString()).ToArray();
+                var explanation = await documentProcessor.ProcessHtmlDocumentAsync(form.Explanation);
+                var summary = Sanitizer.StripHtml(explanation ?? string.Empty);
+                content.Explanation = explanation;
+                content.Summary = summary.Truncate(128, Truncator.FixedLength);
+                content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
+                content.ExternalMediaUrl = form.ExternalMediaUrl;
+
+                var duration = 0L;
+                duration += Sanitizer.GetTextReadingDuration(summary);
+                content.Duration = duration;
+
+                // Clear old props.
+                content.Question = null;
+                content.AnswerType = null;
+                content.Answers = null;
+                content.Checks = null;
+            }
+            else if (form.Type == ContentType.Question)
+            {
+                var question = await documentProcessor.ProcessHtmlDocumentAsync(form.Question);
+                var summary = Sanitizer.StripHtml(question ?? string.Empty);
+
+                content.Question = form.Question;
+                content.Summary = summary.Truncate(128, Truncator.FixedLength);
+                content.AnswerType = form.AnswerType ?? default(AnswerType);
+                content.Answers = (form.Answers ?? Array.Empty<ContentAnswerEditModel>()).Select(formAnswer => new ContentAnswer
+                {
+                    Id = formAnswer.Id,
+                    Text = formAnswer.Text,
+                    Checked = formAnswer.Checked,
+                }).ToArray();
+                content.Checks = (form.Answers ?? Array.Empty<ContentAnswerEditModel>()).Where(_ => _.Checked).Select(_ => _.Id.ToString()).ToArray();
+
+                var duration = 0L;
+                duration += Sanitizer.GetTextReadingDuration(summary);
+                duration += content.Answers.Select(answer => Sanitizer.GetTextReadingDuration(answer.Text ?? string.Empty)).Sum();
+                content.Duration = duration;
+
+                // Clear old props.
+                content.Explanation = null;
+                content.Media = null;
+                content.ExternalMediaUrl = null;
+            }
+
             await unitOfWork.CreateAsync(content);
 
             return Result.Succeed(data: content.Id);
@@ -834,24 +862,52 @@ namespace Academy.Server.Controllers
 
             content.Type = form.Type;
 
-            form.Document = await documentProcessor.ProcessHtmlDocumentAsync(form.Document);
-
-            var title = form.Type == ContentType.Explanation ? Sanitizer.StripHtml(form.Document) : form.Type == ContentType.Question ? form.Question : null;
-
-            content.Summary = title?.Truncate(128, Truncator.FixedLength);
-            content.Document = form.Document;
-            content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
-            content.ExternalMediaUrl = form.ExternalMediaUrl;
-
-            content.Question = form.Question;
-            content.AnswerType = form.AnswerType;
-            content.Answers = form.Answers.Select(formAnswer => new ContentAnswer
+            if (form.Type == ContentType.Explanation)
             {
-                Id = formAnswer.Id,
-                Text = formAnswer.Text,
-                Checked = formAnswer.Checked,
-            }).ToArray();
-            content.Checks = form.Answers.Where(_ => _.Checked).Select(_ => _.Id.ToString()).ToArray();
+                var explanation = await documentProcessor.ProcessHtmlDocumentAsync(form.Explanation);
+                var summary = Sanitizer.StripHtml(explanation ?? string.Empty);
+                content.Explanation = explanation;
+                content.Summary = summary.Truncate(128, Truncator.FixedLength);
+                content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
+                content.ExternalMediaUrl = form.ExternalMediaUrl;
+
+                var duration = 0L;
+                duration += Sanitizer.GetTextReadingDuration(summary);
+                content.Duration = duration;
+
+                // Clear old props.
+                content.Question = null;
+                content.AnswerType = null;
+                content.Answers = null;
+                content.Checks = null;
+            }
+            else if (form.Type == ContentType.Question)
+            {
+                var question = await documentProcessor.ProcessHtmlDocumentAsync(form.Question);
+                var summary = Sanitizer.StripHtml(question ?? string.Empty);
+
+                content.Question = form.Question;
+                content.Summary = summary.Truncate(128, Truncator.FixedLength);
+                content.AnswerType = form.AnswerType ?? default(AnswerType);
+                content.Answers = (form.Answers ?? Array.Empty<ContentAnswerEditModel>()).Select(formAnswer => new ContentAnswer
+                {
+                    Id = formAnswer.Id,
+                    Text = formAnswer.Text,
+                    Checked = formAnswer.Checked,
+                }).ToArray();
+                content.Checks = (form.Answers ?? Array.Empty<ContentAnswerEditModel>()).Where(_ => _.Checked).Select(_ => _.Id.ToString()).ToArray();
+
+                var duration = 0L;
+                duration += Sanitizer.GetTextReadingDuration(summary);
+                duration += content.Answers.Select(answer => Sanitizer.GetTextReadingDuration(answer.Text ?? string.Empty)).Sum();
+                content.Duration = duration;
+
+                // Clear old props.
+                content.Explanation = null;
+                content.Media = null;
+                content.ExternalMediaUrl = null;
+            }
+
             await unitOfWork.UpdateAsync(content);
 
             return Result.Succeed();
@@ -939,16 +995,37 @@ namespace Academy.Server.Controllers
                     Id = content.Id,
                     Summary = content.Summary,
                     Type = content.Type,
+                    Duration = content.Duration,
                     AnswerType = content.AnswerType,
                     Checks = content.Checks
                 })
                 .ToListAsync());
 
+            var duration = Sanitizer.GetTextReadingDuration(course.Title ?? string.Empty);
+            var progresses = new List<CourseProgress>();
+
+            var user = await HttpContext.Request.GetCurrentUserAsync();
+            var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
+
             course.Sections = sections.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index).Where(_ => _.CourseId == course.Id).Select(section =>
             {
+                duration += Sanitizer.GetTextReadingDuration(section.Title ?? string.Empty);
+
                 section.Lessons = lessons.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index).Where(_ => _.SectionId == section.Id).Select(lesson =>
                 {
+                    duration += Sanitizer.GetTextReadingDuration(lesson.Title ?? string.Empty);
+
                     lesson.Contents = contents.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index).Where(_ => _.LessonId == lesson.Id).Select(content => content).ToList();
+
+                    lesson.Contents.ForEach(content =>
+                    {
+                        duration += content.Duration;
+
+                        var progress = user?.CourseProgresses.FirstOrDefault(_ => _.CourseId == course.Id && _.SectionId == section.Id && _.LessonId == lesson.Id && _.ContentId == content.Id);
+                        progress ??= new CourseProgress { CourseId = course.Id, SectionId = section.Id, LessonId = lesson.Id, ContentId = content.Id, Status = CourseStatus.Locked };
+                        progresses.Add(progress);
+                    });
+
                     return lesson;
                 }).ToList();
 
@@ -968,8 +1045,8 @@ namespace Academy.Server.Controllers
                 return (Math.Round(complete / (decimal)Math.Max(statuses.Count(), 1), 2, MidpointRounding.ToZero));
             };
 
-            var user = await HttpContext.Request.GetCurrentUserAsync();
-            var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
+            var progress = progresses.FirstOrDefault(_ => _.Status == CourseStatus.Locked);
+            if (progress != null) progress.Status = CourseStatus.Started;
 
             var courseCertificate = user?.Certificates.FirstOrDefault(_ => _.CourseId == course.Id);
             var coursePurchased = user != null ? await unitOfWork.Query<Payment>()
@@ -989,23 +1066,6 @@ namespace Academy.Server.Controllers
             courseModel.Certificate = mapper.Map<CertificateModel>(courseCertificate);
             courseModel.Purchased = coursePurchased;
             courseModel.Students = courseStudents;
-
-            var progresses = course.Sections.SelectMany(section => section.Lessons.SelectMany(lesson =>
-            {
-                var progresses = new List<CourseProgress>();
-
-                lesson.Contents.ForEach(content =>
-                {
-                    var progress = user?.CourseProgresses.FirstOrDefault(_ => _.CourseId == course.Id && _.SectionId == section.Id && _.LessonId == lesson.Id && _.ContentId == content.Id);
-                    progress ??= new CourseProgress { CourseId = course.Id, SectionId = section.Id, LessonId = lesson.Id, ContentId = content.Id, Status = CourseStatus.Locked };
-                    progresses.Add(progress);
-                });
-                return progresses;
-            })).ToArray();
-
-            var progress = progresses.FirstOrDefault(_ => _.Status == CourseStatus.Locked);
-            if (progress != null) progress.Status = CourseStatus.Started;
-
             courseModel.Sections = course.Sections.Select(section =>
             {
                 var sectionModel = mapper.Map<SectionModel>(section);
@@ -1018,17 +1078,21 @@ namespace Academy.Server.Controllers
 
                         var contentModel = mapper.Map<ContentModel>(content);
 
-                        contentModel.Answers = permitted ? content.Answers : Protection.Encrypt(appSettings.Company.Name, JsonConvert.SerializeObject(content.Answers, JsonSerializerSettingsDefaults.Web));
-                        contentModel.Correct = progress.Status == CourseStatus.Completed ? ((Func<bool>)(() =>
+                        if (content.Type == ContentType.Question)
                         {
-                            if (content.AnswerType == AnswerType.SelectSingle || content.AnswerType == AnswerType.SelectMultiple)
-                                return content.Checks.OrderBy(_ => _).SequenceEqual((progress.Checks ?? Array.Empty<string>()).OrderBy(_ => _));
+                            contentModel.Answers = permitted ? content.Answers : Protection.Encrypt(appSettings.Company.Name, JsonConvert.SerializeObject(content.Answers, JsonSerializerSettingsDefaults.Web));
+                            contentModel.Correct = progress.Status == CourseStatus.Completed ? ((Func<bool>)(() =>
+                            {
+                                if (content.AnswerType == AnswerType.SelectSingle || content.AnswerType == AnswerType.SelectMultiple)
+                                    return content.Checks.OrderBy(_ => _).SequenceEqual((progress.Checks ?? Array.Empty<string>()).OrderBy(_ => _));
 
-                            else if (content.AnswerType == AnswerType.Reorder)
-                                return content.Checks.SequenceEqual(progress.Checks ?? Array.Empty<string>());
+                                else if (content.AnswerType == AnswerType.Reorder)
+                                    return content.Checks.SequenceEqual(progress.Checks ?? Array.Empty<string>());
 
-                            else return false;
-                        }))() : null;
+                                else return false;
+                            }))() : null;
+                        }
+
                         contentModel.Status = progress.Status;
                         return contentModel;
                     }).ToArray();
@@ -1043,7 +1107,7 @@ namespace Academy.Server.Controllers
                 return sectionModel;
 
             }).ToArray();
-
+            courseModel.Duration = duration;
             courseModel.Started = progresses.Where(_ => _.CourseId == course.Id).OrderBy(_ => _.Completed).FirstOrDefault()?.Completed;
             courseModel.Completed = progresses.Where(_ => _.CourseId == course.Id).OrderByDescending(_ => _.Completed).FirstOrDefault()?.Completed;
 

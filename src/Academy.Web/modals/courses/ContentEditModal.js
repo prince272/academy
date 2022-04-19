@@ -151,12 +151,12 @@ const ContentEditModal = withRemount((props) => {
                         {form.watch('type') == 'explanation' && (
                             <>
                                 <div className="col-12">
-                                    <label className="form-label">Document</label>
-                                    <FormController name="document" control={form.control}
+                                    <label className="form-label">Explanation</label>
+                                    <FormController name="explanation" control={form.control}
                                         render={({ field }) => {
                                             return (<DocumentEditor value={field.value} onChange={(value) => field.onChange(value)} />);
                                         }} />
-                                    <div className="invalid-feedback">{formState.errors.document?.message}</div>
+                                    <div className="invalid-feedback">{formState.errors.explanation?.message}</div>
                                 </div>
                                 <div className="col-12">
                                     <label className="form-label">Media</label>

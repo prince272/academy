@@ -77,7 +77,7 @@ const ExplanationView = (props) => {
     const tabs = useMemo(() => {
         const tabs = [];
 
-        if (content.document != null) {
+        if (content.explanation != null) {
             tabs.push({ key: 'document', title: 'Document', icon: <span className="align-text-bottom"><BsJournalRichtext size="1rem" /></span> });
         }
 
@@ -109,7 +109,7 @@ const ExplanationView = (props) => {
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5 text-break">
                                 <div className="h4 mt-3 mb-2">{lesson.title}</div>
-                                <DocumentViewer document={content.document} />
+                                <DocumentViewer document={content.explanation} />
                             </Tab.Pane>
                         );
                     }

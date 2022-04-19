@@ -9,7 +9,7 @@ namespace Academy.Server.Models.Courses
     {
         public ContentType Type { get; set; }
 
-        public string Document { get; set; }
+        public string Explanation { get; set; }
 
         public int? MediaId { get; set; }
 
@@ -17,16 +17,15 @@ namespace Academy.Server.Models.Courses
 
         public string Question { get; set; }
 
-        public AnswerType AnswerType { get; set; }
+        public AnswerType? AnswerType { get; set; }
 
-        public List<ContentAnswerEditModel> Answers { get; } = new List<ContentAnswerEditModel>();
+        public ContentAnswerEditModel[] Answers { get; }
     }
 
     public class ContentEditValidator : AbstractValidator<ContentEditModel>
     {
         public ContentEditValidator()
         {
-            RuleFor(_ => _.Question);
             RuleFor(_ => _.ExternalMediaUrl).Url();
         }
     }

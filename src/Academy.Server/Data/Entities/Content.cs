@@ -17,7 +17,9 @@ namespace Academy.Server.Data.Entities
 
         public ContentType Type { get; set; }
 
-        public string Document { get; set; }
+        public long Duration { get; set; }
+
+        public string Explanation { get; set; }
 
         public Media Media { get; set; }
 
@@ -26,7 +28,7 @@ namespace Academy.Server.Data.Entities
 
         public string Question { get; set; }
 
-        public AnswerType AnswerType { get; set; }
+        public AnswerType? AnswerType { get; set; }
 
         public ContentAnswer[] Answers { get; set; }
 

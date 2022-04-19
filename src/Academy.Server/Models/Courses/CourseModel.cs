@@ -54,6 +54,8 @@ namespace Academy.Server.Models.Courses
         public Course Course { get; set; }
 
         public int Students { get; set; }
+
+        public long Duration { get; set; }
     }
 
     public class SectionModel
@@ -100,7 +102,7 @@ namespace Academy.Server.Models.Courses
 
         public ContentType Type { get; set; }
 
-        public string Document { get; set; }
+        public string Explanation { get; set; }
 
         public MediaModel Media { get; set; }
 
