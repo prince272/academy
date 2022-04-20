@@ -338,6 +338,7 @@ const SectionList = ({ course, setCourse, toggler, permitted }) => {
 
         if (lesson != null) {
             Scroll.scroller.scrollTo(`lesson_${lesson.id}`, {
+                duration: 500,
                 delay: 50,
                 smooth: true,
                 offset: -70, // Scrolls to element + 50 pixels down the page

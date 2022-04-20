@@ -54,14 +54,16 @@ const DocumentViewer = withRemount(({ document, remount }) => {
     useEffect(async () => {
         await setContent(document);
         const nodes = ref.current.querySelectorAll('pre code');
-        for (let i = 0; i < nodes.length; i++) { hljs.highlightElement(nodes[i]); }
+        nodes.forEach((node) => {
+            hljs.highlightElement(node);
+        });
         setLoading(null);
     }, [document]);
 
     return (
         <>
             {loading ? <Loader {...loading} /> : <></>}
-            <div style={{ display: !loading ? 'block' : 'none' }} ref={ref} dangerouslySetInnerHTML={{ __html: content }} />
+            <div className="small" style={{ display: !loading ? 'block' : 'none' }} ref={ref} dangerouslySetInnerHTML={{ __html: content }} />
         </>
     );
 });
