@@ -248,7 +248,7 @@ const SectionItem = ({ course, section, toggler, permitted }) => {
         <Draggable draggableId={`section_${section.id}`} index={section.index}>
             {(provided) => (
                 <div ref={provided.innerRef} {...provided.draggableProps} className="pb-4">
-                    <div className={(permitted || course.sections.length > 1) ? 'card bg-light shadow-sm' : ''}>
+                    <div className="card bg-light shadow-sm">
                         {(permitted || course.sections.length > 1) &&
                             <>
                                 <div className="py-1 d-flex justify-content-between align-items-stretch">
@@ -311,7 +311,7 @@ const SectionItem = ({ course, section, toggler, permitted }) => {
                             </>
                         }
                         <Collapse in={(permitted || course.sections.length > 1) ? toggler.in(`section_${section.id}`) : true} mountOnEnter={true} unmountOnExit={true}>
-                            <div className={(permitted || course.sections.length > 1) ? 'px-3 px-sm-4 pb-3' : ''}>
+                            <div className={(permitted || course.sections.length > 1) ? 'px-3 px-sm-4 pb-3' : 'px-3 pt-3'}>
                                 <LessonList {...{ course, section, toggler, permitted }} />
                             </div>
                         </Collapse>
