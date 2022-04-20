@@ -42,6 +42,7 @@ import 'highlight.js/styles/github-dark.css';
 import { AspectRatio } from 'react-aspect-ratio';
 
 import { CreateLock } from '../../../../utils/helpers';
+import useSound from 'use-sound';
 
 const DocumentViewer = withRemount(({ document, remount }) => {
 
@@ -310,6 +311,10 @@ const LearnPage = withRemount(({ remount }) => {
 
     const mountedRef = useRef(false);
 
+    const [playCorrectSound] = useSound('/sounds/correct.mp3');
+
+    const [playIncorrectSound] = useSound('/sounds/incorrect.mp3');
+
     useEffect(() => {
         mountedRef.current = true;
 
@@ -510,6 +515,9 @@ const LearnPage = withRemount(({ remount }) => {
                             return false;
                         }
                     })();
+
+                    if (_correct) playCorrectSound()
+                    else playIncorrectSound();
 
                     let _alert = _correct ?
                         {
