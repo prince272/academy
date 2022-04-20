@@ -37,7 +37,7 @@ const ContentItem = ({ course, section, lesson, content, permitted }) => {
     return (
         <Draggable draggableId={`content_${content.id}`} index={content.index}>
             {(provided) => (
-                <div ref={provided.innerRef} {...provided.draggableProps} className="pb-3">
+                <div ref={provided.innerRef} {...provided.draggableProps} className="pb-4">
                     <div className="card border-0 shadow-sm">
                         <div className="py-1 d-flex justify-content-between align-items-stretch border-bottom-0" style={{ height: "53px" }}>
                             <div className="px-2 py-1 d-flex align-items-center hstack gap-2">
@@ -135,8 +135,8 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
     return (
         <Draggable draggableId={`lesson_${lesson.id}`} index={lesson.index}>
             {(provided) => (
-                <div ref={provided.innerRef} {...provided.draggableProps} className="pb-3">
-                    <Scroll.Element name={`lesson_${lesson.id}`} className={`card text-body bg-white ${disabled ? 'opacity-50' : 'btn-outline-primary'}`}>
+                <div ref={provided.innerRef} {...provided.draggableProps} className="pb-4">
+                    <Scroll.Element name={`lesson_${lesson.id}`} className={`card text-body bg-white ${disabled ? 'opacity-75' : 'btn-outline-primary'}`}>
                         <div className="p-0 d-flex justify-content-between align-items-stretch border-bottom-0" style={{ height: "72px" }}>
                             <div className="p-2 d-flex align-items-center hstack gap-2">
                                 <div {...provided.dragHandleProps} className={`${!(permitted) && 'd-none'}`}>
@@ -218,7 +218,7 @@ const LessonList = ({ course, section, permitted, toggler }) => {
     const client = useClient();
 
     return (
-        <div className="px-3 px-sm-4 pb-3">
+        <>
             <Droppable droppableId={`lesson_${section.id}`} direction="vertical" type="lesson">
                 {(provided) => (
                     <div ref={provided.innerRef} {...provided.droppableProps}>
@@ -236,7 +236,7 @@ const LessonList = ({ course, section, permitted, toggler }) => {
                     </Link>
                 </div>
             )}
-        </div>
+        </>
     );
 };
 
@@ -247,67 +247,71 @@ const SectionItem = ({ course, section, toggler, permitted }) => {
     return (
         <Draggable draggableId={`section_${section.id}`} index={section.index}>
             {(provided) => (
-                <div ref={provided.innerRef} {...provided.draggableProps} className="pb-3">
-                    <div className="card bg-light shadow-sm">
-                        <div className="py-1 d-flex justify-content-between align-items-stretch">
+                <div ref={provided.innerRef} {...provided.draggableProps} className="pb-4">
+                    <div className={(permitted || course.sections.length > 1) ? 'card bg-light shadow-sm' : ''}>
+                        {(permitted || course.sections.length > 1) &&
+                            <>
+                                <div className="py-1 d-flex justify-content-between align-items-stretch">
 
-                            <div className="p-2 d-flex align-items-center hstack gap-2">
+                                    <div className="p-2 d-flex align-items-center hstack gap-2">
 
-                                <div {...provided.dragHandleProps} className={`${!(permitted) && 'd-none'}`}>
-                                    <div className="btn btn-outline-secondary btn-sm btn-icon btn-no-focus border-0">
-                                        <span className="svg-icon svg-icon-xs d-inline-block" ><BsGripVertical /></span>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <div className="d-flex align-items-center flex-grow-1 cursor-default" onClick={() => toggler.toggle(`section_${section.id}`)}>
-                                <div className="flex-grow-1">
-                                    <ResponsiveEllipsis className="overflow-hidden"
-                                        text={section.title || ''}
-                                        maxLine="1"
-                                        ellipsis="..."
-                                        trimRight
-                                        basedOn="letters"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="p-2 d-flex align-items-center hstack gap-2">
-                                {section.status == 'started' && <div className="badge bg-primary">Started</div>}
-                                {section.status == 'completed' && <div className="badge bg-success">Completed</div>}
-                                {section.status == 'locked' && <div className="badge bg-secondary text-dark">Locked</div>}
-                                {(permitted) && (
-                                    <div>
-                                        <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Options</Tooltip>}>
-                                            {({ ...triggerHandler }) => (
-                                                <Dropdown>
-                                                    <Dropdown.Toggle {...triggerHandler} variant="outline-secondary" size="sm" bsPrefix=" " className="btn-icon btn-no-focus border-0">
-                                                        <span className="svg-icon svg-icon-xs d-inline-block" ><BsThreeDots /></span>
-                                                    </Dropdown.Toggle>
-
-                                                    <Dropdown.Menu style={{ margin: 0 }}>
-                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
-                                                        <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
-                                                    </Dropdown.Menu>
-                                                </Dropdown>
-                                            )}
-                                        </OverlayTrigger>
-                                    </div>
-                                )}
-                                <div>
-                                    <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>{toggler.in(`section_${section.id}`) ? 'Collapse' : 'Expand'} </Tooltip>}>
-                                        <div className="btn btn-outline-secondary btn-sm btn-icon btn-no-focus border-0" onClick={() => toggler.toggle(`section_${section.id}`)}>
-                                            <span className="svg-icon svg-icon-xs d-inline-block" >
-                                                {toggler.in(`section_${section.id}`) ? <BsChevronDown /> : <BsChevronRight />}
-                                            </span>
+                                        <div {...provided.dragHandleProps} className={`${!(permitted) && 'd-none'}`}>
+                                            <div className="btn btn-outline-secondary btn-sm btn-icon btn-no-focus border-0">
+                                                <span className="svg-icon svg-icon-xs d-inline-block" ><BsGripVertical /></span>
+                                            </div>
                                         </div>
-                                    </OverlayTrigger>
+
+                                    </div>
+
+                                    <div className="d-flex align-items-center flex-grow-1 cursor-default" onClick={() => toggler.toggle(`section_${section.id}`)}>
+                                        <div className="flex-grow-1">
+                                            <ResponsiveEllipsis className="overflow-hidden"
+                                                text={section.title || ''}
+                                                maxLine="1"
+                                                ellipsis="..."
+                                                trimRight
+                                                basedOn="letters"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="p-2 d-flex align-items-center hstack gap-2">
+                                        {section.status == 'started' && <div className="badge bg-primary">Started</div>}
+                                        {section.status == 'completed' && <div className="badge bg-success">Completed</div>}
+                                        {section.status == 'locked' && <div className="badge bg-secondary text-dark">Locked</div>}
+                                        {(permitted) && (
+                                            <div>
+                                                <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Options</Tooltip>}>
+                                                    {({ ...triggerHandler }) => (
+                                                        <Dropdown>
+                                                            <Dropdown.Toggle {...triggerHandler} variant="outline-secondary" size="sm" bsPrefix=" " className="btn-icon btn-no-focus border-0">
+                                                                <span className="svg-icon svg-icon-xs d-inline-block" ><BsThreeDots /></span>
+                                                            </Dropdown.Toggle>
+
+                                                            <Dropdown.Menu style={{ margin: 0 }}>
+                                                                <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/edit`} passHref><Dropdown.Item>Edit</Dropdown.Item></Link>
+                                                                <Link href={`${ModalPathPrefix}/courses/${courseId}/sections/${section.id}/delete`} passHref><Dropdown.Item>Delete</Dropdown.Item></Link>
+                                                            </Dropdown.Menu>
+                                                        </Dropdown>
+                                                    )}
+                                                </OverlayTrigger>
+                                            </div>
+                                        )}
+                                        <div>
+                                            <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>{toggler.in(`section_${section.id}`) ? 'Collapse' : 'Expand'} </Tooltip>}>
+                                                <div className="btn btn-outline-secondary btn-sm btn-icon btn-no-focus border-0" onClick={() => toggler.toggle(`section_${section.id}`)}>
+                                                    <span className="svg-icon svg-icon-xs d-inline-block" >
+                                                        {toggler.in(`section_${section.id}`) ? <BsChevronDown /> : <BsChevronRight />}
+                                                    </span>
+                                                </div>
+                                            </OverlayTrigger>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <Collapse in={toggler.in(`section_${section.id}`)} mountOnEnter={true} unmountOnExit={true}>
-                            <div>
+                            </>
+                        }
+                        <Collapse in={(permitted || course.sections.length > 1) ? toggler.in(`section_${section.id}`) : true} mountOnEnter={true} unmountOnExit={true}>
+                            <div className={(permitted || course.sections.length > 1) ? 'px-3 px-sm-4 pb-3' : ''}>
                                 <LessonList {...{ course, section, toggler, permitted }} />
                             </div>
                         </Collapse>
@@ -546,7 +550,7 @@ const CoursePage = withRemount(({ remount }) => {
     return (
         <>
             <NextSeo title="Courses" />
-            <div className="bg-dark position-absolute w-100" style={{ height: "350px" }}></div>
+            <div className="bg-dark position-absolute w-100" style={{ height: "256px" }}></div>
             <div className="container position-relative zi-1 h-100">
                 <div className="row justify-content-center h-100">
                     <div className="col-12 col-md-9 align-self-start">
