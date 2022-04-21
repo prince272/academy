@@ -140,18 +140,18 @@ const ContentEditModal = withRemount((props) => {
 
 
     const removePoweredBy = function (str) {
-        if (str != null) {
-            // Otherwise, fallback to old-school method
-            var dom = document.getElementById(componentId + '_RAW_HTML') || document.createElement("div");
-            dom.id = componentId + '_RAW_HTML';
-            dom.innerHTML = str;
+        // if (str != null) {
+        //     // Otherwise, fallback to old-school method
+        //     var dom = document.getElementById(componentId + '_RAW_HTML') || document.createElement("div");
+        //     dom.id = componentId + '_RAW_HTML';
+        //     dom.innerHTML = str;
 
-            if (dom.lastElementChild && dom.lastElementChild.tagName.toLocaleLowerCase() == 'p') {
-                dom.removeChild(dom.lastElementChild);
-            }
-            return dom.innerHTML;
-        }
-        else return str;
+        //     if (dom.lastElementChild && dom.lastElementChild.tagName.toLocaleLowerCase() == 'p') {
+        //         dom.removeChild(dom.lastElementChild);
+        //     }
+        //     return dom.innerHTML;
+        // }
+         return str;
     };
 
     return (
