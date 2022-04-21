@@ -146,7 +146,7 @@ const ContentEditModal = withRemount((props) => {
             dom.id = componentId + '_RAW_HTML';
             dom.innerHTML = str;
 
-            if (dom.lastElementChild && dom.lastElementChild.tagName == 'p') {
+            if (dom.lastElementChild && dom.lastElementChild.tagName.toLocaleLowerCase() == 'p') {
                 dom.removeChild(dom.lastElementChild);
             }
             return dom.innerHTML;
