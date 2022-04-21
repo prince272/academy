@@ -1,5 +1,8 @@
 ﻿using Ganss.XSS;
+using HtmlAgilityPack;
 using System;
+using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Academy.Server.Utilities
@@ -8,24 +11,43 @@ namespace Academy.Server.Utilities
     {
         public static string StripHtml(string html)
         {
-            const string tagWhiteSpace = @"(>|$)(\W|\n|\r)+<";//matches one or more (white space or line breaks) between '>' and '<'
-            const string stripFormatting = @"<[^>]*(>|$)";//match any character between '<' and '>', even when end tag is missing
-            const string lineBreak = @"<(br|BR)\s{0,1}\/{0,1}>";//matches: <br>,<br/>,<br />,<BR>,<BR/>,<BR />
-            var lineBreakRegex = new Regex(lineBreak, RegexOptions.Multiline);
-            var stripFormattingRegex = new Regex(stripFormatting, RegexOptions.Multiline);
-            var tagWhiteSpaceRegex = new Regex(tagWhiteSpace, RegexOptions.Multiline);
+            var doc = new HtmlAgilityPack.HtmlDocument();
+            doc.LoadHtml(html);
 
-            var text = html;
-            //Decode html specific characters
-            text = System.Net.WebUtility.HtmlDecode(text);
-            //Remove tag whitespace/line breaks
-            text = tagWhiteSpaceRegex.Replace(text, "><");
-            //Replace <br /> with line breaks
-            text = lineBreakRegex.Replace(text, Environment.NewLine);
-            //Strip formatting
-            text = stripFormattingRegex.Replace(text, string.Empty);
+            if (doc.DocumentNode == null || doc.DocumentNode.ChildNodes == null)
+            {
+                return WebUtility.HtmlDecode(html);
+            }
 
-            return text.Trim();
+            var sb = new StringBuilder();
+            var i = 0;
+
+            foreach (var node in doc.DocumentNode.ChildNodes)
+            {
+                var text = node.InnerText.SafeTrim();
+
+                if (!string.IsNullOrEmpty(text))
+                {
+                    sb.Append(text);
+
+                    if (i < doc.DocumentNode.ChildNodes.Count - 1)
+                    {
+                        sb.Append(Environment.NewLine);
+                    }
+                }
+
+                i++;
+            }
+
+            return WebUtility.HtmlDecode(sb.ToString());
+        }
+
+        public static string SafeTrim(this string str)
+        {
+            if (str == null)
+                return null;
+
+            return str.Trim();
         }
 
         public static string SanitizeHtml(string html)
@@ -68,7 +90,7 @@ namespace Academy.Server.Utilities
             }))();
 
             // Slow = 100 wpm, Average = 130 wpm, Fast = 160 wpm. 
-            var wordsPerMinute = 100;
+            var wordsPerMinute = 70;
             var wordsTotalSeconds = wordCount / (wordsPerMinute / 60);
             var wordsTotalTicks = (long)Math.Round(wordsTotalSeconds * Math.Pow(10, 9) / 100);
             return wordsTotalTicks;

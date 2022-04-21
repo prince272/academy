@@ -53,7 +53,7 @@ const ContentItem = ({ course, section, lesson, content, permitted }) => {
                             <div className="d-flex align-items-center flex-grow-1 cursor-default">
                                 <div className="flex-grow-1">
                                     <ResponsiveEllipsis className="overflow-hidden"
-                                        text={`${content.index + 1}. ${stripHtml(content.summary)}`}
+                                        text={`${content.index + 1}. ${content.summary}`}
                                         maxLine="1"
                                         ellipsis="..."
                                         trimRight
@@ -66,8 +66,8 @@ const ContentItem = ({ course, section, lesson, content, permitted }) => {
                                     <>
                                         {content.status == 'completed' && (
                                             <div>
-                                                <div className={`text-${(content.correct ? 'success' : 'danger')} d-flex justify-content-center align-items-center`} style={{ height: "32px", width: "32px" }}>
-                                                    <span className="svg-icon svg-icon-sm d-inline-block" >{content.correct ? <BsCheck2 /> : <BsX />}</span>
+                                                <div className={`text-${(content.type == 'explanation' || content.correct ? 'success' : 'danger')} d-flex justify-content-center align-items-center`} style={{ height: "32px", width: "32px" }}>
+                                                    <span className="svg-icon svg-icon-sm d-inline-block" >{content.type == 'explanation' || content.correct ? <BsCheck2 /> : <BsX />}</span>
                                                 </div>
                                             </div>
                                         )}
@@ -339,7 +339,7 @@ const SectionList = ({ course, setCourse, toggler, permitted }) => {
         if (lesson != null) {
             Scroll.scroller.scrollTo(`lesson_${lesson.id}`, {
                 duration: 500,
-                delay: 50,
+                delay: 0,
                 smooth: true,
                 offset: -70, // Scrolls to element + 50 pixels down the page
             });

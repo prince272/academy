@@ -1092,6 +1092,9 @@ namespace Academy.Server.Controllers
                                 else return false;
                             }))() : null;
                         }
+                        else if (content.Type == ContentType.Explanation)
+                        {
+                        }
 
                         contentModel.Status = progress.Status;
                         return contentModel;
