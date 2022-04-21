@@ -96,6 +96,12 @@ const ContentEditModal = withRemount((props) => {
 
             setSubmitting(true);
 
+            inputs = {
+                ...inputs,
+                explanation: removePoweredBy(inputs.explanation),
+                question: removePoweredBy(inputs.explanation),
+            };
+
             let result = await ({
                 'add': () => client.post(`/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/contents`, inputs),
                 'edit': () => client.put(`/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/contents/${contentId}`, inputs),
@@ -131,6 +137,22 @@ const ContentEditModal = withRemount((props) => {
     }, [action]);
 
     if (loading) return (<Loader {...loading} />);
+
+
+    const removePoweredBy = function (str) {
+        if (str != null) {
+            // Otherwise, fallback to old-school method
+            var dom = document.getElementById(componentId + '_RAW_HTML') || document.createElement("div");
+            dom.id = componentId + '_RAW_HTML';
+            dom.innerHTML = str;
+
+            if (dom.lastElementChild && dom.lastElementChild.tagName == 'p') {
+                dom.removeChild(dom.lastElementChild);
+            }
+            return dom.innerHTML;
+        }
+        else return str;
+    };
 
     return (
         <>
@@ -177,7 +199,10 @@ const ContentEditModal = withRemount((props) => {
                             <>
                                 <div className="col-12">
                                     <label className="form-label">Question</label>
-                                    <TextareaAutosize {...form.register("question")} className={`form-control ${formState.errors.question ? 'is-invalid' : ''}`} rows={1} />
+                                    <FormController name="question" control={form.control}
+                                        render={({ field }) => {
+                                            return (<DocumentEditor value={field.value} onChange={(value) => field.onChange(value)} />);
+                                        }} />
                                     <div className="invalid-feedback">{formState.errors.question?.message}</div>
                                 </div>
                                 <div className="col-6">
@@ -200,17 +225,15 @@ const ContentEditModal = withRemount((props) => {
                                     <div className="invalid-feedback">{formState.errors.answerType?.message}</div>
                                 </div>
                                 <div className="col-6">
-                                    {(form.watch('answerType') == 'selectSingle' || form.watch('answerType') == 'selectMultiple' || form.watch('answerType') == 'reorder') && (
-                                        <div className="d-flex align-items-end justify-content-end w-100 h-100">
-                                            <button type="button" className="btn btn-primary" onClick={() => {
-                                                answersController.prepend({
-                                                    id: _.uniqueId(),
-                                                    text: '',
-                                                    checked: false,
-                                                });
-                                            }}>Add answer</button>
-                                        </div>
-                                    )}
+                                    <div className="d-flex align-items-end justify-content-end w-100 h-100">
+                                        <button type="button" className="btn btn-primary" onClick={() => {
+                                            answersController.prepend({
+                                                id: _.uniqueId(),
+                                                text: '',
+                                                checked: false,
+                                            });
+                                        }}>Add answer</button>
+                                    </div>
                                 </div>
                                 {(form.watch('answerType') == 'selectSingle' || form.watch('answerType') == 'selectMultiple' || form.watch('answerType') == 'reorder') && (
                                     <div className="col-12">

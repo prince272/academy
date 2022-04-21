@@ -112,7 +112,7 @@ const ExplanationView = (props) => {
                         return (
                             <Tab.Pane key={tab.key} eventKey={tab.key} className="col-12 col-md-6 col-lg-5 text-break">
                                 <div className="h4 mt-3 mb-2">{lesson.title}</div>
-                                <DocumentViewer document={content.explanation} />
+                                <div><DocumentViewer document={content.explanation} /></div>
                             </Tab.Pane>
                         );
                     }
@@ -141,7 +141,7 @@ const ExplanationView = (props) => {
 };
 ExplanationView.displayName = 'ExplanationView';
 
-const ContentView = (props) => {
+const QuestionView = (props) => {
     const client = useClient();
     const dialog = useDialog();
     const { lesson, content, setCurrentView, moveForward, submitting } = props;
@@ -214,7 +214,7 @@ const ContentView = (props) => {
         <div className="row justify-content-center g-0">
             <div className="col-12 col-md-7 col-lg-6 col-xl-5">
                 <div className="h4 mt-3 mb-2">{lesson.title}</div>
-                <div className="w-100 text-break my-3">{content.question}</div>
+                <div><DocumentViewer document={content.question} /></div>
                 <DragDropContext onDragEnd={handleReorder}>
                     <Droppable droppableId={`content`} direction="vertical" type="lesson">
                         {(provided) => (
@@ -283,7 +283,7 @@ const ContentView = (props) => {
         </div>
     );
 };
-ContentView.displayName = 'ContentView';
+QuestionView.displayName = 'QuestionView';
 
 const LearnPage = withRemount(({ remount }) => {
     const router = useRouter();
@@ -637,7 +637,7 @@ const LearnPage = withRemount(({ remount }) => {
 
             <div key={currentView.id} className="py-2 px-3 flex-grow-1" style={{ overflowY: "auto" }}>
                 {currentView.type == 'explanation' && <ExplanationView key={currentView.id} {...{ course, lesson: currentView.lesson, content: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
-                {currentView.type == 'question' && <ContentView key={currentView.id} {...{ course, lesson: currentView.lesson, content: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
+                {currentView.type == 'question' && <QuestionView key={currentView.id} {...{ course, lesson: currentView.lesson, content: currentView, setCurrentView, moveBackward, moveForward, submitting }} />}
             </div>
 
             <div className="p-3">

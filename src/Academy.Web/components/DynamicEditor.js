@@ -20,13 +20,13 @@ function DocumentEditor({ value, onChange }) {
               buttons: ["alignLeft", "alignCenter", "formatOLSimple", "alignRight", "alignJustify", "formatOL", "formatUL", "paragraphFormat", "paragraphStyle", "lineHeight", "outdent", "indent", "quote"]
             },
             moreRich: {
-              buttons: ["trackChanges", "insertLink", "insertImage", "insertVideo", "insertTable", "emoticons", "fontAwesome", "specialCharacters", "embedly", "insertHR"],
-              buttonsVisible: 2
+              buttons: ["trackChanges", "insertLink", "insertImage", "insertVideo", "insertTable", "insertHR"],
+              buttonsVisible: 0
             },
             moreMisc: {
-              buttons: ["undo", "redo", "fullscreen", "spellChecker", "selectAll", "html", "help"],
+              buttons: ["undo", "redo", "fullscreen", "spellChecker", "html", "help"],
               align: "right",
-              buttonsVisible: 2
+              buttonsVisible: 3
             },
             trackChanges: {
               buttons: ["showChanges", "applyAll", "removeAll", "applyLast", "removeLast"],

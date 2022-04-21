@@ -4,6 +4,7 @@ using System;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace Academy.Server.Utilities
 {
@@ -24,7 +25,7 @@ namespace Academy.Server.Utilities
 
             foreach (var node in doc.DocumentNode.ChildNodes)
             {
-                var text = node.InnerText.SafeTrim();
+                var text = node.InnerText?.Trim();
 
                 if (!string.IsNullOrEmpty(text))
                 {
@@ -42,12 +43,14 @@ namespace Academy.Server.Utilities
             return WebUtility.HtmlDecode(sb.ToString());
         }
 
-        public static string SafeTrim(this string str)
+        public static string WrapHtml(string text)
         {
-            if (str == null)
-                return null;
-
-            return str.Trim();
+            text = HttpUtility.HtmlEncode(text);
+            text = text.Replace("\r\n", "\r");
+            text = text.Replace("\n", "\r");
+            text = text.Replace("\r", "<br>\r\n");
+            text = text.Replace("  ", " &nbsp;");
+            return $"<p>{text.Trim()}</p>";
         }
 
         public static string SanitizeHtml(string html)
