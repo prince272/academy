@@ -5,33 +5,55 @@ import "froala-editor/js/plugins.pkgd.min.js";
 import FroalaEditor from "react-froala-wysiwyg";
 function DocumentEditor({ value, onChange }) {
 
-    return (
-        <div>
-            <FroalaEditor
-                model={value || ''}
-                tag="textarea"
-                onModelChange={onChange} config={{
-                    events: {
-                        "image.beforeUpload": function (files) {
-                            var editor = this;
-                            if (files.length) {
-                                // Create a File Reader.
-                                var reader = new FileReader();
-                                // Set the reader to insert images when they are loaded.
-                                reader.onload = function (e) {
-                                    var result = e.target.result;
-                                    editor.image.insert(result, null, null, editor.image.get());
-                                };
-                                // Read image as base64.
-                                reader.readAsDataURL(files[0]);
-                            }
-                            editor.popups.hideAll();
-                            // Stop default upload chain.
-                            return false;
-                        }
-                    }
-                }} />
-        </div>
-    );
+  return (
+    <div>
+      <FroalaEditor
+        model={value || ''}
+        tag="textarea"
+        onModelChange={onChange}
+        config={{
+          toolbarButtons: {
+            moreText: {
+              buttons: ["bold", "italic", "underline", "strikeThrough", "subscript", "superscript", "fontFamily", "fontSize", "textColor", "backgroundColor", "inlineClass", "inlineStyle", "clearFormatting"]
+            },
+            moreParagraph: {
+              buttons: ["alignLeft", "alignCenter", "formatOLSimple", "alignRight", "alignJustify", "formatOL", "formatUL", "paragraphFormat", "paragraphStyle", "lineHeight", "outdent", "indent", "quote"]
+            },
+            moreRich: {
+              buttons: ["trackChanges", "insertLink", "insertImage", "insertVideo", "insertTable", "emoticons", "fontAwesome", "specialCharacters", "embedly", "insertHR"],
+              buttonsVisible: 2
+            },
+            moreMisc: {
+              buttons: ["undo", "redo", "fullscreen", "spellChecker", "selectAll", "html", "help"],
+              align: "right",
+              buttonsVisible: 2
+            },
+            trackChanges: {
+              buttons: ["showChanges", "applyAll", "removeAll", "applyLast", "removeLast"],
+              buttonsVisible: 0
+            }
+          },
+          events: {
+            "image.beforeUpload": function (files) {
+              var editor = this;
+              if (files.length) {
+                // Create a File Reader.
+                var reader = new FileReader();
+                // Set the reader to insert images when they are loaded.
+                reader.onload = function (e) {
+                  var result = e.target.result;
+                  editor.image.insert(result, null, null, editor.image.get());
+                };
+                // Read image as base64.
+                reader.readAsDataURL(files[0]);
+              }
+              editor.popups.hideAll();
+              // Stop default upload chain.
+              return false;
+            }
+          }
+        }} />
+    </div>
+  );
 }
 export default DocumentEditor;
