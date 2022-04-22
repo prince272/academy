@@ -259,7 +259,7 @@ const QuestionView = (props) => {
                             moveForward(true);
                         }}>
                             <div className="position-relative d-flex align-items-center justify-content-center">
-                                <div className={`${submitting ? 'invisible' : ''}`}>Seek answer <span className="svg-icon svg-icon-xs d-inline-block me-1"><SvgBitCube /></span>{appSettings.course.bitRules.seekAnswer.value}</div>
+                                <div className={`${submitting ? 'invisible' : ''}`}>Show answer <span className="svg-icon svg-icon-xs d-inline-block me-1"><SvgBitCube /></span>{appSettings.course.bitRules.seekAnswer.value}</div>
                                 {submitting && <div className="position-absolute top-50 start-50 translate-middle"><div className="spinner-border spinner-border-sm"></div></div>}
                             </div>
                         </button>
