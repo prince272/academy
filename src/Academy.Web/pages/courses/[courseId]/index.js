@@ -10,7 +10,7 @@ import ResponsiveEllipsis from 'react-lines-ellipsis/lib/loose';
 import { BsGripVertical, BsCardImage, BsChevronDown, BsChevronRight, BsPersonFill, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsQuestionCircle, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill, BsCart, BsCart2, BsBasket2, BsCart4, BsCart3 } from 'react-icons/bs';
 import { Collapse, Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import Link from 'next/link';
-import { useClient } from '../../../utils/client';
+import { createHttpClient, useClient } from '../../../utils/client';
 import { useRouterQuery } from 'next-router-query';
 import { ModalPathPrefix, useModal } from '../../../modals';
 
@@ -454,12 +454,12 @@ const SectionList = ({ course, setCourse, toggler, permitted }) => {
     )
 }
 
-const CoursePage = withRemount(({ remount }) => {
+const CoursePage = withRemount(({ remount, ...props }) => {
     const modal = useModal();
     const router = useRouter()
     const { courseId, certificate } = useRouterQuery();
-    let [course, setCourse] = withAsync(useState(null));
-    const [loading, setLoading] = useState({});
+    let [course, setCourse] = withAsync(useState(props.course));
+    const [loading, setLoading] = useState(props.loading);
 
     const appSettings = useAppSettings();
     const client = useClient();
@@ -485,23 +485,23 @@ const CoursePage = withRemount(({ remount }) => {
 
     const load = async () => {
 
-        setLoading({});
+        if (loading) {
+            let result = await client.get(`/courses/${courseId}`);
 
-        let result = await client.get(`/courses/${courseId}`);
+            if (result.error) {
+                const error = result.error;
+                setLoading({ ...error, message: 'Unable to load course.', remount });
+                return;
+            }
 
-        if (result.error) {
-            const error = result.error;
-            setLoading({ ...error, message: 'Unable to load course.', remount });
-            return;
+            course = await setCourse(result.data);
+
+            if (certificate && course.certificateTemplate && course.status == 'completed') {
+                dialog.open({ course }, CertificateViewDialog);
+            }
+
+            setLoading(null);
         }
-
-        course = await setCourse(result.data);
-
-        if (certificate && course.certificateTemplate && course.status == 'completed') {
-            dialog.open({ course }, CertificateViewDialog);
-        }
-
-        setLoading(null);
     };
 
     useEffect(() => {
@@ -550,7 +550,15 @@ const CoursePage = withRemount(({ remount }) => {
 
     return (
         <>
-            <NextSeo title="Courses" />
+            <NextSeo
+                title={course.title}
+                description={course.description}
+                openGraph={{
+                    title: course.title,
+                    description: course.description,
+                    images: course.image ? [{ url: course.image.url }] : undefined,
+                }}
+            />
             <div className="bg-dark position-absolute w-100" style={{ height: "256px" }}></div>
             <div className="container position-relative zi-1 h-100">
                 <div className="row justify-content-center h-100">
@@ -653,6 +661,18 @@ CoursePage.getPageSettings = () => {
     return ({
         showFooter: false
     });
+}
+
+export async function getServerSideProps(context) {
+    const httpClient = createHttpClient({ throwIfError: false });
+    const result = (await httpClient.get(`/courses/${context.params.courseId}`));
+
+    return {
+        props: {
+            course: !result.error ? result.data : null,
+            loading: result.error || null
+        }, // will be passed to the page component as props
+    }
 }
 
 export default CoursePage;
