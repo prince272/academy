@@ -99,7 +99,7 @@ const ContentEditModal = withRemount((props) => {
             inputs = {
                 ...inputs,
                 explanation: removePoweredBy(inputs.explanation),
-                question: removePoweredBy(inputs.explanation),
+                question: removePoweredBy(inputs.question),
             };
 
             let result = await ({
