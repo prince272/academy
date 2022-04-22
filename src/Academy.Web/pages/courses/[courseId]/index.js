@@ -484,23 +484,21 @@ const CoursePage = withRemount(({ remount, ...props }) => {
     };
 
     const load = async () => {
+        setLoading({});
+        let result = await client.get(`/courses/${courseId}`);
 
-        if (loading) {
-            let result = await client.get(`/courses/${courseId}`);
+        if (result.error) {
+            const error = result.error;
+            setLoading({ ...error, message: 'Unable to load course.', remount });
+            return;
+        }
 
-            if (result.error) {
-                const error = result.error;
-                setLoading({ ...error, message: 'Unable to load course.', remount });
-                return;
-            }
+        course = await setCourse(result.data);
 
-            course = await setCourse(result.data);
+        setLoading(null);
 
-            if (certificate && course.certificateTemplate && course.status == 'completed') {
-                dialog.open({ course }, CertificateViewDialog);
-            }
-
-            setLoading(null);
+        if (certificate && course.certificateTemplate && course.status == 'completed') {
+            dialog.open({ course }, CertificateViewDialog);
         }
     };
 
