@@ -333,8 +333,7 @@ const SectionList = ({ course, setCourse, toggler, permitted }) => {
             value: section.status == 'started'
         })));
 
-        const lesson = course.sections.flatMap(section => section.lessons).slice(1).find(lesson => lesson.status == 'started') ||
-            course.sections.flatMap(section => section.lessons).slice(-1)[0];
+        const lesson = course.sections.flatMap(section => section.lessons).slice(1).find(lesson => lesson.status == 'started');
 
         if (lesson != null) {
             Scroll.scroller.scrollTo(`lesson_${lesson.id}`, {
