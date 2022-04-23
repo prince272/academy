@@ -483,18 +483,20 @@ const CoursePage = withRemount(({ remount, ...props }) => {
     };
 
     const load = async () => {
-        setLoading({});
-        let result = await client.get(`/courses/${courseId}`);
+        if (loading) {
 
-        if (result.error) {
-            const error = result.error;
-            setLoading({ ...error, message: 'Unable to load course.', remount });
-            return;
+            let result = await client.get(`/courses/${courseId}`);
+
+            if (result.error) {
+                const error = result.error;
+                setLoading({ ...error, message: 'Unable to load course.', remount });
+                return;
+            }
+
+            course = await setCourse(result.data);
+
+            setLoading(null);
         }
-
-        course = await setCourse(result.data);
-
-        setLoading(null);
 
         if (certificate && course.certificateTemplate && course.status == 'completed') {
             dialog.open({ course }, CertificateViewDialog);
@@ -660,9 +662,9 @@ CoursePage.getPageSettings = () => {
     });
 }
 
-export async function getServerSideProps(context) {
-    const httpClient = createHttpClient({ throwIfError: false }, context);
-    const result = (await httpClient.get(`/courses/${context.params.courseId}`));
+export async function getServerSideProps(ctx) {
+    const httpClient = createHttpClient({ throwIfError: false }, ctx?.req);
+    const result = (await httpClient.get(`/courses/${ctx.params.courseId}`));
 
     return {
         props: {

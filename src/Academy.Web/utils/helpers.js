@@ -1,5 +1,6 @@
 import DOMPurify from 'dompurify';
 import htmlToText from 'html-to-text';
+import Cookies from 'js-cookie';
 
 // What is the JavaScript version of sleep()?
 // source: https://stackoverflow.com/questions/951021/what-is-the-javascript-version-of-sleep
@@ -155,4 +156,24 @@ export function downloadFromUrl(dataUrl, filename) {
 
     // Cleanup the DOM
     document.body.removeChild(link);
+}
+
+export const getCookie = (cookiename, cookiestring) => {
+    var name = cookiename + '=';
+    var decodedCookie = decodeURIComponent(cookiestring);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) === ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return '';
+};
+
+export const setCookie = (cookiename, cookievalue) => {
+    Cookies.set(cookiename, cookievalue, { expires: 365 });
 }

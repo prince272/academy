@@ -373,7 +373,6 @@ export default function MyApp({ Component, pageProps, appSettings, error }) {
         description="Academy of Ours is an e-learning platform that helps you to learn a variety of courses and concepts through interactive checkpoints, lessons, and videos."
         openGraph={{
           type: 'website',
-          locale: 'en_IE',
           url: process.env.NEXT_PUBLIC_CLIENT_URL,
           site_name: 'Academy Of Ours',
           images: [
@@ -424,14 +423,14 @@ MyApp.getInitialProps = async (appContext) => {
   // calls page's `getInitialProps` and fills `appProps.pageProps`
   const appProps = await App.getInitialProps(appContext);
 
-  const httpClient = createHttpClient({ throwIfError: false });
-  const httpResult = (await httpClient.get('/', { cache: true }));
+  const httpClient = createHttpClient({ throwIfError: false }, appContext.ctx?.req);
+  const result = (await httpClient.get('/', { cache: true }));
 
-  if (httpResult.error) {
-    const error = httpResult.error;
+  if (result.error) {
+    const error = result.error;
     return { ...appProps, error };
   }
 
-  const appSettings = httpResult.data;
+  const appSettings = result.data;
   return { ...appProps, appSettings };
 };
