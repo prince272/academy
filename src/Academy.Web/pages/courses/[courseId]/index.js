@@ -333,7 +333,7 @@ const SectionList = ({ course, setCourse, toggler, permitted }) => {
             value: section.status == 'started'
         })));
 
-        const lesson = course.sections.flatMap(section => section.lessons).find(lesson => lesson.status == 'started') ||
+        const lesson = course.sections.flatMap(section => section.lessons).slice(1).find(lesson => lesson.status == 'started') ||
             course.sections.flatMap(section => section.lessons).slice(-1)[0];
 
         if (lesson != null) {
@@ -652,7 +652,7 @@ const CoursePage = withRemount(({ remount, ...props }) => {
                 )
             }
         </>
-    )
+    );
 });
 
 CoursePage.getPageSettings = () => {
@@ -662,7 +662,7 @@ CoursePage.getPageSettings = () => {
 }
 
 export async function getServerSideProps(context) {
-    const httpClient = createHttpClient({ throwIfError: false });
+    const httpClient = createHttpClient({ throwIfError: false }, context);
     const result = (await httpClient.get(`/courses/${context.params.courseId}`));
 
     return {
