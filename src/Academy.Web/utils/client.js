@@ -67,7 +67,7 @@ const createHttpClient = (defaultConfig, req) => {
                                 status: 503,
                                 details: {},
                                 reason: ex.request ? 'ClientSide Error' : 'Unknown Error',
-                                ex: ex
+                                config: requestConfig
                             }
                         };
                     }

@@ -2,7 +2,7 @@ import { Spinner } from "react-bootstrap";
 import { BsArrowLeft, BsArrowRepeat, BsChevronLeft } from "react-icons/bs";
 import { SvgPageNotFoundIllus, SvgOnlinePaymentsIllus, SvgServerDownIllus } from '../resources/images/illustrations';
 
-const Loader = ({ status, message, remount, fallback, ex, ...props }) => {
+const Loader = ({ status, message, remount, fallback, config, ...props }) => {
 
     let render = <></>;
 
@@ -16,7 +16,7 @@ const Loader = ({ status, message, remount, fallback, ex, ...props }) => {
 
                 </div>
                 {message && <div className="mb-3">{message}</div>}
-                <div style={{ display: "none" }}>{JSON.stringify(ex)}</div>
+                <div style={{ display: "none" }}>{JSON.stringify(config)}</div>
                 {(fallback || remount) && (
                     <div className="hstack gap-3 mx-auto">
                         {fallback && <button type="button" className="btn btn-secondary btn-sm" onClick={fallback}>
