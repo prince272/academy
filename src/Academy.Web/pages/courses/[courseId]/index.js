@@ -326,25 +326,6 @@ const SectionList = ({ course, setCourse, toggler, permitted }) => {
     const courseId = course.id;
     const client = useClient();
 
-    useEffect(async () => {
-
-        await toggler.set(course.sections.map((section, index) => ({
-            id: `section_${section.id}`,
-            value: section.status == 'started'
-        })));
-
-        const lesson = course.sections.flatMap(section => section.lessons).slice(1).find(lesson => lesson.status == 'started');
-
-        if (lesson != null) {
-            Scroll.scroller.scrollTo(`lesson_${lesson.id}`, {
-                duration: 500,
-                delay: 30,
-                smooth: true,
-                offset: -70, // Scrolls to element + 50 pixels down the page
-            });
-        }
-    }, []);
-
     const handleDragEnd = (reorder) => {
         const { source, destination, type } = reorder;
 
@@ -458,7 +439,7 @@ const CoursePage = withRemount(({ remount, ...props }) => {
     const router = useRouter()
     const { courseId, certificate } = useRouterQuery();
     let [course, setCourse] = withAsync(useState(props.course));
-    const [loading, setLoading] = useState(props.loading);
+    const [loading, setLoading] = withAsync(useState(props.loading));
 
     const appSettings = useAppSettings();
     const client = useClient();
@@ -494,12 +475,27 @@ const CoursePage = withRemount(({ remount, ...props }) => {
             }
 
             course = await setCourse(result.data);
-
-            setLoading(null);
+            await setLoading(null);
         }
 
         if (certificate && course.certificateTemplate && course.status == 'completed') {
             dialog.open({ course }, CertificateViewDialog);
+        }
+        
+        await toggler.set(course.sections.map((section, index) => ({
+            id: `section_${section.id}`,
+            value: section.status == 'started'
+        })));
+
+        const lesson = course.sections.flatMap(section => section.lessons).slice(1).find(lesson => lesson.status == 'started');
+
+        if (lesson != null) {
+            Scroll.scroller.scrollTo(`lesson_${lesson.id}`, {
+                duration: 500,
+                delay: 30,
+                smooth: true,
+                offset: -70, // Scrolls to element + 50 pixels down the page
+            });
         }
     };
 

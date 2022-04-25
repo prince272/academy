@@ -37,37 +37,90 @@ import protection from '../../../../utils/protection';
 import ReactDOMServer from 'react-dom/server';
 import parse, { domToReact } from 'html-react-parser';
 
-import hljs from "highlight.js";
-import 'highlight.js/styles/github-dark.css';
 import { AspectRatio } from 'react-aspect-ratio';
 
 import { CreateLock } from '../../../../utils/helpers';
 import useSound from 'use-sound';
 
-const DocumentViewer = withRemount(({ document, remount }) => {
+import CodeMirror from '@uiw/react-codemirror';
+import { html } from '@codemirror/lang-html';
+import * as htmlEntities from 'html-entities';
+import { FaFire, FaCode } from 'react-icons/fa';
 
-    const ref = useRef();
-    const client = useClient();
-
-    const [loading, setLoading] = useState({});
-    const [content, setContent] = withAsync(useState(null));
-
-    useEffect(async () => {
-        await setContent(document);
-        const nodes = ref.current.querySelectorAll('pre code');
-        nodes.forEach((node) => {
-            hljs.highlightElement(node);
-        });
-        setLoading(null);
-    }, [document]);
+const CodeViewer = (props) => {
+    const [key, setKey] = useState('input');
+    const [{ language, script }, setInput] = useState({
+        script: props.script,
+        language: props.language
+    });
+    const [output, setOutput] = useState('');
+    const [loading, setLoading] = useState(null);
 
     return (
+        <div className="card p-2">
+            <AspectRatio ratio="1280/512">
+                <Tab.Container activeKey={key} onSelect={(k) => setKey(k)}>
+                    <Tab.Content>
+                        <Tab.Pane className="h-100" eventKey="input">
+                            <div className="h-100 position-relative">
+                                <CodeMirror className="h-100"
+                                    value={script}
+                                    height="100%"
+                                    theme='dark'
+                                    readOnly={props.readOnly}
+                                    extensions={[(() => {
+                                        if (language == 'html' || language == 'css' || language == 'js')
+                                            return html({ matchClosingTags: true, autoCloseTags: true });
+                                    })()]}
+                                    onChange={(value, viewUpdate) => {
+                                        setInput({ language, script: value });
+                                    }}
+                                />
+                                <div className="position-absolute top-0 end-0 mt-2 me-2"><div className="badge bg-secondary text-dark">{language.toUpperCase()}</div></div>
+                            </div>
+                        </Tab.Pane>
+                        <Tab.Pane className="h-100" eventKey="output">
+                            <iframe width="100%" height="100%" frameborder="0" srcDoc={output}></iframe>
+                        </Tab.Pane>
+                    </Tab.Content>
+                    <div class="position-absolute bottom-0 end-0 mb-2 me-2">
+                        <button onClick={async () => {
+                            setLoading({});
+                            if (key == 'input') {
+                                setOutput(script);
+                            }
+                            setKey(_.xor(['input', 'output'], [key])[0]);
+                            setLoading(null);
+                        }} type="button" className="btn btn-sm btn-outline-primary">
+                            {{
+                                input: <><span className="svg-icon svg-icon-xs d-inline-block"><FaCode /></span> Source</>,
+                                output: <><span className="svg-icon svg-icon-xs d-inline-block"><FaFire /></span> Preview</>
+                            }[_.xor(['input', 'output'], [key])[0]]}
+                        </button>
+                    </div>
+                </Tab.Container>
+            </AspectRatio>
+        </div>
+    );
+};
+
+const DocumentViewer = ({ document }) => {
+    return (
         <>
-            {loading ? <Loader {...loading} /> : <></>}
-            <div className="small" style={{ display: !loading ? 'block' : 'none' }} ref={ref} dangerouslySetInnerHTML={{ __html: content }} />
+            <div className="small">
+                {parse(document || '', {
+                    replace: domNode => {
+                        if (domNode.tagName == 'pre' && domNode.attribs && domNode.attribs['data-language']) {
+                            const language = domNode.attribs['data-language'];
+                            const script = htmlEntities.decode(ReactDOMServer.renderToStaticMarkup(domToReact(domNode.children)));
+                            return <CodeViewer readOnly={true} {...{ language, script }} />
+                        }
+                    }
+                })}
+            </div>
         </>
     );
-});
+};
 
 const ExplanationView = (props) => {
     const { lesson, content, setCurrentView, moveForward, submitting } = props;
@@ -222,10 +275,10 @@ const QuestionView = (props) => {
                                 {content.answers.map((answer, answerIndex) => {
                                     answer.index = answerIndex;
                                     return (
-                                        <Draggable key={answer.id} draggableId={`answer_${answer.id}`} index={answer.index}>
+                                        <Draggable key={answer.id} draggableId={`answer_${answer.id}`} index={answer.index} isDragDisabled={content.answerType != 'reorder'}>
                                             {(provided) => (
                                                 <div ref={provided.innerRef} {...provided.draggableProps}  {...provided.dragHandleProps} className="pb-3">
-                                                    <div className={`card shadow-sm bg-white text-body ${answer.checked ? `${content._submitted ? (answer.correct ? 'border-success bg-soft-success' : 'border-danger bg-soft-danger') : 'border-primary bg-soft-primary'}` : `btn-outline-primary`}`}
+                                                    <div className={`card shadow-sm bg-white text-body ${answer.checked ? `${content._submitted ? (answer.correct ? 'border-success bg-soft-success' : 'border-danger bg-soft-danger') : 'border-primary bg-soft-primary'}` : content.answerType == 'reorder' ? '' : `btn-outline-primary`}`}
                                                         style={{ borderLeftWidth: "5px", borderColor: "transparent" }} onClick={() => handleSelect(answer.index)}>
                                                         <div className="d-flex justify-content-between align-items-stretch border-bottom-0" style={{ minHeight: "52px" }}>
                                                             <div className="px-2 py-1 d-flex align-items-center hstack gap-2">
@@ -236,7 +289,7 @@ const QuestionView = (props) => {
 
                                                             </div>
 
-                                                            <div className="d-flex align-items-center flex-grow-1 cursor-default py-3 pe-3">
+                                                            <div className="d-flex align-items-center flex-grow-1 py-3 pe-3">
                                                                 <div className="flex-grow-1 small">
                                                                     <div>{answer.text}</div>
                                                                 </div>

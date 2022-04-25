@@ -232,8 +232,3 @@ div#__next > div {
     transform: scale(0.8);
   }
 }
-
-code {
-  font-family: Consolas, 'Courier New', monospace;
-  border-radius: 5px;
-}

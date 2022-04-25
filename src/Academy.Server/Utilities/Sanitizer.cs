@@ -57,6 +57,7 @@ namespace Academy.Server.Utilities
         {
             var sanitizer = new HtmlSanitizer();
             sanitizer.AllowedAttributes.Add("class");
+            sanitizer.AllowDataAttributes = true;
             sanitizer.AllowedSchemes.Add("data");
 
             html = sanitizer.Sanitize(html).Trim();

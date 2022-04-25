@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Oidc, { UserManager, WebStorageStateStore } from 'oidc-client-ts';
-import { AsyncLocker, getCookie, setCookie } from './helpers';
+import { AsyncLocker } from './helpers';
 import queryString from 'qs';
 import { useSessionState, withAsync } from './hooks';
 import { useEventDispatcher } from './eventDispatcher';
@@ -161,13 +161,11 @@ const useClientProvider = () => {
         const currentUser = (await httpClient.get(`/accounts/profile`, { throwIfError: true })).data.data;
         await setUser(currentUser);
         await setUserContext(context);
-        setCookie('userContext', JSON.stringify(context));
     };
 
     const unloadUserContext = async () => {
         await setUser(null);
         await setUserContext(null);
-        setCookie('userContext', null);
     };
 
     const handleUserSignedOut = async () => {
