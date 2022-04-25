@@ -107,7 +107,7 @@ const CodeViewer = (props) => {
 const DocumentViewer = ({ document }) => {
     return (
         <>
-            <div className="small">
+            <div>
                 {parse(document || '', {
                     replace: domNode => {
                         if (domNode.tagName == 'pre' && domNode.attribs && domNode.attribs['data-language']) {
