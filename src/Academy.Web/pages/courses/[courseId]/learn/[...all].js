@@ -80,10 +80,10 @@ const CodeViewer = (props) => {
                             </div>
                         </Tab.Pane>
                         <Tab.Pane className="h-100" eventKey="output">
-                            <iframe width="100%" height="100%" frameborder="0" srcDoc={output}></iframe>
+                            <iframe width="100%" height="100%" frameBorder="0" srcDoc={output}></iframe>
                         </Tab.Pane>
                     </Tab.Content>
-                    <div class="position-absolute bottom-0 end-0 mb-2 me-2">
+                    <div className="position-absolute bottom-0 end-0 mb-2 me-2">
                         <button onClick={async () => {
                             setLoading({});
                             if (key == 'input') {
