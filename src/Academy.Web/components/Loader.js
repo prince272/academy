@@ -15,7 +15,7 @@ const Loader = ({ status, message, remount, fallback, ...props }) => {
                      (<SvgServerDownIllus style={{ width: "auto", height: "160px" }} />)}
 
                 </div>
-                {message && <div className="mb-3">{message}</div>}
+                {message && <div className="mb-3">{status}: {message}</div>}
                 {(fallback || remount) && (
                     <div className="hstack gap-3 mx-auto">
                         {fallback && <button type="button" className="btn btn-secondary btn-sm" onClick={fallback}>

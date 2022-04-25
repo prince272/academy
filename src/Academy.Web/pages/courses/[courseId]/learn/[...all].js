@@ -57,13 +57,13 @@ const CodeViewer = (props) => {
     const [loading, setLoading] = useState(null);
 
     return (
-        <div className="card p-2">
+        <div className="card p-1">
             <AspectRatio ratio="1280/512">
                 <Tab.Container activeKey={key} onSelect={(k) => setKey(k)}>
                     <Tab.Content>
                         <Tab.Pane className="h-100" eventKey="input">
                             <div className="h-100 position-relative">
-                                <CodeMirror className="h-100"
+                                <CodeMirror className="h-100 small"
                                     value={script}
                                     height="100%"
                                     theme='dark'
