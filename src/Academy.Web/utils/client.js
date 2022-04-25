@@ -66,7 +66,8 @@ const createHttpClient = (defaultConfig, req) => {
                                 message: 'Oops! Something went wrong!',
                                 status: 503,
                                 details: {},
-                                reason: ex.request ? 'ClientSide Error' : 'Unknown Error'
+                                reason: ex.request ? 'ClientSide Error' : 'Unknown Error',
+                                ex: ex
                             }
                         };
                     }
