@@ -14,21 +14,15 @@ setupCache(http, { storage: buildMemoryStorage() });
 
 const createHttpClient = (defaultConfig, req) => {
 
-    const serverSide = typeof window === 'undefined';
-
     defaultConfig = Object.assign({}, {
         baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
-        headers: {
-            Cookie: req?.headers.cookie
-        },
         paramsSerializer: params => {
             return queryString.stringify(params)
         },
         withCredentials: true,
         cache: false,
+        httpsAgent: typeof window === 'undefined' ? new https.Agent({ rejectUnauthorized: false }) : undefined
     }, defaultConfig);
-
-    if (serverSide) defaultConfig.httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
     const request = async (config) => {
         config = Object.assign({}, defaultConfig, config);
@@ -66,8 +60,7 @@ const createHttpClient = (defaultConfig, req) => {
                                 message: 'Oops! Something went wrong!',
                                 status: 503,
                                 details: {},
-                                reason: ex.request ? 'ClientSide Error' : 'Unknown Error',
-                                config: requestConfig
+                                reason: ex.request ? 'ClientSide Error' : 'Unknown Error'
                             }
                         };
                     }
