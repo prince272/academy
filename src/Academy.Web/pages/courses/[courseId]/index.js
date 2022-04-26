@@ -659,7 +659,7 @@ CoursePage.getPageSettings = () => {
 }
 
 export async function getServerSideProps(ctx) {
-    const httpClient = createHttpClient({ throwIfError: false }, ctx.req);
+    const httpClient = createHttpClient({ throwIfError: false }, ctx);
     const result = (await httpClient.get(`/courses/${ctx.params.courseId}`));
 
     return {

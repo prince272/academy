@@ -423,7 +423,7 @@ MyApp.getInitialProps = async (appContext) => {
   // calls page's `getInitialProps` and fills `appProps.pageProps`
   const appProps = await App.getInitialProps(appContext);
 
-  const httpClient = createHttpClient({ throwIfError: false }, appContext.ctx?.req);
+  const httpClient = createHttpClient({ throwIfError: false }, appContext.ctx);
   const result = (await httpClient.get('/', { cache: true }));
 
   if (result.error) {

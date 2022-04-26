@@ -12,13 +12,14 @@ import { setupCache, buildMemoryStorage } from 'axios-cache-interceptor';
 const http = axios.create();
 setupCache(http, { storage: buildMemoryStorage() });
 
-const createHttpClient = (defaultConfig, req) => {
+const createHttpClient = (defaultConfig, ctx) => {
 
     defaultConfig = Object.assign({}, {
         baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
         paramsSerializer: params => {
             return queryString.stringify(params)
         },
+        headers: ctx?.req?.headers?.cookie ? { cookie: ctx.req.headers.cookie } : undefined,
         withCredentials: true,
         cache: false,
         httpsAgent: typeof window === 'undefined' ? new https.Agent({ rejectUnauthorized: false }) : undefined
