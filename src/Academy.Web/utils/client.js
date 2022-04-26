@@ -34,7 +34,8 @@ const createHttpClient = (defaultConfig, ctx) => {
         }
         else {
             try {
-                return ({ ...(await http.request(requestConfig)).data, requestConfig: requestConfig })
+                const response = (await http.request(requestConfig)).data;
+                return { ...response, data: { ...response.data, requestConfig } };
             }
             catch (ex) {
                 console.error(ex);
