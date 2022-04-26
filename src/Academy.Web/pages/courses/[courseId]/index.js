@@ -481,7 +481,7 @@ const CoursePage = withRemount(({ remount, ...props }) => {
         if (certificate && course.certificateTemplate && course.status == 'completed') {
             dialog.open({ course }, CertificateViewDialog);
         }
-        
+
         await toggler.set(course.sections.map((section, index) => ({
             id: `section_${section.id}`,
             value: section.status == 'started'
@@ -554,6 +554,7 @@ const CoursePage = withRemount(({ remount, ...props }) => {
                     images: course.image ? [{ url: course.image.url }] : undefined,
                 }}
             />
+            <div style={{ display: "none" }}>{JSON.stringify(course.requestConfig)}</div>
             <div className="bg-dark position-absolute w-100" style={{ height: "256px" }}></div>
             <div className="container position-relative zi-1 h-100">
                 <div className="row justify-content-center h-100">
