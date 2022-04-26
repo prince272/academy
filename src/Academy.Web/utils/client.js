@@ -35,6 +35,7 @@ const createHttpClient = (defaultConfig, ctx) => {
         else {
             try {
                 const response = (await http.request(requestConfig)).data;
+                delete requestConfig.paramsSerializer
                 return { ...response, data: { ...response.data, requestConfig } };
             }
             catch (ex) {
