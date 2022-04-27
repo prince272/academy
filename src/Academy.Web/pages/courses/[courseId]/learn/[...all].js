@@ -98,7 +98,7 @@ const CodeViewer = (props) => {
 
 
     return (
-        <div className="card vstack gap-2 p-2">
+        <div className="card vstack gap-1 p-1">
             <Tab.Container activeKey={key} onSelect={(k) => setKey(k)}>
                 <Tab.Content>
                     <Tab.Pane className="h-100" eventKey="input">
