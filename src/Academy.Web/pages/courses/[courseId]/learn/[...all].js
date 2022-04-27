@@ -47,6 +47,31 @@ import { html } from '@codemirror/lang-html';
 import * as htmlEntities from 'html-entities';
 import { FaFire, FaCode } from 'react-icons/fa';
 
+
+function IFrame(props) {
+    const ref = React.useRef();
+    const [height, setHeight] = React.useState("0px");
+    const onLoad = () => {
+        setHeight(ref.current.contentWindow.document.body.scrollHeight + "px");
+    };
+    return (
+        <iframe
+            ref={ref}
+            onLoad={onLoad}
+            width="100%"
+            height={height}
+            scrolling="no"
+            frameBorder="0"
+            style={{
+                maxWidth: 640,
+                width: "100%",
+                overflow: "auto",
+            }}
+            {...props}
+        ></iframe>
+    );
+}
+
 const CodeViewer = (props) => {
     const [key, setKey] = useState('input');
     const [{ language, script }, setInput] = useState({
@@ -55,6 +80,7 @@ const CodeViewer = (props) => {
     });
     const [output, setOutput] = useState('');
     const [loading, setLoading] = useState(null);
+
 
     return (
         <div className="card vstack gap-2 p-2">
@@ -79,7 +105,7 @@ const CodeViewer = (props) => {
                         </div>
                     </Tab.Pane>
                     <Tab.Pane className="h-100" eventKey="output">
-                        <iframe width="100%" height="100%" frameBorder="0" srcDoc={output}></iframe>
+                        <IFrame srcDoc={output} />
                     </Tab.Pane>
                 </Tab.Content>
                 <div>
