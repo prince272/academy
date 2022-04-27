@@ -103,7 +103,7 @@ const CodeViewer = (props) => {
     }[language]].filter(l => l);
 
     return (
-        <div className="card vstack gap-1 p-1">
+        <div className="card vstack gap-1 p-1 mb-2">
             <Tab.Container activeKey={key} onSelect={(k) => setKey(k)}>
                 <Tab.Content>
                     <Tab.Pane className="h-100" eventKey="input">
