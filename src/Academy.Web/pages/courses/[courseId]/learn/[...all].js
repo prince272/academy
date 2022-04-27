@@ -47,29 +47,44 @@ import { html } from '@codemirror/lang-html';
 import * as htmlEntities from 'html-entities';
 import { FaFire, FaCode } from 'react-icons/fa';
 
+class IFrame extends React.Component {
+    state = { contentHeight: 100 };
 
-function IFrame(props) {
-    const ref = React.useRef();
-    const [height, setHeight] = React.useState("0px");
-    const onLoad = () => {
-        setHeight(ref.current.contentWindow.document.body.scrollHeight + "px");
+    handleResize = () => {
+        const { body, documentElement } = this.container.contentWindow.document;
+        const contentHeight = Math.max(
+            body.clientHeight,
+            body.offsetHeight,
+            body.scrollHeight,
+            documentElement.clientHeight,
+            documentElement.offsetHeight,
+            documentElement.scrollHeight
+        );
+        if (contentHeight !== this.state.contentHeight) this.setState({ contentHeight });
     };
-    return (
-        <iframe
-            ref={ref}
-            onLoad={onLoad}
-            width="100%"
-            height={height}
-            scrolling="no"
-            frameBorder="0"
-            style={{
-                maxWidth: 640,
-                width: "100%",
-                overflow: "auto",
-            }}
-            {...props}
-        ></iframe>
-    );
+
+    onLoad = () => {
+        this.container.contentWindow.addEventListener('resize', this.handleResize);
+        this.handleResize();
+    }
+
+    componentWillUnmount() {
+        this.container.contentWindow.removeEventListener('resize', this.handleResize);
+    }
+
+    render() {
+        const { contentHeight } = this.state;
+        return (
+            <iframe
+                frameBorder="0"
+                onLoad={this.onLoad}
+                ref={(container) => { this.container = container; }}
+                scrolling="no"
+                style={{ width: '100%', height: `${contentHeight}px` }}
+                {...this.props}
+            />
+        );
+    }
 }
 
 const CodeViewer = (props) => {
