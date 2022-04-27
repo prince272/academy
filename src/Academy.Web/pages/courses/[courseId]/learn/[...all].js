@@ -96,6 +96,11 @@ const CodeViewer = (props) => {
     const [output, setOutput] = useState('');
     const [loading, setLoading] = useState(null);
 
+    const extensions = [{
+        'html': (() => html({ matchClosingTags: true, autoCloseTags: true }))(),
+        'css': (() => html({ matchClosingTags: true, autoCloseTags: true }))(),
+        'js': (() => html({ matchClosingTags: true, autoCloseTags: true }))()
+    }[language]].filter(l => l);
 
     return (
         <div className="card vstack gap-1 p-1">
@@ -108,10 +113,7 @@ const CodeViewer = (props) => {
                                 height="100%"
                                 theme='dark'
                                 readOnly={props.readOnly}
-                                extensions={[(() => {
-                                    if (language == 'html' || language == 'css' || language == 'js')
-                                        return html({ matchClosingTags: true, autoCloseTags: true });
-                                })()]}
+                                extensions={extensions}
                                 onChange={(value, viewUpdate) => {
                                     setInput({ language, script: value });
                                 }}
@@ -123,21 +125,31 @@ const CodeViewer = (props) => {
                         <IFrame srcDoc={output} />
                     </Tab.Pane>
                 </Tab.Content>
-                <div>
-                    <button onClick={async () => {
-                        setLoading({});
-                        if (key == 'input') {
-                            setOutput(script);
-                        }
-                        setKey(_.xor(['input', 'output'], [key])[0]);
-                        setLoading(null);
-                    }} type="button" className="btn btn-sm btn-outline-primary d-block w-100">
-                        {{
-                            input: <><span className="svg-icon svg-icon-xs d-inline-block"><FaCode /></span> Source code</>,
-                            output: <><span className="svg-icon svg-icon-xs d-inline-block"><FaFire /></span> Preview</>
-                        }[_.xor(['input', 'output'], [key])[0]]}
-                    </button>
-                </div>
+                {((() => {
+                    switch(language)
+                    {
+                        case 'html': return true;
+                        case 'css': return true;
+                        case 'js': return true;
+                    }
+                })()) &&
+                    (
+                        <div>
+                            <button onClick={async () => {
+                                setLoading({});
+                                if (key == 'input') {
+                                    setOutput(script);
+                                }
+                                setKey(_.xor(['input', 'output'], [key])[0]);
+                                setLoading(null);
+                            }} type="button" className="btn btn-sm btn-outline-primary d-block w-100">
+                                {{
+                                    input: <><span className="svg-icon svg-icon-xs d-inline-block"><FaCode /></span> Source code</>,
+                                    output: <><span className="svg-icon svg-icon-xs d-inline-block"><FaFire /></span> Preview</>
+                                }[_.xor(['input', 'output'], [key])[0]]}
+                            </button>
+                        </div>
+                    )}
             </Tab.Container>
         </div>
     );
@@ -149,7 +161,7 @@ const DocumentViewer = ({ document }) => {
             <div>
                 {parse(document || '', {
                     replace: domNode => {
-                        if (domNode.tagName == 'pre' && domNode.attribs && domNode.attribs['data-language']) {
+                        if (domNode.tagName == 'pre' && domNode.attribs && domNode.attribs['data-language'] !== undefined) {
                             const language = domNode.attribs['data-language'];
                             const script = htmlEntities.decode(ReactDOMServer.renderToStaticMarkup(domToReact(domNode.children)));
                             return <CodeViewer readOnly={true} {...{ language, script }} />
