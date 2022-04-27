@@ -50,7 +50,7 @@ namespace Academy.Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var webLink = Configuration.GetSection("IdentityServer:Clients:Web").GetValue<string>("Origin");
+            var webUrl = Configuration.GetSection("IdentityServer:Clients:Web").GetValue<string>("Origin");
 
             services.Configure<AppSettings>(options =>
             {
@@ -94,7 +94,7 @@ namespace Academy.Server
 
                     PhoneNumber = "+233550362337",
 
-                    WebLink = webLink,
+                    WebLink = webUrl,
                     MapLink = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d75551.8964035619!2d-0.19444572554201875!3d5.610157527892059!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf9b079dcc55cf%3A0x373d56b9a01d602d!2s4%20Agbaamo%20St%2C%20Accra!5e0!3m2!1sen!2sgh!4v1595846305553!5m2!1sen!2sgh",
                     FacebookLink = "https://www.facebook.com/princeowusu272/",
                     InstagramLink = "",
@@ -158,14 +158,8 @@ namespace Academy.Server
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    var allowedOrigins = Configuration
-                    .GetSection("IdentityServer:Clients")
-                    .GetChildren()
-                    .Select(_ => _.GetValue<string>("Origin"))
-                    .ToArray();
-
                     builder
-                    .WithOrigins(allowedOrigins)
+                    .WithOrigins(webUrl)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()
@@ -306,10 +300,12 @@ namespace Academy.Server
 
             services.AddResponseCompression();
 
+
             services.ConfigureApplicationCookie(options =>
             {
                 // Cookie settings
                 options.Cookie.HttpOnly = true;
+                options.Cookie.Domain = new Uri(webUrl).Host;
                 options.Cookie.SameSite = SameSiteMode.None;
 
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);

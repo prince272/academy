@@ -57,49 +57,47 @@ const CodeViewer = (props) => {
     const [loading, setLoading] = useState(null);
 
     return (
-        <div className="card p-1">
-            <AspectRatio ratio="1280/512">
-                <Tab.Container activeKey={key} onSelect={(k) => setKey(k)}>
-                    <Tab.Content>
-                        <Tab.Pane className="h-100" eventKey="input">
-                            <div className="h-100 position-relative">
-                                <CodeMirror className="h-100 small"
-                                    value={script}
-                                    height="100%"
-                                    theme='dark'
-                                    readOnly={props.readOnly}
-                                    extensions={[(() => {
-                                        if (language == 'html' || language == 'css' || language == 'js')
-                                            return html({ matchClosingTags: true, autoCloseTags: true });
-                                    })()]}
-                                    onChange={(value, viewUpdate) => {
-                                        setInput({ language, script: value });
-                                    }}
-                                />
-                                <div className="position-absolute top-0 end-0 mt-2 me-2"><div className="badge bg-secondary text-dark">{language.toUpperCase()}</div></div>
-                            </div>
-                        </Tab.Pane>
-                        <Tab.Pane className="h-100" eventKey="output">
-                            <iframe width="100%" height="100%" frameBorder="0" srcDoc={output}></iframe>
-                        </Tab.Pane>
-                    </Tab.Content>
-                    <div className="position-absolute bottom-0 end-0 mb-2 me-2">
-                        <button onClick={async () => {
-                            setLoading({});
-                            if (key == 'input') {
-                                setOutput(script);
-                            }
-                            setKey(_.xor(['input', 'output'], [key])[0]);
-                            setLoading(null);
-                        }} type="button" className="btn btn-sm btn-outline-primary">
-                            {{
-                                input: <><span className="svg-icon svg-icon-xs d-inline-block"><FaCode /></span> Source</>,
-                                output: <><span className="svg-icon svg-icon-xs d-inline-block"><FaFire /></span> Preview</>
-                            }[_.xor(['input', 'output'], [key])[0]]}
-                        </button>
-                    </div>
-                </Tab.Container>
-            </AspectRatio>
+        <div className="card vstack gap-2 p-2">
+            <Tab.Container activeKey={key} onSelect={(k) => setKey(k)}>
+                <Tab.Content>
+                    <Tab.Pane className="h-100" eventKey="input">
+                        <div className="h-100 position-relative">
+                            <CodeMirror className="h-100 small"
+                                value={script}
+                                height="100%"
+                                theme='dark'
+                                readOnly={props.readOnly}
+                                extensions={[(() => {
+                                    if (language == 'html' || language == 'css' || language == 'js')
+                                        return html({ matchClosingTags: true, autoCloseTags: true });
+                                })()]}
+                                onChange={(value, viewUpdate) => {
+                                    setInput({ language, script: value });
+                                }}
+                            />
+                            <div className="position-absolute top-0 end-0 mt-2 me-2"><div className="badge bg-secondary text-dark">{language.toUpperCase()}</div></div>
+                        </div>
+                    </Tab.Pane>
+                    <Tab.Pane className="h-100" eventKey="output">
+                        <iframe width="100%" height="100%" frameBorder="0" srcDoc={output}></iframe>
+                    </Tab.Pane>
+                </Tab.Content>
+                <div>
+                    <button onClick={async () => {
+                        setLoading({});
+                        if (key == 'input') {
+                            setOutput(script);
+                        }
+                        setKey(_.xor(['input', 'output'], [key])[0]);
+                        setLoading(null);
+                    }} type="button" className="btn btn-sm btn-outline-primary d-block w-100">
+                        {{
+                            input: <><span className="svg-icon svg-icon-xs d-inline-block"><FaCode /></span> Source code</>,
+                            output: <><span className="svg-icon svg-icon-xs d-inline-block"><FaFire /></span> Preview</>
+                        }[_.xor(['input', 'output'], [key])[0]]}
+                    </button>
+                </div>
+            </Tab.Container>
         </div>
     );
 };
