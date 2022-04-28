@@ -105,7 +105,7 @@ const ContentList = ({ course, section, lesson, permitted }) => {
     const client = useClient();
 
     return (
-        <div className="px-2 py-2">
+        <div className="px-1 px-sm-3 py-2">
             <Droppable droppableId={`content_${lesson.id}`} direction="vertical" type="content">
                 {(provided) => (
                     <div ref={provided.innerRef} {...provided.droppableProps}>
@@ -136,7 +136,7 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
         <Draggable draggableId={`lesson_${lesson.id}`} index={lesson.index}>
             {(provided) => (
                 <div ref={provided.innerRef} {...provided.draggableProps} className="pb-3">
-                    <Scroll.Element name={`lesson_${lesson.id}`} className={`card text-body bg-white ${disabled ? 'opacity-50' : 'btn-outline-primary'}`}>
+                    <Scroll.Element name={`lesson_${lesson.id}`} className={`card text-body ${lesson.status == 'completed' ? 'bg-success bg-opacity-10' : lesson.status == 'started' ? 'bg-primary bg-opacity-10' : 'bg-light'} ${disabled ? 'opacity-50' : 'btn-outline-primary'}`}>
                         <div className="p-0 d-flex justify-content-between align-items-stretch border-bottom-0" style={{ height: "72px" }}>
                             <div className="p-2 d-flex align-items-center hstack gap-2">
                                 <div {...provided.dragHandleProps} className={`${!(permitted) && 'd-none'}`}>
@@ -311,7 +311,7 @@ const SectionItem = ({ course, section, toggler, permitted }) => {
                             </>
                         }
                         <Collapse in={(permitted || course.sections.length > 1) ? toggler.in(`section_${section.id}`) : true} mountOnEnter={true} unmountOnExit={true}>
-                            <div className={(permitted || course.sections.length > 1) ? 'px-3 px-sm-4 pb-3' : 'px-3 pt-3'}>
+                            <div className={(permitted || course.sections.length > 1) ? 'px-1 px-sm-3 pb-3' : 'px-3 pt-3'}>
                                 <LessonList {...{ course, section, toggler, permitted }} />
                             </div>
                         </Collapse>
