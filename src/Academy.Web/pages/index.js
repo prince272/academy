@@ -105,38 +105,6 @@ const HomePage = () => {
           </Mounted>
         </div>
       </section>
-
-      <section className="position-relative" style={{
-        backgroundImage: "url('/img/img1.jpg')",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover"
-      }}>
-        <div className="position-absolute top-0 left-0 bg-dark opacity-75 w-100 h-100"></div>
-        <div className="position-relative">
-          <div className="container content-space-2">
-            <div className="row justify-content-center">
-              <div className="col-lg-10">
-                <div className="border rounded bg-white d-inline-flex p-1 mb-3">
-                  <Image src={'/img/prince-owusu-profile.png'} width={128} height={128} className="img-thumbnail" />
-                </div>
-                <div className="h3 fw-bold text-white">Prince Owusu</div>
-                <div className="mb-3 text-white text-start">I'm a programmer and web developer with a wide range of interests, including web app development, data analysis, and reverse engineering. This site was built and developed so that teachers may add courses for students to study. In our world, no one is perfect, and nothing is always the best. We may, however, strive to be better. I hope that this platform will be of great help to you.</div>
-                <div className="text-white text-start">
-                  <ul>
-                    <li>
-                      <p>By email: <a className="text-white" href={`mailto:${appSettings.company.emails.support}`}>{appSettings.company.emails.support}</a></p>
-                    </li>
-                    <li>
-                      <p>By phone number: {((phoneNumber) => (<a className="text-white" href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section id="benefits" className="bg-white">
         <div className="container content-space-3">
           <div className="text-center mx-lg-auto pb-7">
