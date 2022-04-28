@@ -96,6 +96,14 @@ const CodeViewer = (props) => {
     const [output, setOutput] = useState('');
     const [loading, setLoading] = useState(null);
 
+    const canOutput = (() => {
+        switch (language) {
+            case 'html': return true;
+            case 'css': return true;
+            case 'js': return true;
+        }
+    })();
+
     const extensions = [{
         'html': (() => html({ matchClosingTags: true, autoCloseTags: true }))(),
         'css': (() => html({ matchClosingTags: true, autoCloseTags: true }))(),
@@ -112,7 +120,7 @@ const CodeViewer = (props) => {
                                 value={script}
                                 height="100%"
                                 theme='dark'
-                                readOnly={props.readOnly}
+                                readOnly={canOutput}
                                 extensions={extensions}
                                 onChange={(value, viewUpdate) => {
                                     setInput({ language, script: value });
@@ -138,13 +146,7 @@ const CodeViewer = (props) => {
                         <IFrame srcDoc={output} />
                     </Tab.Pane>
                 </Tab.Content>
-                {((() => {
-                    switch (language) {
-                        case 'html': return true;
-                        case 'css': return true;
-                        case 'js': return true;
-                    }
-                })()) &&
+                {canOutput &&
                     (
                         <div>
                             <button onClick={async () => {

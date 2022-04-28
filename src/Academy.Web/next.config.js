@@ -4,7 +4,7 @@ const dev = process.env.NODE_ENV !== "production";
 module.exports = withPWA({
   pwa: {
     dest: 'public',
-    disable: true,
+    disable: dev,
     register: true,
   },
   webpack5: true,

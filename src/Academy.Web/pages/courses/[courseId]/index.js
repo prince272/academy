@@ -52,7 +52,7 @@ const ContentItem = ({ course, section, lesson, content, permitted }) => {
 
                             <div className="d-flex align-items-center flex-grow-1 cursor-default">
                                 <div className="flex-grow-1">
-                                    <ResponsiveEllipsis className="overflow-hidden"
+                                    <ResponsiveEllipsis className="overflow-hidden text-break"
                                         text={`${content.index + 1}. ${content.summary}`}
                                         maxLine="1"
                                         ellipsis="..."
@@ -149,7 +149,7 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                 <div className="flex-grow-1">
                                     <div className="mb-1">
                                         <div className="fw-bold">
-                                            <ResponsiveEllipsis className="overflow-hidden"
+                                            <ResponsiveEllipsis className="overflow-hidden text-break"
                                                 text={lesson.title || ''}
                                                 maxLine="1"
                                                 ellipsis="..."
@@ -265,7 +265,7 @@ const SectionItem = ({ course, section, toggler, permitted }) => {
 
                                     <div className="d-flex align-items-center flex-grow-1 cursor-default" onClick={() => toggler.toggle(`section_${section.id}`)}>
                                         <div className="flex-grow-1">
-                                            <ResponsiveEllipsis className="overflow-hidden"
+                                            <ResponsiveEllipsis className="overflow-hidden text-break"
                                                 text={section.title || ''}
                                                 maxLine="1"
                                                 ellipsis="..."
@@ -572,7 +572,7 @@ const CoursePage = withRemount(({ remount, ...props }) => {
                                     <div className="hstack gap-2 flex-wrap mb-2"><div className="badge text-dark bg-white">{appSettings.course.subjects.find(subject => course.subject == subject.value)?.name}</div>{course.purchased && <div className="badge text-white bg-primary">Purchased</div>}</div>
                                     <div className="d-flex align-items-center mb-1">
                                         <div className="h5 text-white mb-0 w-100">
-                                            <ResponsiveEllipsis className="overflow-hidden"
+                                            <ResponsiveEllipsis className="overflow-hidden text-break"
                                                 text={course.title || ''}
                                                 maxLine="1"
                                                 ellipsis="..."
@@ -589,7 +589,7 @@ const CoursePage = withRemount(({ remount, ...props }) => {
                                         <div><span><BsPersonFill /></span> {formatNumber(course.students)}</div>
                                     </div>
                                     <div className="mb-1">
-                                        <ResponsiveEllipsis className="overflow-hidden"
+                                        <ResponsiveEllipsis className="overflow-hidden text-break"
                                             text={course.description || ''}
                                             maxLine="3"
                                             ellipsis="..."
