@@ -108,7 +108,7 @@ const CodeViewer = (props) => {
                 <Tab.Content>
                     <Tab.Pane className="h-100" eventKey="input">
                         <div className="h-100 position-relative">
-                            <CodeMirror className="h-100 small"
+                            <CodeMirror className="h-100"
                                 value={script}
                                 height="100%"
                                 theme='dark'
@@ -118,7 +118,16 @@ const CodeViewer = (props) => {
                                     setInput({ language, script: value });
                                 }}
                             />
-                            <div className="position-absolute top-0 end-0 mt-2 me-2"><div className="badge bg-secondary text-dark">{language.toUpperCase()}</div></div>
+                            <style jsx>{`
+                            div > :global(.cm-theme-dark .cm-scroller) {
+                                padding-top: 1.5rem!important;
+                                padding-bottom: 1.5rem!important;
+                            }
+                            div > :global(.cm-theme-dark .cm-editor) {
+                                border-radius: .3125rem!important;
+                            }
+                            `}</style>
+                            <div className="position-absolute top-0 end-0 mt-2 me-2"><div className="badge bg-secondary text-dark opacity-75">{language.toUpperCase()}</div></div>
                         </div>
                     </Tab.Pane>
                     <Tab.Pane className="h-100" eventKey="output">
@@ -126,8 +135,7 @@ const CodeViewer = (props) => {
                     </Tab.Pane>
                 </Tab.Content>
                 {((() => {
-                    switch(language)
-                    {
+                    switch (language) {
                         case 'html': return true;
                         case 'css': return true;
                         case 'js': return true;
