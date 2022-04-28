@@ -103,7 +103,7 @@ const CodeViewer = (props) => {
     }[language]].filter(l => l);
 
     return (
-        <div className="card vstack gap-1 p-1 mb-2">
+        <div className="card vstack gap-1 p-1 mb-3">
             <Tab.Container activeKey={key} onSelect={(k) => setKey(k)}>
                 <Tab.Content>
                     <Tab.Pane className="h-100" eventKey="input">
@@ -122,9 +122,13 @@ const CodeViewer = (props) => {
                             div > :global(.cm-theme-dark .cm-scroller) {
                                 padding-top: 1.5rem!important;
                                 padding-bottom: 1.5rem!important;
+                                font-family: Consolas, monospace !important;
+                                font-size: 0.875rem;
                             }
                             div > :global(.cm-theme-dark .cm-editor) {
                                 border-radius: .3125rem!important;
+                                font-family: Consolas, monospace !important;
+                                font-size: 0.875rem;
                             }
                             `}</style>
                             <div className="position-absolute top-0 end-0 mt-2 me-2"><div className="badge bg-secondary text-dark opacity-75">{language.toUpperCase()}</div></div>
