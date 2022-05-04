@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@codemirror/lang-css": "^0.20.0",
     "@codemirror/lang-html": "^0.20.0",
     "@codemirror/lang-javascript": "^0.20.0",
     "@stefanprobst/next-error-boundary": "^3.0.2",

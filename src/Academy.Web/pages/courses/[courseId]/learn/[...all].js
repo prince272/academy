@@ -44,6 +44,8 @@ import useSound from 'use-sound';
 
 import CodeMirror from '@uiw/react-codemirror';
 import { html } from '@codemirror/lang-html';
+import { javascript } from '@codemirror/lang-javascript';
+import { css } from '@codemirror/lang-css';
 import * as htmlEntities from 'html-entities';
 import { FaFire, FaCode } from 'react-icons/fa';
 
@@ -96,18 +98,18 @@ const CodeViewer = (props) => {
     const [output, setOutput] = useState('');
     const [loading, setLoading] = useState(null);
 
-    const canOutput = (() => {
+    const preview = props.preview || (() => {
         switch (language) {
             case 'html': return true;
-            case 'css': return true;
-            case 'js': return true;
+            case 'css': return false;
+            case 'js': return false;
         }
     })();
 
     const extensions = [{
         'html': (() => html({ matchClosingTags: true, autoCloseTags: true }))(),
-        'css': (() => html({ matchClosingTags: true, autoCloseTags: true }))(),
-        'js': (() => html({ matchClosingTags: true, autoCloseTags: true }))()
+        'css': (() => css({}))(),
+        'js': (() => javascript({ }))()
     }[language]].filter(l => l);
 
     return (
@@ -120,7 +122,7 @@ const CodeViewer = (props) => {
                                 value={script}
                                 height="100%"
                                 theme='dark'
-                                readOnly={canOutput}
+                                readOnly={preview}
                                 extensions={extensions}
                                 onChange={(value, viewUpdate) => {
                                     setInput({ language, script: value });
@@ -146,7 +148,7 @@ const CodeViewer = (props) => {
                         <IFrame srcDoc={output} />
                     </Tab.Pane>
                 </Tab.Content>
-                {canOutput &&
+                {preview &&
                     (
                         <div>
                             <button onClick={async () => {
@@ -177,8 +179,9 @@ const DocumentViewer = ({ document }) => {
                     replace: domNode => {
                         if (domNode.tagName == 'pre' && domNode.attribs && domNode.attribs['data-language'] !== undefined) {
                             const language = domNode.attribs['data-language'];
+                            const preview = domNode.attribs['data-preview'];
                             const script = htmlEntities.decode(ReactDOMServer.renderToStaticMarkup(domToReact(domNode.children)));
-                            return <CodeViewer readOnly={true} {...{ language, script }} />
+                            return <CodeViewer readOnly={true} {...{ language, preview, script }} />
                         }
                     }
                 })}
