@@ -98,13 +98,13 @@ const CodeViewer = (props) => {
     const [output, setOutput] = useState('');
     const [loading, setLoading] = useState(null);
 
-    const preview = props.preview || (() => {
+    const preview = props.preview === undefined ? (() => {
         switch (language) {
             case 'html': return true;
             case 'css': return false;
             case 'js': return false;
         }
-    })();
+    })() : props.preview;
 
     const extensions = [{
         'html': (() => html({ matchClosingTags: true, autoCloseTags: true }))(),
@@ -113,7 +113,7 @@ const CodeViewer = (props) => {
     }[language]].filter(l => l);
 
     return (
-        <div className="card vstack gap-1 p-1 mb-3">
+        <div className="card vstack gap-1 p-1 mb-5">
             <Tab.Container activeKey={key} onSelect={(k) => setKey(k)}>
                 <Tab.Content>
                     <Tab.Pane className="h-100" eventKey="input">
@@ -179,7 +179,8 @@ const DocumentViewer = ({ document }) => {
                     replace: domNode => {
                         if (domNode.tagName == 'pre' && domNode.attribs && domNode.attribs['data-language'] !== undefined) {
                             const language = domNode.attribs['data-language'];
-                            const preview = domNode.attribs['data-preview'];
+                            let preview = domNode.attribs['data-preview'];
+                            preview = preview && JSON.parse(preview);
                             const script = htmlEntities.decode(ReactDOMServer.renderToStaticMarkup(domToReact(domNode.children)));
                             return <CodeViewer readOnly={true} {...{ language, preview, script }} />
                         }
