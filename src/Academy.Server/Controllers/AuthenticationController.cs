@@ -70,6 +70,8 @@ namespace Academy.Server.Controllers
                         var lastName = signinInfo.Principal.FindFirstValue(ClaimTypes.Surname);
                         var phoneNumber = signinInfo.Principal.FindFirstValue(ClaimTypes.MobilePhone);
 
+                        user.Email = email;
+                        user.EmailConfirmed = true;
                         user.FirstName = firstName;
                         user.LastName = lastName;
                         user.UserName = await Compute.GenerateSlugAsync($"{firstName} {lastName}", slug => userManager.Users.AnyAsync(_ => _.UserName == slug));

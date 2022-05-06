@@ -4,7 +4,7 @@ import { Form, Modal } from 'react-bootstrap';
 import { useForm, Controller as FormController } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
-import { cleanObject, preventDefault } from '../../utils/helpers';
+import { cleanObject, preventDefault, submitForm } from '../../utils/helpers';
 import { useClient } from '../../utils/client';
 import { ModalPathPrefix } from '..';
 import { noCase, sentenceCase } from 'change-case';
@@ -91,9 +91,16 @@ const SignUpModal = (props) => {
                         </>
                     )}
                     {provider == null && (
-                        <div className="col-12">
-                            <button className="btn btn-primary  w-100" type="button" onClick={() => setProvider('username')}>Sign up with Email or Phone</button>
-                        </div>
+                        <>
+                            <div className="col-12">
+                                <button className="btn btn-primary  w-100" type="button" onClick={() => setProvider('username')}>Sign up with Email or Phone</button>
+                            </div>
+                            <div className="col-12">
+                                <button className="btn btn-secondary w-100" type="button" onClick={() => {
+                                    submitForm('post', `${process.env.NEXT_PUBLIC_SERVER_URL}/authentication/google`, { returnUrl: returnUrl || window.location.href });
+                                }}><span className="svg-icon svg-icon-xs d-inline-block me-2"><SvgGoogleLogo /></span> Sign in with Google</button>
+                            </div>
+                        </>
                     )}
                     <div className="col-12 mt-3 d-flex justify-content-center text-center mt-3">
                         <p className="small mb-0">By continuing you agree to our <Link href="/terms"><a>Terms and Conditions</a></Link></p>
