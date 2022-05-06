@@ -91,6 +91,7 @@ const useClientProvider = () => {
     const userManagerRef = useRef(null);
     let [user, setUser] = withAsync(useState(null));
     let [userContext, setUserContext] = withAsync(useState(null));
+    const [initialized, setInitialized] = useState(false);
 
     const disablePopup = true;
 
@@ -242,49 +243,54 @@ const useClientProvider = () => {
         }
     };
 
-    const challange = async () => {
-        let userManager = null
-        try { userManager = await loadUserManager(); }
-        catch (ex) { console.error(ex); return; }
+    const initialize = async () => {
+        try {
+            let userManager = null
+            try { userManager = await loadUserManager(); }
+            catch (ex) { console.error(ex); return; }
 
-        const currentURL = new URL(window.location.href);
-        const signinURL = new URL(clientSettings.redirect_uri);
-        const signoutURL = new URL(clientSettings.post_logout_redirect_uri);
+            const currentURL = new URL(window.location.href);
+            const signinURL = new URL(clientSettings.redirect_uri);
+            const signoutURL = new URL(clientSettings.post_logout_redirect_uri);
 
-        if (currentURL.pathname == signinURL.pathname) {
-            try {
-                const context = await userManager.signinCallback();
+            if (currentURL.pathname == signinURL.pathname) {
+                try {
+                    const context = await userManager.signinCallback();
 
-                // Signin with redirect usually provides a user context.
-                // Consider notifing user context state manager and the events.
-                if (context) {
-                    await loadUserContext(context);
-                    eventDispatcher.emit('signinComplete', context.state);
+                    // Signin with redirect usually provides a user context.
+                    // Consider notifing user context state manager and the events.
+                    if (context) {
+                        await loadUserContext(context);
+                        eventDispatcher.emit('signinComplete', context.state);
+                    }
+
+                    router.replace(getReturnUrl(context?.state));
                 }
-
-                router.replace(getReturnUrl(context?.state));
+                catch (callbackError) {
+                    console.error("Signin callback authentication error: ", callbackError);
+                }
             }
-            catch (callbackError) {
-                console.error("Signin callback authentication error: ", callbackError);
+            else if (currentURL.pathname == signoutURL.pathname) {
+                try {
+                    const context = await userManager.signoutCallback();
+                    router.replace(getReturnUrl(context?.state));
+                }
+                catch (callbackError) {
+                    console.error("Signout callback authentication error: ", callbackError);
+                }
+            }
+            else {
+                try {
+                    const context = await userManager.signinSilent();
+                    await loadUserContext(context);
+                }
+                catch (silentError) {
+                    console.error("Silent authentication error: ", silentError);
+                }
             }
         }
-        else if (currentURL.pathname == signoutURL.pathname) {
-            try {
-                const context = await userManager.signoutCallback();
-                router.replace(getReturnUrl(context?.state));
-            }
-            catch (callbackError) {
-                console.error("Signout callback authentication error: ", callbackError);
-            }
-        }
-        else {
-            try {
-                const context = await userManager.signinSilent();
-                await loadUserContext(context);
-            }
-            catch (silentError) {
-                console.error("Silent authentication error: ", silentError);
-            }
+        finally {
+            setInitialized(true);
         }
     };
 
@@ -296,8 +302,8 @@ const useClientProvider = () => {
         updateUser,
         signin,
         signout,
-        challange,
-
+        initialize,
+        initialized,
         ...httpClient
     };
 };

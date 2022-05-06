@@ -109,7 +109,7 @@ const CodeViewer = (props) => {
     const extensions = [{
         'html': (() => html({ matchClosingTags: true, autoCloseTags: true }))(),
         'css': (() => css({}))(),
-        'js': (() => javascript({ }))()
+        'js': (() => javascript({}))()
     }[language]].filter(l => l);
 
     return (
@@ -514,12 +514,13 @@ const LearnPage = withRemount(({ remount }) => {
     };
 
     useEffect(() => {
-        if (!client.loading && !client.user) {
-            const location = window.location;
-            router.replace(`/courses/${courseId}`);
-            router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: { returnUrl: location.href } });
+        if (client.initialized) {
+            if (!client.user) {
+                router.replace(`/courses/${courseId}`);
+                router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: { returnUrl: window.location.href } });
+            }
         }
-    }, [client.loading, client.user]);
+    }, [client.initialized, client.user]);
 
     useEffect(() => {
         load();
