@@ -11,6 +11,7 @@ import { noCase, sentenceCase } from 'change-case';
 import _ from 'lodash';
 import PhoneInput from '../../components/PhoneInput';
 import { useAppSettings } from '../../utils/appSettings';
+import { SvgGoogleLogo } from '../../resources/images/icons';
 
 const SignUpModal = (props) => {
     const { route, modal } = props;
