@@ -276,14 +276,13 @@ const Body = ({ children }) => {
   useEffect(() => setLoadingBarColor(getComputedStyle(document.body).getPropertyValue('--bs-primary')), []);
 
   useEffect(async () => {
-
+    await client.challange();
+    
     const location = window.location;
     if (location.pathname.toLowerCase().startsWith(ModalPathPrefix)) {
       modal.open(location.href, false);
       router.replace("/", undefined, { shallow: true });
     }
-
-    await client.challange();
 
     setPageLoading(false);
   }, []);
