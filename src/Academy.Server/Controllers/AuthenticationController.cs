@@ -70,6 +70,7 @@ namespace Academy.Server.Controllers
                         var lastName = signinInfo.Principal.FindFirstValue(ClaimTypes.Surname);
                         var phoneNumber = signinInfo.Principal.FindFirstValue(ClaimTypes.MobilePhone);
 
+                        user = new User();
                         user.Email = email;
                         user.EmailConfirmed = true;
                         user.FirstName = firstName;

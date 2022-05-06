@@ -99,7 +99,7 @@ const SignUpModal = (props) => {
                             <div className="col-12">
                                 <button className="btn btn-secondary w-100" type="button" onClick={() => {
                                     submitForm('post', `${process.env.NEXT_PUBLIC_SERVER_URL}/authentication/google`, { returnUrl: returnUrl || window.location.href });
-                                }}><span className="svg-icon svg-icon-xs d-inline-block me-2"><SvgGoogleLogo /></span> Sign in with Google</button>
+                                }}><span className="svg-icon svg-icon-xs d-inline-block me-2"><SvgGoogleLogo /></span> Sign up with Google</button>
                             </div>
                         </>
                     )}
