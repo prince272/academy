@@ -3,6 +3,7 @@ import SvgInstagramLogo from './instagram-logo.svg';
 import SvgLinkedinLogo from './linkedin-logo.svg';
 import SvgTwitterLogo from './twitter-logo.svg';
 import SvgYoutubeLogo from './youtube-logo.svg';
+import SvgGoogleLogo from './google-logo.svg';
 
 import SvgAppWordmark from './app-wordmark.svg';
 import SvgAppLogo from './app-logo.svg';
@@ -12,4 +13,4 @@ import SvgBitCubes from './bit-cubes.svg';
 export { SvgAppLogo, SvgAppWordmark, SvgBitCube, SvgBitCubes };
 
 // source: https://www.iconfinder.com/iconsets/social-media-2285
-export { SvgFacebookLogo, SvgInstagramLogo, SvgLinkedinLogo, SvgTwitterLogo, SvgYoutubeLogo };
+export { SvgFacebookLogo, SvgInstagramLogo, SvgLinkedinLogo, SvgTwitterLogo, SvgYoutubeLogo, SvgGoogleLogo };

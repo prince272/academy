@@ -177,3 +177,20 @@ export const getCookie = (cookiename, cookiestring) => {
 export const setCookie = (cookiename, cookievalue) => {
     Cookies.set(cookiename, cookievalue, { expires: 365 });
 }
+
+export function submitForm(method, action, nameValueObj) {
+    var form = document.createElement("form");
+    var i, input, prop;
+    form.method = method;
+    form.action = action;
+    for (prop in nameValueObj) { // Loop through properties: name-value pairs
+        input = document.createElement("input");
+        input.name = prop;
+        input.value = nameValueObj[prop];
+        input.type = "hidden";
+        form.appendChild(input);
+    }
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}

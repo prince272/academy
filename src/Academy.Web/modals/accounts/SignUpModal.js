@@ -30,7 +30,7 @@ const SignUpModal = (props) => {
         form.handleSubmit(async (inputs) => {
             setSubmitting(true);
 
-            let result = await client.post('/accounts/signup', inputs);
+            let result = await client.post('/accounts', inputs);
 
             if (result.error && result.error.reason != 'duplicateUsername') {
 

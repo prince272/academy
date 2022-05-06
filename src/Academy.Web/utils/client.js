@@ -85,7 +85,6 @@ const useClientProvider = () => {
     const router = useRouter();
     const eventDispatcher = useEventDispatcher();
 
-    const [loading, setLoading] = useState(true);
     let [clientSettings, setClientSettings] = withAsync(useSessionState(null, `client-${clientId}`));
 
     const asyncLocker = useMemo(() => new AsyncLocker());
@@ -114,7 +113,7 @@ const useClientProvider = () => {
             if (!userManagerRef.current) {
                 clientSettings = clientSettings || await (async () => {
                     return {
-                        ...await setClientSettings((await httpClient.get(`/clients/${clientId}`, { throwIfError: true })).data),
+                        ...await setClientSettings((await httpClient.get(`/_configuration/${clientId}`, { throwIfError: true })).data),
                     };
                 })();
 
@@ -143,15 +142,6 @@ const useClientProvider = () => {
         }
     };
 
-    const unloadUserManager = () => {
-        if (userManagerRef.current != null) {
-            const userManager = userManagerRef.current;
-            userManager.events.removeUserSignedOut(handleUserSignedOut);
-        }
-
-        userManagerRef.current = null;
-    };
-
     const loadUserContext = async (context) => {
         const currentUser = (await httpClient.get(`/accounts/profile`, { throwIfError: true })).data.data;
         await setUser(currentUser);
@@ -177,80 +167,93 @@ const useClientProvider = () => {
         return (state && state.returnUrl) || fromQuery || `${window.location.origin}`;
     };
 
-    useEffect(() => {
+    const reloadUser = async () => {
+        const currentUser = (await httpClient.get(`/accounts/profile`, { throwIfError: true })).data.data;
+        await setUser(currentUser);
+    };
 
-        (async () => {
-            try {
-                await loadUserManager();
-            }
-            catch (ex) { console.error(ex); }
+    const updateUser = (state) => {
+        setUser(_user => ({ ..._user, ...state }));
+    };
 
-            setLoading(false);
-        })();
+    const signin = async (state) => {
+        let userManager = null
+        try { userManager = await loadUserManager(); }
+        catch (ex) { console.error(ex); eventDispatcher.emit('signinError', state); return; }
 
-        return () => unloadUserManager();
-    }, []);
+        eventDispatcher.emit('signinStart', state);
 
-    return {
-        loading,
-        clientSettings,
+        try {
+            const context = await userManager.signinSilent({ state });
+            await loadUserContext(context);
+            eventDispatcher.emit('signinComplete', state);
+        }
+        catch (silentError) {
 
-        accessToken: userContext?.access_token,
-
-        user: user,
-        reloadUser: async () => {
-            const currentUser = (await httpClient.get(`/accounts/profile`, { throwIfError: true })).data.data;
-            await setUser(currentUser);
-        },
-        updateUser: (state) => {
-            setUser(_user => ({ ..._user, ...state }));
-        },
-        signin: async (state) => {
-            let userManager = null
-            try { userManager = await loadUserManager(); }
-            catch (ex) { console.error(ex); eventDispatcher.emit('signinError', state); return; }
-
-            eventDispatcher.emit('signinStart', state);
+            console.error("Silent authentication error: ", silentError);
 
             try {
-                const context = await userManager.signinSilent({ state });
+                if (disablePopup) throw new Error('Popup authentication disabled.');
+
+                const context = await userManager.signinPopup({ state });
                 await loadUserContext(context);
                 eventDispatcher.emit('signinComplete', state);
             }
-            catch (silentError) {
-
-                console.error("Silent authentication error: ", silentError);
+            catch (popupError) {
+                console.error("Popup authentication error: ", popupError);
 
                 try {
-                    if (disablePopup) throw new Error('Popup authentication disabled.');
-
-                    const context = await userManager.signinPopup({ state });
-                    await loadUserContext(context);
-                    eventDispatcher.emit('signinComplete', state);
+                    await userManager.signinRedirect({ state });
                 }
-                catch (popupError) {
-                    console.error("Popup authentication error: ", popupError);
+                catch (redirectError) {
+                    console.error("Redirect authentication error: ", redirectError);
 
-                    try {
-                        await userManager.signinRedirect({ state });
-                    }
-                    catch (redirectError) {
-                        console.error("Redirect authentication error: ", redirectError);
-
-                        eventDispatcher.emit('signinError', state);
-                    }
+                    eventDispatcher.emit('signinError', state);
                 }
             }
-        },
+        }
+    };
 
-        signinCallback: async () => {
-            let userManager = null
-            try { userManager = await loadUserManager(); }
-            catch (ex) { console.error(ex); return; }
+    const signout = async (state) => {
+        let userManager = null
+        try { userManager = await loadUserManager(); }
+        catch (ex) { console.error(ex); eventDispatcher.emit('signoutError', state); return; }
 
-            const currentUrl = window.location.href;
+        eventDispatcher.emit('signoutStart', state);
+
+        try {
+            if (disablePopup) throw new Error('Popup authentication disabled.');
+
+            await userManager.signoutPopup({ state });
+            unloadUserContext();
+            eventDispatcher.emit('signoutComplete', state);
+        }
+        catch (popupError) {
+            console.error("Popup authentication error: ", popupError);
+
             try {
-                const context = await userManager.signinCallback(currentUrl);
+                await userManager.signoutRedirect({ state });
+            }
+            catch (redirectError) {
+                console.error("Redirect authentication error: ", redirectError);
+
+                eventDispatcher.emit('signoutError', state);
+            }
+        }
+    };
+
+    const challange = async () => {
+        let userManager = null
+        try { userManager = await loadUserManager(); }
+        catch (ex) { console.error(ex); return; }
+
+        const currentURL = new URL(window.location.href);
+        const signinURL = new URL(clientSettings.redirect_uri);
+        const signoutURL = new URL(clientSettings.post_logout_redirect_uri);
+
+        if (currentURL.pathname == signinURL.pathname) {
+            try {
+                const context = await userManager.signinCallback();
 
                 // Signin with redirect usually provides a user context.
                 // Consider notifing user context state manager and the events.
@@ -264,50 +267,36 @@ const useClientProvider = () => {
             catch (callbackError) {
                 console.error("Signin callback authentication error: ", callbackError);
             }
-        },
-
-        signout: async (state) => {
-            let userManager = null
-            try { userManager = await loadUserManager(); }
-            catch (ex) { console.error(ex); eventDispatcher.emit('signoutError', state); return; }
-
-            eventDispatcher.emit('signoutStart', state);
-
+        }
+        else if (currentURL.pathname == signoutURL.pathname) {
             try {
-                if (disablePopup) throw new Error('Popup authentication disabled.');
-
-                await userManager.signoutPopup({ state });
-                unloadUserContext();
-                eventDispatcher.emit('signoutComplete', state);
-            }
-            catch (popupError) {
-                console.error("Popup authentication error: ", popupError);
-
-                try {
-                    await userManager.signoutRedirect({ state });
-                }
-                catch (redirectError) {
-                    console.error("Redirect authentication error: ", redirectError);
-
-                    eventDispatcher.emit('signoutError', state);
-                }
-            }
-        },
-
-        signoutCallback: async () => {
-            let userManager = null
-            try { userManager = await loadUserManager(); }
-            catch (ex) { console.error(ex); return; }
-
-            const currentUrl = window.location.href;
-            try {
-                const context = await userManager.signoutCallback(currentUrl);
+                const context = await userManager.signoutCallback();
                 router.replace(getReturnUrl(context?.state));
             }
             catch (callbackError) {
                 console.error("Signout callback authentication error: ", callbackError);
             }
-        },
+        }
+        else {
+            try {
+                const context = await userManager.signinSilent();
+                await loadUserContext(context);
+            }
+            catch (silentError) {
+                console.error("Silent authentication error: ", silentError);
+            }
+        }
+    };
+
+    return {
+        clientSettings,
+        accessToken: userContext?.access_token,
+        user: user,
+        reloadUser,
+        updateUser,
+        signin,
+        signout,
+        challange,
 
         ...httpClient
     };

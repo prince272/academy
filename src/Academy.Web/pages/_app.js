@@ -78,7 +78,7 @@ const Header = () => {
   const [expanded, setExpanded] = useState(false);
   return (
 
-    <Navbar id="header" collapseOnSelect expanded={expanded} onToggle={(toggle) => setExpanded(toggle)} bg="white" variant="light" expand="md" className={`fixed-top shadow-sm ${client.loading ? 'd-none' : ''}`}>
+    <Navbar id="header" collapseOnSelect expanded={expanded} onToggle={(toggle) => setExpanded(toggle)} bg="white" variant="light" expand="md" className={`fixed-top shadow-sm`}>
       <div className="container">
         <Link href="/" passHref>
           <Navbar.Brand className="me-auto" onClick={() => { setExpanded(false); }}>
@@ -168,13 +168,13 @@ const Header = () => {
                 <Nav.Item>
                   <button type="button" className="btn btn-outline-secondary border-0 p-2 mb-2 mb-md-0" onClick={() => {
                     setExpanded(false);
-                    router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: router.asPath }) })
+                    router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: window.location.href }) })
                   }}>Sign in</button>
                 </Nav.Item>
                 <Nav.Item>
                   <button type="button" className="btn btn-primary border-0 p-2" onClick={() => {
                     setExpanded(false);
-                    router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl: router.asPath }) })
+                    router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl: window.location.href }) })
                   }}>Sign up</button>
                 </Nav.Item>
               </>
@@ -275,13 +275,16 @@ const Body = ({ children }) => {
 
   useEffect(() => setLoadingBarColor(getComputedStyle(document.body).getPropertyValue('--bs-primary')), []);
 
-  useEffect(() => {
+  useEffect(async () => {
 
     const location = window.location;
     if (location.pathname.toLowerCase().startsWith(ModalPathPrefix)) {
       modal.open(location.href, false);
       router.replace("/", undefined, { shallow: true });
     }
+
+    await client.challange();
+
     setPageLoading(false);
   }, []);
 
@@ -289,7 +292,7 @@ const Body = ({ children }) => {
     <>
       <LoadingBar color={loadingBarColor} ref={loadingBarRef} />
       {children}
-      {(client.loading || pageLoading) && (<div className="position-fixed top-50 start-50 translate-middle bg-light w-100 h-100 zi-3"><Loader /></div>)}
+      {(pageLoading) && (<div className="position-fixed top-50 start-50 translate-middle bg-light w-100 h-100 zi-3"><Loader /></div>)}
     </>
   );
 };

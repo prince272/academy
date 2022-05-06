@@ -53,8 +53,8 @@ namespace Academy.Server.Controllers
         }
 
 
-        [HttpPost("signup")]
-        public async Task<IActionResult> Signup([FromBody] SignUpModel form)
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] SignUpModel form)
         {
             var user = new User();
 
@@ -92,8 +92,8 @@ namespace Academy.Server.Controllers
             return Result.Succeed();
         }
 
-        [HttpPost("signin")]
-        public async Task<IActionResult> Signin([FromBody] SignInModel form)
+        [HttpPost("authenticate")]
+        public async Task<IActionResult> Authenticate([FromBody] SignInModel form)
         {
             var user = await userManager.FindByUsernameAsync(form.Username);
             if (user == null)
@@ -128,6 +128,7 @@ namespace Academy.Server.Controllers
                 return Result.Failed(StatusCodes.Status400BadRequest, error);
             }
         }
+
 
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()

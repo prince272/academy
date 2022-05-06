@@ -12,9 +12,13 @@ using IdentityModel;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -170,8 +174,7 @@ namespace Academy.Server
 
             services.AddControllers(options =>
             {
-
-
+                options.Filters.Add<ExceptionActionFilter>();
             })
                 .AddNewtonsoftJson(options =>
                 {
@@ -296,6 +299,21 @@ namespace Academy.Server
                 .AddApiAuthorization<User, AppDbContext>();
 
             services.AddAuthentication()
+                        //.AddFacebook(options =>
+                        //{
+                        //    options.AppId = Configuration.GetValue<string>("Authentication:Facebook:AppId");
+                        //    options.AppSecret = Configuration.GetValue<string>("Authentication:Facebook:AppSecret");
+                        //    options.AccessDeniedPath = "/account/access-denied";
+                        //})
+                        .AddGoogle("google", options =>
+                        {
+                            options.ClientId = Configuration.GetValue<string>("Authentication:Google:ClientId");
+                            options.ClientSecret = Configuration.GetValue<string>("Authentication:Google:ClientSecret");
+                            options.AccessDeniedPath = "/account/access-denied";
+                            options.SaveTokens = true;
+                        });
+
+            services.AddAuthentication()
                 .AddIdentityServerJwt();
 
             services.AddResponseCompression();
@@ -384,14 +402,6 @@ namespace Academy.Server
             // Register Syncfusion license.
             SyncfusionLicenseProvider.RegisterLicense("NTY0NTk4QDMxMzkyZTM0MmUzMFE0Ni93eHhJNjcvQ29ySG1VTGlzb1JLaFdEakJaQkRDQWppSkhmenZxNFk9");
 
-            app.UseExceptionHandler(_ => _.Run(async context =>
-            {
-                var statusCode = StatusCodes.Status500InternalServerError;
-                var response = Result.Failed(statusCode);
-                context.Response.StatusCode = statusCode;
-                await context.Response.WriteAsJsonAsync(response.Value);
-            }));
-
             app.UseCors();
 
             app.UseStatusCodePages(_ => _.Run(async context =>
@@ -437,5 +447,52 @@ namespace Academy.Server
                     pattern: "{controller:slugify}/{action:slugify=Index}/{id?}");
             });
         }
+    }
+
+    public class ExceptionActionFilter : ExceptionFilterAttribute
+    {
+        private readonly IWebHostEnvironment _hostingEnvironment;
+
+        public ExceptionActionFilter(IWebHostEnvironment hostingEnvironment)
+        {
+            _hostingEnvironment = hostingEnvironment;
+        }
+
+        #region Overrides of ExceptionFilterAttribute
+
+        public override async Task OnExceptionAsync(ExceptionContext context)
+        {
+            var actionDescriptor = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)context.ActionDescriptor;
+            Type controllerType = actionDescriptor.ControllerTypeInfo;
+
+            var controllerBase = typeof(ControllerBase);
+            var controller = typeof(Controller);
+
+            // Api's implements ControllerBase but not Controller
+            if (controllerType.IsSubclassOf(controllerBase) && !controllerType.IsSubclassOf(controller))
+            {
+                // Handle web api exception
+                var statusCode = StatusCodes.Status500InternalServerError;
+                var response = Result.Failed(statusCode);
+                context.HttpContext.Response.StatusCode = statusCode;
+                await context.HttpContext.Response.WriteAsJsonAsync(response.Value);
+            }
+
+            // Pages implements ControllerBase and Controller
+            if (controllerType.IsSubclassOf(controllerBase) && controllerType.IsSubclassOf(controller))
+            {
+                // Handle page exception
+            }
+
+            if (!_hostingEnvironment.IsDevelopment())
+            {
+                // Report exception to insights
+
+            }
+
+            await base.OnExceptionAsync(context);
+        }
+
+        #endregion
     }
 }

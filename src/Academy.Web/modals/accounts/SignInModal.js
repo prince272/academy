@@ -5,11 +5,12 @@ import { Form, Modal } from 'react-bootstrap';
 import { useForm, Controller as FormController } from 'react-hook-form';
 import { useClient } from '../../utils/client';
 import toast from 'react-hot-toast';
-import { cleanObject, preventDefault } from '../../utils/helpers';
+import { cleanObject, preventDefault, submitForm } from '../../utils/helpers';
 import { ModalPathPrefix } from '..';
 import PhoneInput from '../../components/PhoneInput';
 import { useAppSettings } from '../../utils/appSettings';
 import _ from 'lodash';
+import { SvgGoogleLogo } from '../../resources/images/icons';
 
 const SignInModal = (props) => {
     const { route, modal } = props;
@@ -38,7 +39,7 @@ const SignInModal = (props) => {
             inputs = Object.assign({}, defaultInputs, inputs);
 
             setSubmitting(true);
-            let result = await client.post('/accounts/signin', inputs);
+            let result = await client.post('/accounts/authenticate', inputs);
 
             if (result.error) {
                 const error = result.error;
@@ -99,7 +100,12 @@ const SignInModal = (props) => {
                     {provider == null && (
                         <>
                             <div className="col-12">
-                                <button className="btn btn-primary  w-100" type="button" onClick={() => setProvider('username')}>Sign in with Email or Phone</button>
+                                <button className="btn btn-primary w-100" type="button" onClick={() => setProvider('username')}>Sign in with Email or Phone</button>
+                            </div>
+                            <div className="col-12">
+                                <button className="btn btn-secondary w-100" type="button" onClick={() => {
+                                    submitForm('post', `${process.env.NEXT_PUBLIC_SERVER_URL}/authentication/google`, { returnUrl: returnUrl || window.location.href });
+                                }}><span className="svg-icon svg-icon-xs d-inline-block me-2"><SvgGoogleLogo /></span> Sign in with Google</button>
                             </div>
                         </>
                     )}
