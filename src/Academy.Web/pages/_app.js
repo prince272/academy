@@ -87,10 +87,10 @@ const Header = () => {
         </Link>
 
         <Nav.Item className="me-2">
-          <button type="button" className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
+          <button type="button" className="btn btn-outline-danger p-2 shadow-sm" onClick={() => {
             setExpanded(false);
             router.replace({ pathname: `${ModalPathPrefix}/sponsor` })
-          }}>Made with <span className="svg-icon svg-icon-sm d-inline-block text-danger me-2 heart"><BsHeartFill /></span></button>
+          }}>Made with <span className="svg-icon svg-icon-sm d-inline-block me-2 heart"><BsHeartFill /></span></button>
         </Nav.Item>
 
         <Navbar.Toggle className="ms-0" />
