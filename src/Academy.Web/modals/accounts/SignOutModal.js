@@ -20,7 +20,7 @@ const SignOutModal = (props) => {
 
         form.handleSubmit(async (inputs) => {
             setSubmitting(true);
-            await client.signout({ returnUrl: router.asPath });
+            await client.signout({ returnUrl: window.location.href });
             setSubmitting(false);
         })();
     };

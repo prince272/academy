@@ -468,9 +468,7 @@ const LearnPage = withRemount(({ remount }) => {
                 return;
             }
 
-            setLoading({ status: 402, fallback: () => router.push(`/courses/${courseId}`), message: 'The lesson cannot be accessed because you need to purchase the course.', remount });
             const payment = result.data;
-
             router.replace(`/courses/${courseId}`)
             router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { returnUrl: window.location.href, payment: JSON.stringify(payment) } });
             return;

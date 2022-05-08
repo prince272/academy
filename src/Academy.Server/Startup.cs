@@ -310,7 +310,6 @@ namespace Academy.Server
                             options.ClientId = Configuration.GetValue<string>("Authentication:Google:ClientId");
                             options.ClientSecret = Configuration.GetValue<string>("Authentication:Google:ClientSecret");
                             options.AccessDeniedPath = "/account/access-denied";
-                            options.SaveTokens = true;
                         });
 
             services.AddAuthentication()
