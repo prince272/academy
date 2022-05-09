@@ -118,7 +118,7 @@ const CodeViewer = (props) => {
                 <Tab.Content>
                     <Tab.Pane className="h-100" eventKey="input">
                         <div className="h-100 position-relative">
-                            <CodeMirror className="h-100"
+                            <CodeMirror className="h-100 small"
                                 value={script}
                                 height="100%"
                                 theme='dark'
@@ -358,13 +358,13 @@ const QuestionView = (props) => {
                                                                     </div>
                                                                 )}
                                                                 {content.answerType == 'selectSingle' && (
-                                                                    <div class="form-check">
+                                                                    <div className="form-check">
                                                                         <input type="radio" className="form-check-input" readOnly={true} checked={answer.checked} />
                                                                         <label className="form-check-label"></label>
                                                                     </div>
                                                                 )}
                                                                 {content.answerType == 'selectMultiple' && (
-                                                                    <div class="form-check">
+                                                                    <div className="form-check">
                                                                         <input type="checkbox" className="form-check-input" readOnly={true} checked={answer.checked} />
                                                                         <label className="form-check-label"></label>
                                                                     </div>
