@@ -180,7 +180,7 @@ const CheckoutModal = withRemount((props) => {
                     <div>
                         <Loader message={
                             <div className="text-center">
-                                <div>Checking payment status...</div>
+                                <div>You will receive a prompt on your mobile device. Please complete the transaction to continue.</div>
                             </div>
                         } />
                     </div>
@@ -211,8 +211,8 @@ const CheckoutModal = withRemount((props) => {
                     <div>
                         <div className="d-flex flex-column text-center justify-content-center p-4">
                             <div className="mb-3 px-10"><span className="svg-icon svg-icon-lg text-info"><BsClockHistory /></span></div>
-                            <div className="h3">Payment Timeout</div>
-                            <div className="mb-3">Please tap the check button to continue checking the payment status.</div>
+                            <div className="h3">Payment Awaiting</div>
+                            <div className="mb-3">Please tap the check button to confirm the transaction.</div>
 
                             <div className="vstack gap-3">
                                 <button type="button" className="btn btn-primary" onClick={() => {
