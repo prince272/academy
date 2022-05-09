@@ -244,6 +244,7 @@ const CoursesPage = withRemount((props) => {
                                         <SvgWebSearchIllus style={{ width: "auto", height: "128px" }} />
                                     </div>
                                     <div className="mb-3">There are no courses here.</div>
+                                    <div><Link href={{ pathname: `${ModalPathPrefix}/contact` }}><a className="btn btn-outline-primary mb-3">Request a course</a></Link></div>
                                 </div>
                             </>) : (<Loader {...loading} />)
                         )}

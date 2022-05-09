@@ -60,7 +60,8 @@ namespace Academy.Server.Controllers
 
                         if (result.Succeeded)
                         {
-                            await signInManager.SignInAsync(user, isPersistent: false);
+                            await signInManager.SignOutAsync();
+                            await signInManager.SignInAsync(user, isPersistent: true);
                             return Redirect(returnUrl);
                         }
                     }
@@ -90,7 +91,8 @@ namespace Academy.Server.Controllers
 
                         if (result.Succeeded)
                         {
-                            await signInManager.SignInAsync(user, isPersistent: false);
+                            await signInManager.SignOutAsync();
+                            await signInManager.SignInAsync(user, isPersistent: true);
                             return Redirect(returnUrl);
                         }
                     }

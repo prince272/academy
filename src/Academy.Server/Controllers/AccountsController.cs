@@ -111,7 +111,8 @@ namespace Academy.Server.Controllers
                     return Result.Failed(StatusCodes.Status400BadRequest, reason: ResultReason.ConfirmUsername, errors: new[] { error });
                 }
 
-                await signInManager.SignInAsync(user, true);
+                await signInManager.SignOutAsync();
+                await signInManager.SignInAsync(user, isPersistent: true);
                 return Result.Succeed();
             }
             else if (result.IsLockedOut)

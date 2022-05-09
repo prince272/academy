@@ -265,6 +265,12 @@ namespace Academy.Server.Controllers
                     if (form.Solve)
                     {
                         var remainingBits = user.Bits + appSettings.Course.BitRules[CourseBitRuleType.SeekAnswer].Value;
+
+                        if (remainingBits < 0)
+                        {
+                            return Result.Failed(StatusCodes.Status400BadRequest, $"You need {"bit".ToQuantity(Math.Abs(appSettings.Course.BitRules[CourseBitRuleType.SeekAnswer].Value))} to show the answer.");
+                        }
+
                         user.Bits = remainingBits;
                     }
                     else
