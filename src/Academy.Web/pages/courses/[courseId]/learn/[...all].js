@@ -359,13 +359,13 @@ const QuestionView = (props) => {
                                                                 )}
                                                                 {content.answerType == 'selectSingle' && (
                                                                     <div class="form-check">
-                                                                        <input type="radio" class="form-check-input" readOnly={true} checked={answer.checked} />
+                                                                        <input type="radio" className="form-check-input" readOnly={true} checked={answer.checked} />
                                                                         <label className="form-check-label"></label>
                                                                     </div>
                                                                 )}
                                                                 {content.answerType == 'selectMultiple' && (
                                                                     <div class="form-check">
-                                                                        <input type="checkbox" class="form-check-input" readOnly={true} checked={answer.checked} />
+                                                                        <input type="checkbox" className="form-check-input" readOnly={true} checked={answer.checked} />
                                                                         <label className="form-check-label"></label>
                                                                     </div>
                                                                 )}
