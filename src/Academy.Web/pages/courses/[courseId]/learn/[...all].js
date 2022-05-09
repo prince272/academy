@@ -352,14 +352,27 @@ const QuestionView = (props) => {
                                                         <div className="d-flex justify-content-between align-items-stretch border-bottom-0" style={{ minHeight: "52px" }}>
                                                             <div className="px-2 py-1 d-flex align-items-center hstack gap-2">
 
-                                                                <div className={`${content.answerType != 'reorder' ? 'd-none' : ''}`}>
-                                                                    <span className="svg-icon svg-icon-xs d-inline-block" ><BsGripVertical /></span>
-                                                                </div>
-
+                                                                {content.answerType == 'reorder' && (
+                                                                    <div>
+                                                                        <span className="svg-icon svg-icon-xs d-inline-block" ><BsGripVertical /></span>
+                                                                    </div>
+                                                                )}
+                                                                {content.answerType == 'selectSingle' && (
+                                                                    <div class="form-check">
+                                                                        <input type="radio" class="form-check-input" readOnly={true} checked={answer.checked} />
+                                                                        <label class="form-check-label"></label>
+                                                                    </div>
+                                                                )}
+                                                                {content.answerType == 'selectMultiple' && (
+                                                                    <div class="form-check">
+                                                                        <input type="checkbox" class="form-check-input" readOnly={true} checked={answer.checked} />
+                                                                        <label class="form-check-label"></label>
+                                                                    </div>
+                                                                )}
                                                             </div>
 
                                                             <div className="d-flex align-items-center flex-grow-1 py-3 pe-3">
-                                                                <div className="flex-grow-1 small">
+                                                                <div className="flex-grow-1">
                                                                     <div>{answer.text}</div>
                                                                 </div>
                                                             </div>
