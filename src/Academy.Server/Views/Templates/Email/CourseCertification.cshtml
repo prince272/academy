@@ -14,7 +14,7 @@
               <tbody>
                 <tr>
                   <td class="o_bg-white o_px-md o_py o_sans o_text o_text-secondary" align="center">
-                    <p><img class="o_img-full o_br" src="@(Context.Request.AbsoluteUrl("/img/course-certification.png"))" width="584" height="352" alt="" style="max-width: 584px;"></p>
+                    <p><img class="o_img-full o_br" src="@(Model.Course.Certificate.Image.Url)" width="584" height="352" alt="" style="max-width: 584px;"></p>
                   </td>
                 </tr>
               </tbody>
@@ -54,7 +54,7 @@
               <tbody>
                 <tr>
                   <td class="o_bg-white o_px-md o_py o_sans o_text o_text-secondary" align="left">
-                      <p>Hi <b>@(Model.User.FullName)</b>,<br />You’ve successfully completed the @(Model.Course.Title). Your certificate has been added to your profile for you to download whenever you want.</p>
+                      <p>Hi <b>@(Model.User.FullName)</b>,<br />You’ve successfully completed the @(Model.Course.Title) course. Your certificate has been added to your profile for you to download whenever you want.</p>
                   </td>
                 </tr>
               </tbody>

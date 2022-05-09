@@ -2,6 +2,7 @@
 using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.DocumentProcessor;
 using Academy.Server.Extensions.EmailSender;
+using Academy.Server.Extensions.SmsSender;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Extensions.ViewRenderer;
 using Academy.Server.Models.Courses;
@@ -37,6 +38,7 @@ namespace Academy.Server.Controllers
         private readonly ISharedService sharedService;
         private readonly AppSettings appSettings;
         private readonly IEmailSender emailSender;
+        private readonly ISmsSender smsSender;
         private readonly IViewRenderer viewRenderer;
 
         public CoursesController(IServiceProvider serviceProvider)
@@ -48,6 +50,7 @@ namespace Academy.Server.Controllers
             sharedService = serviceProvider.GetRequiredService<ISharedService>();
             appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
             emailSender = serviceProvider.GetRequiredService<IEmailSender>();
+            smsSender = serviceProvider.GetRequiredService<ISmsSender>();
             viewRenderer = serviceProvider.GetRequiredService<IViewRenderer>();
         }
 
@@ -363,6 +366,11 @@ namespace Academy.Server.Controllers
                     emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = user.Email },
                        subject: $"Congratulations! You've completed the {courseModel.Title} course!",
                        body: await viewRenderer.RenderToStringAsync("Email/CourseCertification", (user, courseModel))).Forget();
+                }
+
+                if  (user.PhoneNumber != null)
+                {
+                    smsSender.SendAsync(user.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/CourseCertification", (user, courseModel))).Forget();
                 }
             }
 
