@@ -295,6 +295,7 @@ namespace Academy.Server
 
                 options.Authentication.CookieLifetime = TimeSpan.FromDays(30);
                 options.Authentication.CookieSlidingExpiration = true;
+
             })
                 .AddApiAuthorization<User, AppDbContext>();
 

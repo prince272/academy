@@ -129,10 +129,6 @@ const useClientProvider = () => {
                     monitorSession: true
                 });
 
-                const context = await userManager.getUser();
-                if (context) await loadUserContext(context);
-
-                userManager.events.addUserSignedOut(handleUserSignedOut);
                 userManagerRef.current = userManager;
             }
 
@@ -152,10 +148,6 @@ const useClientProvider = () => {
     const unloadUserContext = async () => {
         await setUser(null);
         await setUserContext(null);
-    };
-
-    const handleUserSignedOut = async () => {
-        await unloadUserContext();
     };
 
     const getReturnUrl = (state) => {
