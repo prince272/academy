@@ -126,6 +126,7 @@ const useClientProvider = () => {
                     userStore: new WebStorageStateStore({
                         prefix: 'web'
                     }),
+                    prompt: 'login',
                     monitorSession: true
                 });
 
