@@ -120,8 +120,8 @@ const useClientProvider = () => {
 
                 const userManager = new UserManager({
                     ...clientSettings,
-                    automaticSilentRenew: false,
-                    includeIdTokenInSilentRenew: false,
+                    automaticSilentRenew: true,
+                    includeIdTokenInSilentRenew: true,
                     loadUserInfo: false,
                     userStore: new WebStorageStateStore({
                         prefix: 'web'
