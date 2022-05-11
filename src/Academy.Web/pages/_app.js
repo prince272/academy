@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { useClient } from '../utils/client';
 import { cleanObject } from '../utils/helpers';
 import { useRouter } from 'next/router';
+import Script from "next/script";
 
 import { useEffect, useMemo, useRef, useState, } from 'react';
 
@@ -33,6 +34,8 @@ import { useAppSettings } from '../utils/appSettings';
 import { useEventDispatcher } from '../utils/eventDispatcher';
 import { useDialog } from '../utils/dialog';
 import LoadingBar from 'react-top-loading-bar';
+
+import * as gtag from '../utils/gtag';
 
 const BitInfoDialog = () => {
   const appSettings = useAppSettings();
@@ -256,7 +259,8 @@ const Body = ({ children }) => {
     }
   };
 
-  const handleRouteComplete = () => {
+  const handleRouteComplete = (url) => {
+    if (url) gtag.pageview(url);
     loadingBarRef.current.complete();
     setPageLoading(false);
   };
@@ -419,6 +423,24 @@ export default function MyApp({ Component, pageProps, appSettings, error }) {
           </EventDispatcherProvider>
         </SSRProvider>
       ) : (<ErrorView {...{ error, asPage: true }} />)}
+      {/* Global Site Tag (gtag.js) - Google Analytics */}
+      <Script
+        strategy="afterInteractive"
+        src={`https://www.googletagmanager.com/gtag/js?id=${gtag.GA_TRACKING_ID}`}
+      />
+      <Script
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${gtag.GA_TRACKING_ID}', {
+              page_path: window.location.pathname,
+            });
+          `,
+        }}
+      />
     </>
   );
 }
