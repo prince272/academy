@@ -167,14 +167,14 @@ namespace Academy.Server.Controllers
             if (ValidationHelper.PhoneOrEmail(form.Username))
             {
                 form.Code = await userManager.GenerateChangePhoneNumberTokenAsync(user, form.Username);
-                await smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ConfirmAccount", (user, form)));
+                (smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ConfirmAccount", (user, form)))).Forget();
             }
             else
             {
                 form.Code = await userManager.GenerateChangeEmailTokenAsync(user, form.Username);
-                await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = form.Username },
+                (emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = form.Username },
                     subject: "Confirm Your Account",
-                    body: await viewRenderer.RenderToStringAsync("Email/ConfirmAccount", (user, form)));
+                    body: await viewRenderer.RenderToStringAsync("Email/ConfirmAccount", (user, form)))).Forget();
             }
 
             return Result.Succeed();
@@ -223,13 +223,13 @@ namespace Academy.Server.Controllers
             if (ValidationHelper.PhoneOrEmail(form.Username))
             {
                 form.Code = await userManager.GenerateChangePhoneNumberTokenAsync(user, form.Username);
-                await smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ChangeAccount", (user, form)));
+                (smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ChangeAccount", (user, form)))).Forget();
             }
             else
             {
                 form.Code = await userManager.GenerateChangeEmailTokenAsync(user, form.Username);
-                await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = form.Username },
-                    subject: subject, body: await viewRenderer.RenderToStringAsync("Email/ChangeAccount", (user, form)));
+                (emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = form.Username },
+                    subject: subject, body: await viewRenderer.RenderToStringAsync("Email/ChangeAccount", (user, form)))).Forget();
             }
 
             return Result.Succeed();
@@ -300,12 +300,12 @@ namespace Academy.Server.Controllers
 
             if (ValidationHelper.PhoneOrEmail(form.Username))
             {
-                await smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ResetPassword", (user, form)));
+                (smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ResetPassword", (user, form)))).Forget();
             }
             else
             {
-                await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = form.Username },
-                    subject: subject, body: await viewRenderer.RenderToStringAsync("Email/ResetPassword", (user, form)));
+                (emailSender.SendAsync(account: appSettings.Company.Emails.App, address: new EmailAddress { Email = form.Username },
+                    subject: subject, body: await viewRenderer.RenderToStringAsync("Email/ResetPassword", (user, form)))).Forget();
             }
 
             return Result.Succeed();

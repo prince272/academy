@@ -87,13 +87,13 @@ namespace Academy.Server.Controllers
         [HttpPost("/contact")]
         public async Task<IActionResult> Contact([FromBody] ContactModel form)
         {
-            await emailSender.SendAsync(account: appSettings.Company.Emails.App, address: appSettings.Company.Emails.Info,
+             (emailSender.SendAsync(account: appSettings.Company.Emails.App, address: appSettings.Company.Emails.Info,
                 subject: $"{form.FullName} - {form.Subject}",
-                body: await viewRenderer.RenderToStringAsync("Email/ContactSent", form));
+                body: await viewRenderer.RenderToStringAsync("Email/ContactSent", form))).Forget();
 
-            await emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = form.Email },
+             (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = form.Email },
                 subject: form.Subject,
-                body: await viewRenderer.RenderToStringAsync("Email/ContactReceived", form));
+                body: await viewRenderer.RenderToStringAsync("Email/ContactReceived", form))).Forget();
 
             return Result.Succeed();
         }

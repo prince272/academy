@@ -14,7 +14,7 @@ import { pascalCase } from 'change-case';
 
 import Loader from '../../../../components/Loader';
 
-import { BsArrowLeft, BsCheckCircleFill, BsFilm, BsGripVertical, BsJournalRichtext, BsXCircleFill, BsXLg } from 'react-icons/bs';
+import { BsInfoCircle , BsArrowLeft, BsCheckCircleFill, BsFilm, BsGripVertical, BsJournalRichtext, BsXCircleFill, BsXLg } from 'react-icons/bs';
 
 import LinesEllipsisLoose from 'react-lines-ellipsis/lib/loose'
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
@@ -388,6 +388,11 @@ const QuestionView = (props) => {
                         )}
                     </Droppable>
                 </DragDropContext>
+                <div className="text-info mb-3">
+                    {content.answerType == 'selectSingle' && (<span><span className="svg-icon svg-icon-xs d-inline-blockv me-2" ><BsInfoCircle /></span>Please select a one option to answer the question.</span>)}
+                    {content.answerType == 'selectMultiple' && (<span><span className="svg-icon svg-icon-xs d-inline-block me-2" ><BsInfoCircle /></span>Please select one or more options to answer the question.</span>)}
+                    {content.answerType == 'reorder' && (<span><span className="svg-icon svg-icon-xs d-inline-block me-2" ><BsInfoCircle /></span>Please reorder the options to answer the question.</span>)}
+                </div>
                 <div className="d-flex justify-content-end mb-3">
                     {!content._correct && (
                         <button className="btn btn-secondary" disabled={submitting} onClick={() => {

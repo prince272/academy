@@ -85,7 +85,7 @@ const CheckoutModal = withRemount((props) => {
     const verifyPayment = async () => {
         payment = await setPayment({ ...payment, status: 'processing' });
 
-        for (let count = 0; count < 12; count++) {
+        for (let count = 0; count < 6; count++) {
             const result = await client.post(`/payments/${payment.id}/verify`);
 
             if (!result.error) {
