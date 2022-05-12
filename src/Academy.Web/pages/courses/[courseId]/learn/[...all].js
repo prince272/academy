@@ -389,9 +389,9 @@ const QuestionView = (props) => {
                     </Droppable>
                 </DragDropContext>
                 <div className="text-info mb-3">
-                    {content.answerType == 'selectSingle' && (<span><span className="svg-icon svg-icon-xs d-inline-blockv me-2" ><BsInfoCircle /></span>Please select a one option to answer the question.</span>)}
-                    {content.answerType == 'selectMultiple' && (<span><span className="svg-icon svg-icon-xs d-inline-block me-2" ><BsInfoCircle /></span>Please select one or more options to answer the question.</span>)}
-                    {content.answerType == 'reorder' && (<span><span className="svg-icon svg-icon-xs d-inline-block me-2" ><BsInfoCircle /></span>Please reorder the options to answer the question.</span>)}
+                    {content.answerType == 'selectSingle' && (<span className="small"><span className="me-1"><BsInfoCircle /></span>Please select a one option to answer the question.</span>)}
+                    {content.answerType == 'selectMultiple' && (<span className="small"><span className="me-1"><BsInfoCircle /></span>Please select one or more options to answer the question.</span>)}
+                    {content.answerType == 'reorder' && (<span className="small"><span className="me-1"><BsInfoCircle /></span>Please reorder the options to answer the question.</span>)}
                 </div>
                 <div className="d-flex justify-content-end mb-3">
                     {!content._correct && (
