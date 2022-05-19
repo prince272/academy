@@ -44,9 +44,8 @@ const CourseItem = ({ course }) => {
                 )}
             </div>
             <div className="card-body p-2 position-relative">
-                <div className="d-inline-block badge text-dark bg-soft-primary mb-2 me-5">{appSettings.course.subjects.find(subject => course.subject == subject.value)?.name}</div>
                 <div className="fs-6 mb-2" style={{ height: "48px" }}>
-                    <ResponsiveEllipsis className="overflow-hidden"
+                    <ResponsiveEllipsis className="overflow-hidden text-break"
                         text={course.title || ''}
                         maxLine='2'
                         ellipsis='...'
@@ -54,9 +53,32 @@ const CourseItem = ({ course }) => {
                         basedOn='letters'
                     />
                 </div>
+                <div className="text-primary">{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
                 <div className="hstack gap-3 justify-content-between">
-                    <div className="text-primary">{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
+                    <div className="d-inline-flex align-items-center my-2 me-2">
+                        {(() => {
+                            const teacher = (client.user && client.user.id == course.teacher.id) ? client.user : course.teacher;
+                            return (
+                                <>
+                                    {teacher.avatar ?
+                                        (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={teacher.avatar.url} width={24} height={24} objectFit="cover" alt={`${teacher.fullName}`} />) :
+                                        (
+                                            <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "24px", height: "24px" }}>
+                                                <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
+                                            </div>
+                                        )}
+                                    <ResponsiveEllipsis className="overflow-hidden text-break fst-italic ms-2"
+                                        text={teacher.fullName}
+                                        maxLine='1'
+                                        ellipsis='...'
+                                        trimRight
+                                        basedOn='letters'
+                                    />
+                                </>
+                            )
+                        })()}
 
+                    </div>
                     <div className="hstack">
                         <div><span className="text-primary"><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
                         <span className="mx-2">·</span>

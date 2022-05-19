@@ -1,5 +1,7 @@
 ﻿using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.StorageProvider;
+using Academy.Server.Models.Accounts;
+using Academy.Server.Models.Members;
 using Academy.Server.Models.Students;
 using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +12,7 @@ namespace Academy.Server.Models.Courses
 {
     public class CourseModel
     {
-        public StudentModel User { get; set; }
+        public TeacherModel Teacher { get; set; }
 
         public int Id { get; set; }
 

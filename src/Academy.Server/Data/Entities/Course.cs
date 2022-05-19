@@ -7,9 +7,9 @@ namespace Academy.Server.Data.Entities
 {
     public class Course : IEntity
     {
-        public virtual User User { get; set; }
+        public virtual User Teacher { get; set; }
 
-        public int UserId { get; set; }
+        public int TeacherId { get; set; }
 
         public int Id { get; set; }
 

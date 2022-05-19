@@ -3,7 +3,7 @@ using Academy.Server.Models.Courses;
 
 namespace Academy.Server.Models.Members
 {
-    public class MemberModel
+    public class TeacherModel
     {
         public int Id { get; set; }
 
@@ -18,11 +18,11 @@ namespace Academy.Server.Models.Members
         public MediaModel Avatar { get; set; }
     }
 
-    public class MemberProfile : AutoMapper.Profile
+    public class TeacherProfile : AutoMapper.Profile
     {
-        public MemberProfile()
+        public TeacherProfile()
         {
-            CreateMap<User, MemberModel>();
+            CreateMap<User, TeacherModel>();
         }
     }
 }

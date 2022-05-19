@@ -758,7 +758,7 @@ const LearnPage = withRemount(({ remount }) => {
                             </OverlayTrigger>
 
                             <div className="h6 text-center mb-0 mx-2 w-100">
-                                <ResponsiveEllipsis className="overflow-hidden"
+                                <ResponsiveEllipsis className="overflow-hidden text-break"
                                     text={section.title || ''}
                                     maxLine='1'
                                     ellipsis='...'

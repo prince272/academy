@@ -29,7 +29,7 @@ namespace Academy.Server.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> Index(int pageNumber, int pageSize, [FromQuery] MemeberSearchModel search)
+        public async Task<IActionResult> Index(int pageNumber, int pageSize, [FromQuery] TeacherSearchModel search)
         {
             var currentUser = await HttpContext.Request.GetCurrentUserAsync();
             if (!currentUser.HasRoles(RoleConstants.Admin))
@@ -52,10 +52,10 @@ namespace Academy.Server.Controllers
         }
 
         [NonAction]
-        private async Task<MemberModel> GetMemberModel(int userId)
+        private async Task<TeacherModel> GetMemberModel(int userId)
         {
             var user = await unitOfWork.Query<User>().FirstOrDefaultAsync(_ => _.Id == userId);
-            var userModel = mapper.Map<MemberModel>(user);
+            var userModel = mapper.Map<TeacherModel>(user);
             return userModel;
         }
     }

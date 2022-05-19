@@ -110,7 +110,7 @@ const CheckoutModal = withRemount((props) => {
             <Modal.Body className="p-0" as={Form} onSubmit={preventDefault(() => submit())}>
                 <div className="mt-3 px-4">
                     <div className="h4">
-                        <ResponsiveEllipsis className="overflow-hidden"
+                        <ResponsiveEllipsis className="overflow-hidden text-break"
                             text={payment.status == 'pending' ? (payment.title || '') : `Payment ${noCase(payment.status)}`}
                             maxLine='1'
                             ellipsis='...'

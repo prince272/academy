@@ -52,12 +52,12 @@ namespace Academy.Server.Events
                 if (payment.Reason == PaymentReason.Course)
                 {
                     var course = unitOfWork.Query<Course>()
-                        .Include(_ => _.User)
+                        .Include(_ => _.Teacher)
                         .FirstOrDefault(_ => _.Code == payment.ReferenceId);
 
                     if (course != null)
                     {
-                        var user = course.User;
+                        var user = course.Teacher;
                         user.Balance += course.Cost;
                         await unitOfWork.UpdateAsync(user);
                     }

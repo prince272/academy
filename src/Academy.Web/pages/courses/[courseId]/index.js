@@ -588,6 +588,30 @@ const CoursePage = withRemount(({ remount, ...props }) => {
                                         <span className="mx-2">·</span>
                                         <div><span><BsPersonFill /></span> {formatNumber(course.students)}</div>
                                     </div>
+                                    <div className="d-inline-flex align-items-center my-2 me-2">
+                                        {(() => {
+                                            const teacher = (client.user && client.user.id == course.teacher.id) ? client.user : course.teacher;
+                                            return (
+                                                <>
+                                                    {teacher.avatar ?
+                                                        (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={teacher.avatar.url} width={24} height={24} objectFit="cover" alt={`${teacher.fullName}`} />) :
+                                                        (
+                                                            <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "24px", height: "24px" }}>
+                                                                <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
+                                                            </div>
+                                                        )}
+                                                    <ResponsiveEllipsis className="overflow-hidden text-break text-white fst-italic ms-2"
+                                                        text={teacher.fullName}
+                                                        maxLine='1'
+                                                        ellipsis='...'
+                                                        trimRight
+                                                        basedOn='letters'
+                                                    />
+                                                </>
+                                            )
+                                        })()}
+
+                                    </div>
                                     <div className="mb-1">
                                         <ResponsiveEllipsis className="overflow-hidden text-break"
                                             text={course.description || ''}
