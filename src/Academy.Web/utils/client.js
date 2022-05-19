@@ -48,7 +48,7 @@ const createHttpClient = (defaultConfig, ctx) => {
                     if (ex.message === "Network Error") {
                         return {
                             error: {
-                                message: 'Unable to access the network',
+                                message: 'Looks like you lost your connection. Please check it and try again.',
                                 status: -1,
                                 details: {},
                                 reason: 'Network Error'

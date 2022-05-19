@@ -376,6 +376,14 @@ namespace Academy.Server
                 options.ClientSecret = "Jyo1bbROPF0fdiHoxv3uqtuVETob6OVPmjQxvHmkmmAAE";
             });
 
+            //services.AddTwilioSmsSender(options =>
+            //{
+
+            //    options.AccountSID = "AC6ae01e15d7d661735d0e353be820955d";
+            //    options.AuthToken = "63247b130198885d0cb3d49aed781bc0";
+            //    options.MessagingServiceSID = "MGe9442d79988f0f407949ff2e2c27ef36";
+            //});
+
             services.AddRazorViewRenderer(options =>
             {
                 options.RootPathFormat = "/Views/Templates/{0}";

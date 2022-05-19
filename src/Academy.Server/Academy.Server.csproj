@@ -36,6 +36,7 @@
 		<PackageReference Include="Syncfusion.DocIO.Net.Core" Version="19.4.0.40" />
 		<PackageReference Include="Syncfusion.DocIORenderer.Net.Core" Version="19.4.0.40" />
 		<PackageReference Include="Syncfusion.EJ2.PdfViewer.AspNet.Core.Windows" Version="19.4.0.42" />
+		<PackageReference Include="Twilio" Version="5.75.0" />
 	</ItemGroup>
 
 	<ItemGroup>

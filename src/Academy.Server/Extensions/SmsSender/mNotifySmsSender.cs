@@ -21,7 +21,7 @@ namespace Academy.Server.Extensions.SmsSender
             smsOptions = serviceProvider.GetRequiredService<IOptions<mNotifySmsSenderOptions>>().Value;
         }
 
-        public async Task SendAsync(string phoneNumber, string message, CancellationToken cancellationToken = default)
+        public async Task SendAsync(string phoneNumber, string body, CancellationToken cancellationToken = default)
         {
             var requestHeaders = new Dictionary<string, string>();
             var requestData =  new Dictionary<string, object>
@@ -29,7 +29,7 @@ namespace Academy.Server.Extensions.SmsSender
                                         { "key", smsOptions.ClientSecret },
                                         { "recipient", new [] { phoneNumber.TrimStart('+') } },
                                         { "sender", smsOptions.ClientId },
-                                        { "message", message },
+                                        { "message", body },
                                     };
             var response = await httpClient.SendAsJsonAsync(HttpMethod.Post, "/api/sms/quick", requestData, requestHeaders, cancellationToken);
             var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, object>>();

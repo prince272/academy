@@ -88,11 +88,11 @@ namespace Academy.Server.Controllers
         public async Task<IActionResult> Contact([FromBody] ContactModel form)
         {
              (emailSender.SendAsync(account: appSettings.Company.Emails.App, address: appSettings.Company.Emails.Info,
-                subject: $"{form.FullName} - {form.Subject}",
+                subject: $"Message from {form.FullName}",
                 body: await viewRenderer.RenderToStringAsync("Email/ContactSent", form))).Forget();
 
              (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = form.Email },
-                subject: form.Subject,
+                subject: "Your Message Has Been Received",
                 body: await viewRenderer.RenderToStringAsync("Email/ContactReceived", form))).Forget();
 
             return Result.Succeed();

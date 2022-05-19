@@ -335,7 +335,7 @@ const QuestionView = (props) => {
     return (
         <div className="row justify-content-center g-0">
             <div className="col-12 col-md-7 col-lg-6 col-xl-5">
-                <div className="h4 mt-3 mb-2">{lesson.title}</div>
+                <div className="h4 my-3">{lesson.title}</div>
                 <div><DocumentViewer document={content.question} /></div>
                 <DragDropContext onDragEnd={handleReorder}>
                     <Droppable droppableId={`content`} direction="vertical" type="lesson">
@@ -389,9 +389,9 @@ const QuestionView = (props) => {
                     </Droppable>
                 </DragDropContext>
                 <div className="text-info mb-3">
-                    {content.answerType == 'selectSingle' && (<span className="small"><span className="me-1"><BsInfoCircle /></span>Please select a one option to answer the question.</span>)}
+                    {content.answerType == 'selectSingle' && (<span className="small"><span className="me-1"><BsInfoCircle /></span>Please select one option to answer the question.</span>)}
                     {content.answerType == 'selectMultiple' && (<span className="small"><span className="me-1"><BsInfoCircle /></span>Please select one or more options to answer the question.</span>)}
-                    {content.answerType == 'reorder' && (<span className="small"><span className="me-1"><BsInfoCircle /></span>Please reorder the options to answer the question.</span>)}
+                    {content.answerType == 'reorder' && (<span className="small"><span className="me-1"><BsInfoCircle /></span>Please drag and drop the options to answer the question.</span>)}
                 </div>
                 <div className="d-flex justify-content-end mb-3">
                     {!content._correct && (

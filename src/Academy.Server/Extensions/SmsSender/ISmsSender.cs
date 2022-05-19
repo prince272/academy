@@ -5,6 +5,6 @@ namespace Academy.Server.Extensions.SmsSender
 {
     public interface ISmsSender
     {
-        Task SendAsync(string phoneNumber, string message, CancellationToken cancellationToken = default);
+        Task SendAsync(string phoneNumber, string body, CancellationToken cancellationToken = default);
     }
 }

@@ -11,8 +11,6 @@ namespace Academy.Server.Models
 
         public string PhoneNumber { get; set; }
 
-        public string Subject { get; set; }
-
         public string Message { get; set; }
     }
 
@@ -23,7 +21,6 @@ namespace Academy.Server.Models
             RuleFor(_ => _.FullName).NotEmpty();
             RuleFor(_ => _.Email).Email();
             RuleFor(_ => _.PhoneNumber).Phone();
-            RuleFor(_ => _.Subject).NotEmpty();
             RuleFor(_ => _.Message).NotEmpty();
         }
     }

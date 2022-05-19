@@ -42,6 +42,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Academy.Server.Extensions.SmsSender;
 
 namespace Academy.Server.Controllers
 {
@@ -55,6 +56,7 @@ namespace Academy.Server.Controllers
         private readonly ISharedService sharedService;
         private readonly AppSettings appSettings;
         private readonly IEmailSender emailSender;
+        private readonly ISmsSender smsSender;
         private readonly IViewRenderer viewRenderer;
 
         public TestController(IServiceProvider serviceProvider)
@@ -66,26 +68,54 @@ namespace Academy.Server.Controllers
             sharedService = serviceProvider.GetRequiredService<ISharedService>();
             appSettings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
             emailSender = serviceProvider.GetRequiredService<IEmailSender>();
+            smsSender = serviceProvider.GetRequiredService<ISmsSender>();
             viewRenderer = serviceProvider.GetRequiredService<IViewRenderer>();
         }
 
         [HttpGet("/test")]
         public async Task<IActionResult> Index()
         {
-            var contents = await unitOfWork.Query<Content>().ToListAsync();
-            foreach (var content in contents)
-            {
-                if (content.Type == ContentType.Question)
-                {
-                    content.Question = Sanitizer.WrapHtml(content.Question);
-                }
-                else
-                {
+            string message = "Welcome to our very " +
+               "first web developmen" +
+               "t courses on Academy" +
+               "OfOurs.com\r\n\r\n" +
+               "\"Education is the p" +
+               "assport to the futur" +
+               "e, for tomorrow belo" +
+               "ngs to those who pre" +
+               "pare for it today.\"" +
+               "\r\n\r\n" +
+               "Get started today by" +
+               " visiting academyofo" +
+               "urs.com/courses\r\n" +
+               "\r\n" +
+               "If you have any ques" +
+               "tions or would want " +
+               "to study other cours" +
+               "es, you can simply f" +
+               "ill out the contact " +
+               "form on our website.";
 
+            string numbersString = "233550362337\r\n2332020522169";
+        
+
+            var numbers = numbersString.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+            var errorNumbers = new List<string>();
+
+            foreach (var number in numbers)
+            {
+                try
+                {
+                    await smsSender.SendAsync(number, "Nice");
                 }
-                // await unitOfWork.UpdateAsync(content);
+                catch (Exception ex)
+                {
+                    errorNumbers.Add(number);
+                }
             }
-            await unitOfWork.UpdateAsync(contents);
+
+
+
             return View();
         }
     }

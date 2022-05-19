@@ -42,6 +42,12 @@ namespace Academy.Server.Services
             services.AddScoped<ISmsSender, mNotifySmsSender>();
         }
 
+        public static void AddTwilioSmsSender(this IServiceCollection services, Action<TwilioSmsSenderOptions> configure)
+        {
+            services.Configure(configure);
+            services.AddScoped<ISmsSender, TwilioSmsSender>();
+        }
+
         public static void AddRazorViewRenderer(this IServiceCollection services, Action<RazorViewRendererOptions> configure)
         {
             services.Configure(configure);

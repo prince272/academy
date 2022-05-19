@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 namespace Academy.Server.Controllers
 {
     [ApiController]
+    [Route("[controller]")]
     public class CoursesController : ControllerBase
     {
         private readonly IUnitOfWork unitOfWork;
@@ -55,7 +56,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("/courses")]
+        [HttpPost("/")]
         public async Task<IActionResult> Create([FromBody] CourseEditModel form)
         {
             var user = await HttpContext.Request.GetCurrentUserAsync();
@@ -83,7 +84,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPut("/courses/{courseId}")]
+        [HttpPut("{courseId}")]
         public async Task<IActionResult> Edit(int courseId, [FromBody] CourseEditModel form)
         {
             var course = await unitOfWork.Query<Course>()
@@ -113,7 +114,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpDelete("/courses/{courseId}")]
+        [HttpDelete("{courseId}")]
         public async Task<IActionResult> Delete(int courseId)
         {
             var course = await unitOfWork.Query<Course>()
@@ -129,7 +130,7 @@ namespace Academy.Server.Controllers
             return Result.Succeed();
         }
 
-        [HttpGet("/courses/{courseId}")]
+        [HttpGet("{courseId}")]
         public async Task<IActionResult> Read(int courseId, int? sectionId = null, int? lessonId = null)
         {
             var courseModel = await GetCourseModel(courseId, sectionId, lessonId);
@@ -183,7 +184,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/purchase")]
+        [HttpPost("{courseId}/purchase")]
         public async Task<IActionResult> Purchase(int courseId)
         {
             var course = await unitOfWork.Query<Course>()
@@ -218,7 +219,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}/progress")]
+        [HttpPost("{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}/progress")]
         public async Task<IActionResult> Progresss(int courseId, int sectionId, int lessonId, int contentId, [FromBody] ContentProgressModel form)
         {
             var user = await HttpContext.Request.GetCurrentUserAsync();
@@ -292,7 +293,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/certificate")]
+        [HttpPost("{courseId}/certificate")]
         public async Task<IActionResult> Certificate(int courseId)
         {
             var user = await HttpContext.Request.GetCurrentUserAsync();
@@ -378,7 +379,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/reorder")]
+        [HttpPost("{courseId}/reorder")]
         public async Task<IActionResult> Reorder(int courseId, [FromBody] CourseReorderModel form)
         {
             var course = (await GetCourseModel(courseId))?.Course;
@@ -512,7 +513,7 @@ namespace Academy.Server.Controllers
 
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/reviews")]
+        [HttpPost("{courseId}/reviews")]
         public async Task<IActionResult> Create(int courseId, [FromBody] ReviewEditModel form)
         {
             var course = await unitOfWork.Query<Course>()
@@ -534,7 +535,7 @@ namespace Academy.Server.Controllers
             return Result.Succeed(data: review.Id);
         }
 
-        [HttpGet("/courses/{courseId}/students")]
+        [HttpGet("{courseId}/students")]
         public async Task<IActionResult> Students(int courseId, int pageNumber, int pageSize, [FromQuery] StudentSearchModel search)
         {
             var course = await unitOfWork.Query<Course>()
@@ -559,7 +560,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPut("/courses/{courseId}/reviews/{reviewId}")]
+        [HttpPut("{courseId}/reviews/{reviewId}")]
         public async Task<IActionResult> Edit(int courseId, int reviewId, [FromBody] ReviewEditModel form)
         {
             var course = await unitOfWork.Query<Course>()
@@ -582,7 +583,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpDelete("/courses/{courseId}/reviews/{reviewId}")]
+        [HttpDelete("{courseId}/reviews/{reviewId}")]
         public async Task<IActionResult> DeleteReview(int courseId, int reviewId)
         {
             var course = await unitOfWork.Query<Course>()
@@ -601,7 +602,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/sections")]
+        [HttpPost("{courseId}/sections")]
         public async Task<IActionResult> Create(int courseId, [FromBody] SectionEditModel form)
         {
             var course = await unitOfWork.Query<Course>()
@@ -623,7 +624,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPut("/courses/{courseId}/sections/{sectionId}")]
+        [HttpPut("{courseId}/sections/{sectionId}")]
         public async Task<IActionResult> Edit(int courseId, int sectionId, [FromBody] SectionEditModel form)
         {
             var section = await unitOfWork.Query<Section>().AsSingleQuery()
@@ -646,7 +647,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpDelete("/courses/{courseId}/sections/{sectionId}")]
+        [HttpDelete("{courseId}/sections/{sectionId}")]
         public async Task<IActionResult> Delete(int courseId, int sectionId)
         {
             var section = await unitOfWork.Query<Section>().AsSingleQuery()
@@ -666,7 +667,7 @@ namespace Academy.Server.Controllers
             return Result.Succeed();
         }
 
-        [HttpGet("/courses/{courseId}/sections/{sectionId}")]
+        [HttpGet("{courseId}/sections/{sectionId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId)
         {
             var courseModel = (await GetCourseModel(courseId));
@@ -680,7 +681,7 @@ namespace Academy.Server.Controllers
 
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/sections/{sectionId}/lessons")]
+        [HttpPost("{courseId}/sections/{sectionId}/lessons")]
         public async Task<IActionResult> Create(int courseId, int sectionId, [FromBody] LessonEditModel form)
         {
             var section = await unitOfWork.Query<Section>().AsSingleQuery()
@@ -706,7 +707,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPut("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}")]
+        [HttpPut("{courseId}/sections/{sectionId}/lessons/{lessonId}")]
         public async Task<IActionResult> Edit(int courseId, int sectionId, int lessonId, [FromBody] LessonEditModel form)
         {
             var lesson = await unitOfWork.Query<Lesson>().AsSingleQuery()
@@ -734,7 +735,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpDelete("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}")]
+        [HttpDelete("{courseId}/sections/{sectionId}/lessons/{lessonId}")]
         public async Task<IActionResult> Delete(int courseId, int sectionId, int lessonId)
         {
             var lesson = await unitOfWork.Query<Lesson>().AsSingleQuery()
@@ -760,7 +761,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}")]
+        [HttpGet("{courseId}/sections/{sectionId}/lessons/{lessonId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId)
         {
             var courseModel = (await GetCourseModel(courseId));
@@ -776,7 +777,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/contents")]
+        [HttpPost("{courseId}/sections/{sectionId}/lessons/{lessonId}/contents")]
         public async Task<IActionResult> Create(int courseId, int sectionId, int lessonId, [FromBody] ContentEditModel form)
         {
             var lesson = await unitOfWork.Query<Lesson>().AsSingleQuery()
@@ -853,7 +854,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPut("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}")]
+        [HttpPut("{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}")]
         public async Task<IActionResult> Edit(int courseId, int sectionId, int lessonId, int contentId, [FromBody] ContentEditModel form)
         {
             var content = await unitOfWork.Query<Content>().AsSingleQuery()
@@ -928,7 +929,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpDelete("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}")]
+        [HttpDelete("{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}")]
         public async Task<IActionResult> Delete(int courseId, int sectionId, int lessonId, int contentId)
         {
             var content = await unitOfWork.Query<Content>().AsSingleQuery()
@@ -955,7 +956,7 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpGet("/courses/{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}")]
+        [HttpGet("{courseId}/sections/{sectionId}/lessons/{lessonId}/contents/{contentId}")]
         public async Task<IActionResult> Read(int courseId, int sectionId, int lessonId, int contentId)
         {
             var courseModel = (await GetCourseModel(courseId, sectionId, lessonId));

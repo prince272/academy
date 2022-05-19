@@ -77,11 +77,6 @@ const ContactModal = (props) => {
                         <div className="invalid-feedback">{formState.errors.phoneNumber?.message}</div>
                     </div>
                     <div className="col-12">
-                        <label className="form-label">Subject</label>
-                        <input {...form.register("subject")} className={`form-control  ${formState.errors.subject ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{formState.errors.subject?.message}</div>
-                    </div>
-                    <div className="col-12">
                         <label className="form-label">Message</label>
                         <textarea {...form.register("message")} className={`form-control ${formState.errors.message ? 'is-invalid' : ''}`} rows="4" placeholder={`Say something nice...`} />
                         <div className="invalid-feedback">{formState.errors.message?.message}</div>
