@@ -15,6 +15,49 @@ import Mounted from '../components/Mounted';
 
 import parsePhoneNumber from 'libphonenumber-js';
 
+const ScrollLeftArrow = (() => {
+  const {
+      isFirstItemVisible,
+      scrollPrev,
+      visibleItemsWithoutSeparators,
+      initComplete
+  } = useContext(VisibilityContext);
+
+  const [disabled, setDisabled] = useState(
+      !initComplete || (initComplete && isFirstItemVisible)
+  );
+
+  useEffect(() => {
+      // NOTE: detect if whole component visible
+      if (visibleItemsWithoutSeparators.length) {
+          setDisabled(isFirstItemVisible);
+      }
+  }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
+
+  return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
+});
+
+const ScrollRightArrow = () => {
+  const {
+      isLastItemVisible,
+      scrollNext,
+      visibleItemsWithoutSeparators
+  } = useContext(VisibilityContext);
+
+  // console.log({ isLastItemVisible });
+  const [disabled, setDisabled] = useState(
+      !visibleItemsWithoutSeparators.length && isLastItemVisible
+  );
+  useEffect(() => {
+      if (visibleItemsWithoutSeparators.length) {
+          setDisabled(isLastItemVisible);
+      }
+  }, [isLastItemVisible, visibleItemsWithoutSeparators]);
+
+
+  return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
+}
+
 const HomePage = () => {
   const appSettings = useAppSettings();
 
@@ -41,47 +84,8 @@ const HomePage = () => {
       <section id="subjects" className="bg-white">
         <div className="container py-5">
           <ScrollMenu
-            LeftArrow={(() => {
-              const {
-                isFirstItemVisible,
-                scrollPrev,
-                visibleItemsWithoutSeparators,
-                initComplete
-              } = useContext(VisibilityContext);
-            
-              const [disabled, setDisabled] = useState(
-                !initComplete || (initComplete && isFirstItemVisible)
-              );
-            
-              useEffect(() => {
-                // NOTE: detect if whole component visible
-                if (visibleItemsWithoutSeparators.length) {
-                  setDisabled(isFirstItemVisible);
-                }
-              }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
-            
-              return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
-            })}
-            RightArrow={() => {
-              const {
-                isLastItemVisible,
-                scrollNext,
-                visibleItemsWithoutSeparators
-              } = useContext(VisibilityContext);
-            
-              // console.log({ isLastItemVisible });
-              const [disabled, setDisabled] = useState(
-                !visibleItemsWithoutSeparators.length && isLastItemVisible
-              );
-              useEffect(() => {
-                if (visibleItemsWithoutSeparators.length) {
-                  setDisabled(isLastItemVisible);
-                }
-              }, [isLastItemVisible, visibleItemsWithoutSeparators]);
-            
-            
-              return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
-            }}
+            LeftArrow={ScrollLeftArrow}
+            RightArrow={ScrollRightArrow}
 
             wrapperClassName=""
             scrollContainerClassName="">
