@@ -19,7 +19,6 @@ import { useAppSettings } from '../../utils/appSettings';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { cleanObject, preventDefault } from '../../utils/helpers';
 import { SvgWebSearchIllus } from '../../resources/images/illustrations';
-import Mounted from '../../components/Mounted';
 import { useEventDispatcher } from '../../utils/eventDispatcher';
 import { useQueryState } from 'next-usequerystate';
 
@@ -204,7 +203,7 @@ const CoursesPage = withRemount((props) => {
                     })}
                 </ScrollMenu>
                 <div>
-                    {(page && page.items.length) ? (
+                    {(!loading && page.items.length) ? (
                         <InfiniteScroll
                             className="row g-3 py-3 h-100"
                             dataLength={page.items.length}
@@ -221,7 +220,8 @@ const CoursesPage = withRemount((props) => {
                             })}
                         </InfiniteScroll>
 
-                    ) : ((!loading) ?
+                    ) 
+                    : ((!loading && !page.items.length) ?
                         (<>
                             <div className="d-flex flex-column text-center justify-content-center pt-10 mt-10">
                                 <div className="mb-4">
@@ -231,7 +231,8 @@ const CoursesPage = withRemount((props) => {
                                 {!permitted && <div><Link href={{ pathname: `${ModalPathPrefix}/contact` }}><a className="btn btn-outline-primary mb-3">Request a course</a></Link></div>}
                                 {permitted && <div><Link href={{ pathname: `${ModalPathPrefix}/courses/add` }}><a className="btn btn-outline-primary mb-3">Add a course</a></Link></div>}
                             </div>
-                        </>) : (<Loader {...loading} />)
+                        </>) 
+                        : (<Loader {...loading} />)
                     )}
                 </div>
             </div>
