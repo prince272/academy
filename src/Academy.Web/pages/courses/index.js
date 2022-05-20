@@ -3,13 +3,13 @@ import Link from 'next/link';
 import { NextSeo } from 'next-seo';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useClient } from '../../utils/client';
-import { useAlternativePrevious, withRemount } from '../../utils/hooks';
+import { useAlternativePrevious, withAsync, withRemount } from '../../utils/hooks';
 import Loader from '../../components/Loader';
 import { AspectRatio } from 'react-aspect-ratio';
 import { BsCardImage, BsThreeDots, BsPlus, BsBookHalf, BsCaretDownFill, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
-import { Dropdown, OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import { ModalPathPrefix, useModal } from '../../modals';
 import { CourseItem } from '../../components/courses';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
@@ -17,10 +17,11 @@ import { useForm } from 'react-hook-form';
 import { sentenceCase } from 'change-case';
 import { useAppSettings } from '../../utils/appSettings';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { cleanObject } from '../../utils/helpers';
+import { cleanObject, preventDefault } from '../../utils/helpers';
 import { SvgWebSearchIllus } from '../../resources/images/illustrations';
 import Mounted from '../../components/Mounted';
 import { useEventDispatcher } from '../../utils/eventDispatcher';
+import { useQueryState } from 'next-usequerystate';
 
 const CoursesPage = withRemount((props) => {
     const { remount } = props;
@@ -32,7 +33,15 @@ const CoursesPage = withRemount((props) => {
     const eventDispatcher = useEventDispatcher();
 
     const appSettings = useAppSettings();
-    const search = useForm({ shouldUnregister: true });
+
+    const scrollApiRef = useRef();
+    const [mounted, setMounted] = useState(false);
+
+    const [subject, setSubject] = useQueryState('subject');
+    const [sort, setSort] = useQueryState('sort');
+
+    const searchProps = { subject, sort };
+    const prevSearchProps = useAlternativePrevious(searchProps);
 
     const load = async (params, next) => {
         setLoading({});
@@ -49,14 +58,11 @@ const CoursesPage = withRemount((props) => {
         setLoading(null);
     };
 
-    useEffect(() => {
-        search.reset();
-        Object.entries(router.query).forEach(([name, value]) => {
-            search.setValue(name, value);
-        });
-        setPage(null);
-        load(router.query);
-    }, [router.query]);
+    useEffect(async () => {
+        setMounted(true);
+    }, []);
+
+    useEffect(async () => { await load(cleanObject(searchProps || {})); }, [prevSearchProps]);
 
     useEffect(() => {
 
@@ -118,138 +124,107 @@ const CoursesPage = withRemount((props) => {
         };
     }, []);
 
-    const scrollItems = (() => {
-        const items = [];
-
-        items.push(() => (
-            <Dropdown className="mx-2 pe-auto">
-                <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Subject`))(appSettings.course.subjects.find(item => item.value == search.watch('subject')))}</Dropdown.Toggle>
-                <Dropdown.Menu style={{ margin: 0 }}>
-                    {[{ name: 'Any', value: null }, ...appSettings.course.subjects].map(item => (
-                        <Link key={item.value || 'null'} href={{ pathname: router.basePath, query: cleanObject({ ...search.watch(), subject: item.value }) }} passHref><Dropdown.Item className={`cursor-pointer ${item.value == search.watch('subject') ? 'bg-soft-primary' : ''}`}>{item.name}</Dropdown.Item></Link>
-                    ))}
-                </Dropdown.Menu>
-            </Dropdown>
-        ));
-
-        items.push(() => (
-            <Dropdown className="mx-2 pe-auto">
-                <Dropdown.Toggle as="div" variant=" " className="link-dark fw-bold cursor-pointer">{((item) => (item ? item.name : `Sort`))(appSettings.course.sorts.find(item => item.value == search.watch('sort')))}</Dropdown.Toggle>
-                <Dropdown.Menu style={{ margin: 0 }}>
-                    {[{ name: 'Any', value: null }, ...appSettings.course.sorts].map(item => (
-                        <Link key={item.value || 'null'} href={{ pathname: router.basePath, query: cleanObject({ ...search.watch(), sort: item.value }) }} passHref><Dropdown.Item className={`cursor-pointer ${item.value == search.watch('sort') ? 'bg-soft-primary' : ''}`}>{item.name}</Dropdown.Item></Link>
-                    ))}
-                </Dropdown.Menu>
-            </Dropdown>
-        ));
-
-        return items;
-    })();
-
     const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher'))));
 
     return (
         <>
             <NextSeo title="Courses" />
             <div className="container h-100 py-3">
-                <div className="position-relative h-100 pe-none">
-                    <div className="d-flex align-items-center py-2">
-                        <div className="h3 mb-0">Courses</div>
-                    </div>
-                    <ScrollMenu
-                        LeftArrow={(() => {
-                            const {
-                                isFirstItemVisible,
-                                scrollPrev,
-                                visibleItemsWithoutSeparators,
-                                initComplete
-                            } = useContext(VisibilityContext);
+                <div className="d-flex align-items-center pt-2 pb-3">
+                    <div className="h3 mb-0">Courses ({page?.items.length || 0})</div>
+                </div>
+                <ScrollMenu
+                    onInit={() => {
+                        scrollApiRef.current.scrollToItem(
+                            scrollApiRef.current.getItemById(`scroll-item-${subject}`),
+                            "auto",
+                            "start"
+                        );
+                    }}
+                    apiRef={scrollApiRef}
+                    key={String(mounted)}
+                    LeftArrow={(() => {
+                        const {
+                            isFirstItemVisible,
+                            scrollPrev,
+                            visibleItemsWithoutSeparators,
+                            initComplete
+                        } = useContext(VisibilityContext);
 
-                            const [disabled, setDisabled] = useState(
-                                !initComplete || (initComplete && isFirstItemVisible)
-                            );
+                        const [disabled, setDisabled] = useState(
+                            !initComplete || (initComplete && isFirstItemVisible)
+                        );
 
-                            useEffect(() => {
-                                // NOTE: detect if whole component visible
-                                if (visibleItemsWithoutSeparators.length) {
-                                    setDisabled(isFirstItemVisible);
-                                }
-                            }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
-
-                            return (<div className={`p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
-                        })}
-
-                        RightArrow={() => {
-                            const {
-                                isLastItemVisible,
-                                scrollNext,
-                                visibleItemsWithoutSeparators
-                            } = useContext(VisibilityContext);
-
-                            // console.log({ isLastItemVisible });
-                            const [disabled, setDisabled] = useState(
-                                !visibleItemsWithoutSeparators.length && isLastItemVisible
-                            );
-                            useEffect(() => {
-                                if (visibleItemsWithoutSeparators.length) {
-                                    setDisabled(isLastItemVisible);
-                                }
-                            }, [isLastItemVisible, visibleItemsWithoutSeparators]);
-
-
-                            return (<div className={`p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
-                        }}
-
-                        onWheel={(apiObj, ev) => {
-                            const isThouchpad = Math.abs(ev.deltaX) !== 0 || Math.abs(ev.deltaY) < 15;
-
-                            if (isThouchpad) {
-                                ev.stopPropagation();
-                                return;
+                        useEffect(() => {
+                            // NOTE: detect if whole component visible
+                            if (visibleItemsWithoutSeparators.length) {
+                                setDisabled(isFirstItemVisible);
                             }
+                        }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
 
-                            if (ev.deltaY < 0) {
-                                apiObj.scrollNext();
-                            } else if (ev.deltaY > 0) {
-                                apiObj.scrollPrev();
+                        return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
+                    })}
+                    RightArrow={() => {
+                        const {
+                            isLastItemVisible,
+                            scrollNext,
+                            visibleItemsWithoutSeparators
+                        } = useContext(VisibilityContext);
+
+                        // console.log({ isLastItemVisible });
+                        const [disabled, setDisabled] = useState(
+                            !visibleItemsWithoutSeparators.length && isLastItemVisible
+                        );
+                        useEffect(() => {
+                            if (visibleItemsWithoutSeparators.length) {
+                                setDisabled(isLastItemVisible);
                             }
-                        }}
+                        }, [isLastItemVisible, visibleItemsWithoutSeparators]);
 
-                        wrapperClassName="position-absolute w-100 h-75"
-                        scrollContainerClassName="h-100 mx-auto w-100">
-                        {scrollItems.map((ScrollItem, scrollItemIndex) => <ScrollItem key={`scroll-item-${scrollItemIndex}`} itemId={`scroll-item-${scrollItemIndex}`} />)}
-                    </ScrollMenu>
-                    <div className="pe-auto">
-                        {(page && page.items.length) ? (
-                            <InfiniteScroll
-                                className="row g-3 py-6 h-100"
-                                dataLength={page.items.length}
-                                next={() => load({ ...search.watch(), pageNumber: page.pageNumber + 1 }, true)}
-                                hasMore={(page.pageNumber + 1) <= page.totalPages}
-                                loader={<Loader {...loading} />}>
-                                {page.items.map((course) => {
-                                    const courseId = course.id;
-                                    return (
-                                        <div key={courseId} className="col-12 col-sm-6 col-md-4 col-lg-3">
-                                            <CourseItem course={course} />
-                                        </div>
-                                    );
-                                })}
-                            </InfiniteScroll>
 
-                        ) : ((!loading) ?
-                            (<>
-                                <div className="d-flex flex-column text-center justify-content-center pt-10 mt-10">
-                                    <div className="mb-4">
-                                        <SvgWebSearchIllus style={{ width: "auto", height: "128px" }} />
+                        return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
+                    }}
+
+                    wrapperClassName=""
+                    scrollContainerClassName="">
+                    {[{ name: 'All', value: null }, ...appSettings.course.subjects].map((subjectObj) => {
+                        return (
+                            <button className={`btn ${subjectObj.value == subject ? 'btn-primary' : 'btn-outline-secondary'} rounded-pill mx-1 text-nowrap`} key={`scroll-item-${subjectObj.value}`} type="button" itemId={`scroll-item-${subjectObj.value}`} onClick={preventDefault(() => setSubject(subjectObj.value))}>
+                                {subjectObj.name}
+                            </button>
+                        );
+                    })}
+                </ScrollMenu>
+                <div>
+                    {(page && page.items.length) ? (
+                        <InfiniteScroll
+                            className="row g-3 py-3 h-100"
+                            dataLength={page.items.length}
+                            next={() => load({ ...searchProps, pageNumber: page.pageNumber + 1 }, true)}
+                            hasMore={(page.pageNumber + 1) <= page.totalPages}
+                            loader={<Loader {...loading} />}>
+                            {page.items.map((course) => {
+                                const courseId = course.id;
+                                return (
+                                    <div key={courseId} className="col-12 col-sm-6 col-md-4 col-lg-3">
+                                        <CourseItem course={course} />
                                     </div>
-                                    <div className="mb-3">There are no courses here.</div>
-                                    {!permitted && <div><Link href={{ pathname: `${ModalPathPrefix}/contact` }}><a className="btn btn-outline-primary mb-3">Request a course</a></Link></div>}
-                                    {permitted && <div><Link href={{ pathname: `${ModalPathPrefix}/courses/add` }}><a className="btn btn-outline-primary mb-3">Add a course</a></Link></div>}
+                                );
+                            })}
+                        </InfiniteScroll>
+
+                    ) : ((!loading) ?
+                        (<>
+                            <div className="d-flex flex-column text-center justify-content-center pt-10 mt-10">
+                                <div className="mb-4">
+                                    <SvgWebSearchIllus style={{ width: "auto", height: "128px" }} />
                                 </div>
-                            </>) : (<Loader {...loading} />)
-                        )}
-                    </div>
+                                <div className="mb-3">There are no courses here.</div>
+                                {!permitted && <div><Link href={{ pathname: `${ModalPathPrefix}/contact` }}><a className="btn btn-outline-primary mb-3">Request a course</a></Link></div>}
+                                {permitted && <div><Link href={{ pathname: `${ModalPathPrefix}/courses/add` }}><a className="btn btn-outline-primary mb-3">Add a course</a></Link></div>}
+                            </div>
+                        </>) : (<Loader {...loading} />)
+                    )}
                 </div>
             </div>
             {permitted &&

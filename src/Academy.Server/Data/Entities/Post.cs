@@ -12,7 +12,7 @@ namespace Academy.Server.Data.Entities
 
         public string Title { get; set; }
 
-        public string Description { get; set; }
+        public string Body { get; set; }
 
         public Media Image { get; set; }
 
@@ -21,5 +21,7 @@ namespace Academy.Server.Data.Entities
         public DateTimeOffset? Updated { get; set; }
 
         public DateTimeOffset? Published { get; set; }
+
+        public long Duration { get; set; }
     }
 }
