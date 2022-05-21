@@ -34,7 +34,7 @@ const ScrollLeftArrow = (() => {
       }
   }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
 
-  return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
+  return (<div className={`d-flex align-items-center py-1 pe-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
 });
 
 const ScrollRightArrow = () => {
@@ -55,7 +55,7 @@ const ScrollRightArrow = () => {
   }, [isLastItemVisible, visibleItemsWithoutSeparators]);
 
 
-  return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
+  return (<div className={`d-flex align-items-center py-1 ps-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
 }
 
 const HomePage = () => {

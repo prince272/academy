@@ -43,7 +43,7 @@ const ScrollLeftArrow = (() => {
         }
     }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
 
-    return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
+    return (<div className={`d-flex align-items-center py-1 pe-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
 });
 
 const ScrollRightArrow = () => {
@@ -64,7 +64,7 @@ const ScrollRightArrow = () => {
     }, [isLastItemVisible, visibleItemsWithoutSeparators]);
 
 
-    return (<div className={`d-flex align-items-center p-1 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
+    return (<div className={`d-flex align-items-center py-1 ps-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
 }
 
 const CoursesPage = withRemount((props) => {
@@ -180,7 +180,7 @@ const CoursesPage = withRemount((props) => {
                 <ScrollMenu
                     onInit={() => {
                         scrollApiRef.current.scrollToItem(
-                            scrollApiRef.current.getItemById(`scroll-item-${subject}`),
+                            scrollApiRef.current.getItemById(`scroll-item-${searchProps.subject}`),
                             "auto",
                             "start"
                         );
@@ -195,7 +195,7 @@ const CoursesPage = withRemount((props) => {
                     {[{ name: 'All', value: null }, ...appSettings.course.subjects].map((subjectObj) => {
                         return (
                             <ScrollItem key={`scroll-item-${subjectObj.value}`} itemId={`scroll-item-${subjectObj.value}`}>
-                                <a className={`btn ${subjectObj.value == subject ? 'btn-primary' : 'btn-outline-secondary'} rounded-pill mx-1 text-nowrap`} onClick={preventDefault(() => setSubject(subjectObj.value))}>
+                                <a className={`btn btn-sm ${subjectObj.value == searchProps.subject ? 'btn-primary' : 'btn-outline-secondary'} rounded-pill mx-1 text-nowrap`} onClick={preventDefault(() => setSubject(subjectObj.value))}>
                                     {subjectObj.name}
                                 </a>
                             </ScrollItem>
