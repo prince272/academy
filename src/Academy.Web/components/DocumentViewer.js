@@ -15,6 +15,7 @@ import parse, { domToReact } from 'html-react-parser';
 import { pascalCase } from 'change-case';
 
 import { arrayMove, formatNumber, preventDefault, sleep, stripHtml } from '../utils/helpers';
+import { Tab } from 'react-bootstrap';
 
 class IFrame extends React.Component {
     state = { contentHeight: 100 };
