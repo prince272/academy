@@ -35,6 +35,8 @@ namespace Academy.Server.Data.Entities
 
         public decimal Price { get; set; }
 
+        public virtual ICollection<CourseProgress> Progresses { get; set; } = new List<CourseProgress>();
+
         public virtual ICollection<Section> Sections { get; set; } = new List<Section>();
     }
 

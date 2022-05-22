@@ -39,8 +39,8 @@ const CourseItem = ({ course }) => {
                     </div>
                 </div>
                 <div className="col-8 col-sm-12">
-                    <div className="p-2">
-                        <div className="fs-6 fw-bold mb-2" style={{ height: "58px" }}>
+                    <div className="py-1 px-2 h-100 d-flex flex-column">
+                        <div className="fs-6 fw-bold mb-2 flex-grow-1" style={{ height: "42px" }}>
                             <ResponsiveEllipsis className="overflow-hidden text-break"
                                 text={course.title || ''}
                                 maxLine='2'
@@ -48,10 +48,10 @@ const CourseItem = ({ course }) => {
                                 trimRight
                                 basedOn='letters'
                             />
-                            {permitted && (
-                                <div className={`badge bg-${course.published ? 'success' : 'warning'} py-1`}>{course.published ? 'Published' : 'Unpublished'}</div>
-                            )}
                         </div>
+                        {permitted && (
+                            <div className="mb-2"><div className={`badge bg-${course.published ? 'success' : 'warning'} py-1`}>{course.published ? 'Published' : 'Unpublished'}</div></div>
+                        )}
                         <div className="text-primary">{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
                         <div className="hstack gap-3 justify-content-between">
                             <div className="d-inline-flex align-items-center my-1 me-2">

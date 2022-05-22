@@ -142,6 +142,10 @@ namespace Academy.Server.Controllers
         {
             var query = unitOfWork.Query<Course>();
 
+            if (search.Sort == CourseSort.Popular) query = query.OrderByDescending(_ => _.Progresses.Count());
+
+            if (search.Sort == CourseSort.Newest) query = query.OrderByDescending(_ => _.Created);
+
             var user = await HttpContext.Request.GetCurrentUserAsync();
             var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
 
