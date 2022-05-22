@@ -49,6 +49,7 @@ const CourseEditModal = withRemount((props) => {
 
             form.reset({
                 ...result.data,
+                published: !!result.data.published,
                 imageId: result.data.image?.id,
                 certificateTemplateId: result.data.certificateTemplate?.id,
             });
@@ -133,19 +134,22 @@ const CourseEditModal = withRemount((props) => {
                             </select>
                             <div className="invalid-feedback">{formState.errors.subject?.message}</div>
                         </div>
-                        <div className="col-12 col-sm-6">
-                            <label className="form-label">State</label>
-                            <select {...form.register("state")} className={`form-select  ${formState.errors.state ? 'is-invalid' : ''}`}>
-                                {[
-                                    { value: 'hidden', name: 'Hidden' },
-                                    { value: 'visible', name: 'Visible' },
-                                    ...(client.user.roles.some(role => role == 'admin') ? [{ value: 'rejected', name: 'Rejected' }] : [])
-                                ].map((state) => (
-                                    <option key={state.value} value={state.value}>{state.name}</option>
-                                ))}
-                            </select>
-                            <div className="invalid-feedback">{formState.errors.state?.message}</div>
-                        </div>
+
+                        {client.user.roles.some(role => role == 'admin') && (
+                            <div className="col-12 col-sm-6">
+                                <label className="form-label">State</label>
+                                <select {...form.register("published")} className={`form-select  ${formState.errors.published ? 'is-invalid' : ''}`}>
+                                    {[
+                                        { value: false, name: 'Unpublished' },
+                                        { value: true, name: 'Published' },
+                                    ].map((state) => (
+                                        <option key={state.value} value={state.value}>{state.name}</option>
+                                    ))}
+                                </select>
+                                <div className="invalid-feedback">{formState.errors.published?.message}</div>
+                            </div>
+                        )}
+
                         <div className="col-12">
                             <label className="form-label">Description</label>
                             <textarea {...form.register("description")} className={`form-control  ${formState.errors.description ? 'is-invalid' : ''}`} rows="4" />

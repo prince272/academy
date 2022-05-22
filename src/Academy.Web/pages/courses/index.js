@@ -43,7 +43,7 @@ const ScrollLeftArrow = (() => {
         }
     }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
 
-    return (<div className={`d-flex align-items-center py-1 pe-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
+    return (<div className={`d-none d-sm-flex align-items-center py-1 pe-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
 });
 
 const ScrollRightArrow = () => {
@@ -64,7 +64,7 @@ const ScrollRightArrow = () => {
     }, [isLastItemVisible, visibleItemsWithoutSeparators]);
 
 
-    return (<div className={`d-flex align-items-center py-1 ps-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
+    return (<div className={`d-none d-sm-flex align-items-center py-1 ps-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
 }
 
 const CoursesPage = withRemount((props) => {
@@ -177,35 +177,37 @@ const CoursesPage = withRemount((props) => {
                 <div className="d-flex align-items-center pt-2 pb-3">
                     <div className="h3 mb-0">Courses ({page?.items.length || 0})</div>
                 </div>
-                <ScrollMenu
-                    onInit={() => {
-                        scrollApiRef.current.scrollToItem(
-                            scrollApiRef.current.getItemById(`scroll-item-${searchProps.subject}`),
-                            "auto",
-                            "start"
-                        );
-                    }}
-                    apiRef={scrollApiRef}
-                    key={String(mounted)}
-                    LeftArrow={ScrollLeftArrow}
-                    RightArrow={ScrollRightArrow}
+                <div className="mb-3">
+                    <ScrollMenu
+                        onInit={() => {
+                            scrollApiRef.current.scrollToItem(
+                                scrollApiRef.current.getItemById(`scroll-item-${searchProps.subject}`),
+                                "auto",
+                                "start"
+                            );
+                        }}
+                        apiRef={scrollApiRef}
+                        key={String(mounted)}
+                        LeftArrow={ScrollLeftArrow}
+                        RightArrow={ScrollRightArrow}
 
-                    wrapperClassName=""
-                    scrollContainerClassName="">
-                    {[{ name: 'All', value: null }, ...appSettings.course.subjects].map((subjectObj) => {
-                        return (
-                            <ScrollItem key={`scroll-item-${subjectObj.value}`} itemId={`scroll-item-${subjectObj.value}`}>
-                                <a className={`btn btn-sm ${subjectObj.value == searchProps.subject ? 'btn-primary' : 'btn-outline-secondary'} rounded-pill mx-1 text-nowrap`} onClick={preventDefault(() => setSubject(subjectObj.value))}>
-                                    {subjectObj.name}
-                                </a>
-                            </ScrollItem>
-                        );
-                    })}
-                </ScrollMenu>
+                        wrapperClassName=""
+                        scrollContainerClassName="">
+                        {[{ name: 'All', value: null }, ...appSettings.course.subjects].map((subjectObj) => {
+                            return (
+                                <ScrollItem key={`scroll-item-${subjectObj.value}`} itemId={`scroll-item-${subjectObj.value}`}>
+                                    <a className={`btn btn-sm ${subjectObj.value == searchProps.subject ? 'btn-primary' : 'btn-outline-secondary'} rounded-pill mx-1 text-nowrap`} onClick={preventDefault(() => setSubject(subjectObj.value))}>
+                                        {subjectObj.name}
+                                    </a>
+                                </ScrollItem>
+                            );
+                        })}
+                    </ScrollMenu>
+                </div>
                 <div>
                     {(!loading && page.items.length) ? (
                         <InfiniteScroll
-                            className="row g-3 py-3 h-100"
+                            className="row gy-3"
                             dataLength={page.items.length}
                             next={() => load({ ...searchProps, pageNumber: page.pageNumber + 1 }, true)}
                             hasMore={(page.pageNumber + 1) <= page.totalPages}
@@ -220,20 +222,20 @@ const CoursesPage = withRemount((props) => {
                             })}
                         </InfiniteScroll>
 
-                    ) 
-                    : ((!loading && !page.items.length) ?
-                        (<>
-                            <div className="d-flex flex-column text-center justify-content-center pt-10 mt-10">
-                                <div className="mb-4">
-                                    <SvgWebSearchIllus style={{ width: "auto", height: "128px" }} />
+                    )
+                        : ((!loading && !page.items.length) ?
+                            (<>
+                                <div className="d-flex flex-column text-center justify-content-center pt-10 mt-10">
+                                    <div className="mb-4">
+                                        <SvgWebSearchIllus style={{ width: "auto", height: "128px" }} />
+                                    </div>
+                                    <div className="mb-3">There are no courses here.</div>
+                                    {!permitted && <div><Link href={{ pathname: `${ModalPathPrefix}/contact` }}><a className="btn btn-outline-primary mb-3">Request a course</a></Link></div>}
+                                    {permitted && <div><Link href={{ pathname: `${ModalPathPrefix}/courses/add` }}><a className="btn btn-outline-primary mb-3">Add a course</a></Link></div>}
                                 </div>
-                                <div className="mb-3">There are no courses here.</div>
-                                {!permitted && <div><Link href={{ pathname: `${ModalPathPrefix}/contact` }}><a className="btn btn-outline-primary mb-3">Request a course</a></Link></div>}
-                                {permitted && <div><Link href={{ pathname: `${ModalPathPrefix}/courses/add` }}><a className="btn btn-outline-primary mb-3">Add a course</a></Link></div>}
-                            </div>
-                        </>) 
-                        : (<Loader {...loading} />)
-                    )}
+                            </>)
+                            : (<Loader {...loading} />)
+                        )}
                 </div>
             </div>
             {permitted &&

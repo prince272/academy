@@ -69,8 +69,7 @@ namespace Academy.Server.Controllers
             course.Description = form.Description;
             course.Created = DateTimeOffset.UtcNow;
 
-            course.State = course.State == CourseState.Rejected ? (user.HasRoles(RoleConstants.Admin) ? form.State : course.State) : form.State;
-            course.Published = course.State == CourseState.Visible ? course.Published ?? DateTimeOffset.UtcNow : null;
+            course.Published = user.HasRoles(RoleConstants.Admin) ? (form.Published ? (course.Published ?? DateTimeOffset.UtcNow) : null) : course.Published;
 
             course.Cost = Math.Round(form.Cost, 2, MidpointRounding.AwayFromZero);
             course.Price = form.Cost > 0 ? Math.Round((appSettings.Course.Rate * form.Cost) + form.Cost, 2, MidpointRounding.AwayFromZero) : 0;
@@ -100,8 +99,7 @@ namespace Academy.Server.Controllers
             course.Description = form.Description;
             course.Updated = DateTimeOffset.UtcNow;
 
-            course.State = course.State == CourseState.Rejected ? (user.HasRoles(RoleConstants.Admin) ? form.State : course.State) : form.State;
-            course.Published = course.State == CourseState.Visible ? course.Published ?? DateTimeOffset.UtcNow : null;
+            course.Published = user.HasRoles(RoleConstants.Admin) ? (form.Published ? (course.Published ?? DateTimeOffset.UtcNow) : null) : course.Published;
 
             course.Cost = Math.Round(form.Cost, 2, MidpointRounding.AwayFromZero);
             course.Price = form.Cost > 0 ? Math.Round((appSettings.Course.Rate * form.Cost) + form.Cost, 2, MidpointRounding.AwayFromZero) : 0;
@@ -147,15 +145,11 @@ namespace Academy.Server.Controllers
             var user = await HttpContext.Request.GetCurrentUserAsync();
             var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
 
-            if (!permitted)
-            {
-                query = query.Where(course => course.State == CourseState.Visible);
-            }
+            if (!permitted) query = query.Where(course => course.Published != null);
 
             if (search.UserId != null) query = query.Where(_ => _.Id == search.UserId);
 
             if (search.Subject != null) query = query.Where(_ => _.Subject == search.Subject);
-
 
             if (!string.IsNullOrWhiteSpace(search.Query))
             {

@@ -20,8 +20,6 @@ namespace Academy.Server.Models.Courses
 
         public CourseSubject Subject { get; set; }
 
-        public CourseState State { get; set; }
-
         public string Description { get; set; }
 
         public DateTimeOffset Created { get; set; }
