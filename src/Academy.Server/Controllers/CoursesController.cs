@@ -140,20 +140,40 @@ namespace Academy.Server.Controllers
         [HttpGet("/courses")]
         public async Task<IActionResult> List(int pageNumber, int pageSize, [FromQuery] CourseSearchModel search)
         {
-            var query = unitOfWork.Query<Course>();
-
-            if (search.Sort == CourseSort.Popular) query = query.OrderByDescending(_ => _.Progresses.Count());
-
-            if (search.Sort == CourseSort.Newest) query = query.OrderByDescending(_ => _.Created);
-
             var user = await HttpContext.Request.GetCurrentUserAsync();
             var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
 
-            if (!permitted) query = query.Where(course => course.Published != null);
+            var query = unitOfWork.Query<Course>();
 
-            if (search.UserId != null) query = query.Where(_ => _.Id == search.UserId);
+            if (search.Sort == CourseSort.Popular)
+            {
+                query = query.OrderByDescending(_ => _.Progresses.Count());
+            }
 
-            if (search.Subject != null) query = query.Where(_ => _.Subject == search.Subject);
+            if (search.Sort == CourseSort.Newest)
+            {
+                query = query.OrderByDescending(_ => _.Created);
+            }
+
+            if (search.Sort == CourseSort.Updated)
+            {
+                query = query.OrderByDescending(_ => _.Updated);
+            }
+
+            if (!permitted)
+            {
+                query = query.Where(course => course.Published != null);
+            }
+
+            if (search.UserId != null)
+            {
+                query = query.Where(_ => _.Id == search.UserId);
+            }
+
+            if (search.Subject != null)
+            {
+                query = query.Where(_ => _.Subject == search.Subject);
+            }
 
             if (!string.IsNullOrWhiteSpace(search.Query))
             {
@@ -877,15 +897,15 @@ namespace Academy.Server.Controllers
 
             if (form.Type == ContentType.Explanation)
             {
-                var explanation = await documentProcessor.ProcessHtmlDocumentAsync(form.Explanation);
-                var summary = Sanitizer.StripHtml(explanation ?? string.Empty);
-                content.Explanation = explanation;
-                content.Summary = summary.Truncate(128, Truncator.FixedLength);
+                var explanationInHTML = await documentProcessor.ProcessHtmlDocumentAsync(form.Explanation);
+                var explanationInText = Sanitizer.StripHtml(explanationInHTML ?? string.Empty);
+                var duration = Sanitizer.GetTextReadingDuration(explanationInText);
+
+                content.Explanation = explanationInHTML;
+                content.Summary = explanationInText.Truncate(128, Truncator.FixedLength);
                 content.Media = (await unitOfWork.FindAsync<Media>(form.MediaId));
                 content.ExternalMediaUrl = form.ExternalMediaUrl;
 
-                var duration = 0L;
-                duration += Sanitizer.GetTextReadingDuration(summary);
                 content.Duration = duration;
 
                 // Clear old props.
@@ -896,11 +916,12 @@ namespace Academy.Server.Controllers
             }
             else if (form.Type == ContentType.Question)
             {
-                var question = await documentProcessor.ProcessHtmlDocumentAsync(form.Question);
-                var summary = Sanitizer.StripHtml(question ?? string.Empty);
+                var questionInHTML = await documentProcessor.ProcessHtmlDocumentAsync(form.Question);
+                var questionInText = Sanitizer.StripHtml(questionInHTML ?? string.Empty);
+                var duration = Sanitizer.GetTextReadingDuration(questionInText);
 
-                content.Question = form.Question;
-                content.Summary = summary.Truncate(128, Truncator.FixedLength);
+                content.Question = questionInHTML;
+                content.Summary = questionInText.Truncate(128, Truncator.FixedLength);
                 content.AnswerType = form.AnswerType ?? default(AnswerType);
                 content.Answers = (form.Answers ?? Array.Empty<ContentAnswerEditModel>()).Select(formAnswer => new ContentAnswer
                 {
@@ -910,8 +931,6 @@ namespace Academy.Server.Controllers
                 }).ToArray();
                 content.Checks = (form.Answers ?? Array.Empty<ContentAnswerEditModel>()).Where(_ => _.Checked).Select(_ => _.Id.ToString()).ToArray();
 
-                var duration = 0L;
-                duration += Sanitizer.GetTextReadingDuration(summary);
                 duration += content.Answers.Select(answer => Sanitizer.GetTextReadingDuration(answer.Text ?? string.Empty)).Sum();
                 content.Duration = duration;
 
@@ -976,8 +995,8 @@ namespace Academy.Server.Controllers
         private async Task<CourseModel> GetCourseModel(int courseId, int? sectionId = null, int? lessonId = null, bool single = true)
         {
             var course = await unitOfWork.Query<Course>()
-                .Include(_ => _.Teacher)
                 .AsNoTracking()
+                .Include(_ => _.Teacher)
                 .FirstOrDefaultAsync(_ => _.Id == courseId);
 
             if (course == null) return null;

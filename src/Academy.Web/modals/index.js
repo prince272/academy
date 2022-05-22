@@ -22,6 +22,9 @@ import LessonEditModal from './courses/LessonEditModal';
 import ContentEditModal from './courses/ContentEditModal';
 import SectionEditModal from './courses/SectionEditModal';
 
+// posts
+import PostEditModel from './posts/PostEditModel';
+
 // home
 import CheckoutModal from './CheckoutModal';
 import ContactModal from './ContactModal';
@@ -123,6 +126,11 @@ const useModalProvider = () => {
             {
                 pattern: [`${ModalPathPrefix}/courses/:courseId/sections/:sectionId/lessons/:lessonId/contents/:action(add)`, `${ModalPathPrefix}/courses/:courseId/sections/:sectionId/lessons/:lessonId/contents/:contentId/:action(edit|delete)`],
                 modal: ContentEditModal,
+                authenticate: true,
+            },
+            {
+                pattern: [`${ModalPathPrefix}/posts/:action(add)`, `${ModalPathPrefix}/posts/:postId/:action(edit|delete)`],
+                modal: PostEditModel,
                 authenticate: true,
             },
             {

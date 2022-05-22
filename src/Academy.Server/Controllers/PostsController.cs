@@ -9,6 +9,7 @@ using Academy.Server.Models.Posts;
 using Academy.Server.Services;
 using Academy.Server.Utilities;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -63,12 +64,15 @@ namespace Academy.Server.Controllers
 
             var post = new Post();
             post.Title = form.Title;
-            post.Catgory = form.Catgory;
+            post.Category = form.Category;
 
-            var description = await documentProcessor.ProcessHtmlDocumentAsync(form.Description);
-            var summary = Sanitizer.StripHtml(description ?? string.Empty);
-            post.Description = description;
-            post.Summary = summary.Truncate(128, Truncator.FixedLength);
+            var descriptionInHTML = await documentProcessor.ProcessHtmlDocumentAsync(form.Description);
+            var descriptionInText = Sanitizer.StripHtml(descriptionInHTML ?? string.Empty);
+            var duration = Sanitizer.GetTextReadingDuration(descriptionInText);
+
+            post.Description = descriptionInHTML;
+            post.Summary = descriptionInText.Truncate(128, Truncator.FixedLength);
+            post.Duration = duration;
 
             post.Created = DateTimeOffset.UtcNow;
             post.Published = user.HasRoles(RoleConstants.Admin) ? (form.Published ? (post.Published ?? DateTimeOffset.UtcNow) : null) : post.Published;
@@ -95,12 +99,15 @@ namespace Academy.Server.Controllers
             if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
             post.Title = form.Title;
-            post.Catgory = form.Catgory;
+            post.Category = form.Category;
 
-            var description = await documentProcessor.ProcessHtmlDocumentAsync(form.Description);
-            var summary = Sanitizer.StripHtml(description ?? string.Empty);
-            post.Description = description;
-            post.Summary = summary.Truncate(128, Truncator.FixedLength);
+            var descriptionInHTML = await documentProcessor.ProcessHtmlDocumentAsync(form.Description);
+            var descriptionInText = Sanitizer.StripHtml(descriptionInHTML ?? string.Empty);
+            var duration = Sanitizer.GetTextReadingDuration(descriptionInText);
+
+            post.Description = descriptionInHTML;
+            post.Summary = descriptionInText.Truncate(128, Truncator.FixedLength);
+            post.Duration = duration;
 
             post.Updated = DateTimeOffset.UtcNow;
             post.Published = user.HasRoles(RoleConstants.Admin) ? (form.Published ? (post.Published ?? DateTimeOffset.UtcNow) : null) : post.Published;
@@ -127,6 +134,100 @@ namespace Academy.Server.Controllers
             await unitOfWork.DeleteAsync(post);
 
             return Result.Succeed();
+        }
+
+        [HttpGet("{postId}")]
+        public async Task<IActionResult> Read(int postId)
+        {
+            var postModel = await GetPostModel(postId);
+            if (postModel == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            return Result.Succeed(data: postModel);
+        }
+
+        [HttpGet("/posts")]
+        public async Task<IActionResult> List(int pageNumber, int pageSize, [FromQuery] PostSearchModel search)
+        {
+            var user = await HttpContext.Request.GetCurrentUserAsync();
+            var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
+
+            var query = unitOfWork.Query<Post>()
+                .AsNoTracking();
+
+            if (search.Sort == PostSort.Popular)
+            {
+
+            }
+
+            if (search.Sort == PostSort.Newest)
+            {
+                query = query.OrderByDescending(_ => _.Created);
+            }
+
+            if (search.Sort == PostSort.Updated)
+            {
+                query = query.OrderByDescending(_ => _.Updated);
+            }
+
+            if (!permitted)
+            {
+                query = query.Where(course => course.Published != null);
+            }
+
+            if (search.UserId != null)
+            {
+                query = query.Where(_ => _.Id == search.UserId);
+            }
+
+            if (search.Category != null)
+            {
+                query = query.Where(_ => _.Category == search.Category);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search.Query))
+            {
+                var predicates = new List<Expression<Func<Post, bool>>>();
+
+                predicates.Add(_ => EF.Functions.Like(_.Title, $"%{search.Query}%") ||
+                                    EF.Functions.Like(_.Category.ToString(), $"%{search.Query}%"));
+
+                query = query.WhereAny(predicates.ToArray());
+            }
+
+            var pageInfo = new PageInfo(await query.CountAsync(), pageNumber, pageSize);
+
+            query = (pageInfo.SkipItems > 0 ? query.Skip(pageInfo.SkipItems) : query).Take(pageInfo.PageSize);
+
+            var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async postId =>
+            {
+                var postModel = await GetPostModel(postId);
+                if (postModel == null) throw new ArgumentException();
+                return postModel;
+            });
+
+            return Result.Succeed(data: TypeMerger.Merge(new { Items = pageItems }, pageInfo));
+        }
+
+        [NonAction]
+        private async Task<PostModel> GetPostModel(int postId, bool single = true)
+        {
+            var post = await unitOfWork.Query<Post>().AsNoTracking()
+                .Include(_ => _.Teacher)
+                .ProjectTo<Post>(new MapperConfiguration(config =>
+                {
+                    var map = config.CreateMap<Post, Post>();
+                    if (!single) map.ForMember(_ => _.Description, config => config.Ignore());
+                }))
+                .FirstOrDefaultAsync(_ => _.Id == postId);
+
+            if (post == null) return null;
+
+            var user = await HttpContext.Request.GetCurrentUserAsync();
+            var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
+
+            var courseModel = mapper.Map<PostModel>(post);
+
+            return courseModel;
         }
     }
 }

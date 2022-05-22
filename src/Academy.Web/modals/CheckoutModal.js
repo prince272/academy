@@ -218,7 +218,7 @@ const CheckoutModal = withRemount((props) => {
                                 <button type="button" className="btn btn-primary" onClick={() => {
                                     verifyPayment();
                                 }}>Check</button>
-                                <Link href={route.query.returnUrl}><a className="btn btn-secondary">Cancel</a></Link>
+                                <Link href={route.query.returnUrl}><a className="btn btn-outline-secondary">Cancel</a></Link>
                             </div>
                         </div>
                     </div>

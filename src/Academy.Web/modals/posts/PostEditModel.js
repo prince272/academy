@@ -12,13 +12,14 @@ import Cleave from 'cleave.js/react';
 import Loader from '../../components/Loader';
 import { useClient } from '../../utils/client';
 import { withRemount } from '../../utils/hooks';
+import DocumentEditor from '../../components/DocumentEditor';
 import MediaUploader, { MediaExtensions } from '../../components/MediaUploader';
 import { BsInfoCircle } from 'react-icons/bs';
 import { useAppSettings } from '../../utils/appSettings';
 import { useEventDispatcher } from '../../utils/eventDispatcher';
 import _ from 'lodash';
 
-const CourseEditModal = withRemount((props) => {
+const PostEditModal = withRemount((props) => {
     const { route, modal, remount, updateModalProps } = props;
     const router = useRouter();
     const form = useForm({ shouldUnregister: true });
@@ -26,7 +27,7 @@ const CourseEditModal = withRemount((props) => {
     const [loading, setLoading] = useState({});
     const [submitting, setSubmitting] = useState(false);
     const [action, setAction] = useState(route.query.action);
-    const courseId = route.query.courseId;
+    const postId = route.query.postId;
 
     const componentId = useMemo(() => _.uniqueId('Component'), []);
     const eventDispatcher = useEventDispatcher();
@@ -38,25 +39,24 @@ const CourseEditModal = withRemount((props) => {
 
             setLoading({});
 
-            let result = await client.get(`/courses/${courseId}`);
+            let result = await client.get(`/posts/${postId}`);
 
             if (result.error) {
                 const error = result.error;
 
-                setLoading({ ...error, message: 'Unable to load course.', fallback: modal.close, remount });
+                setLoading({ ...error, message: 'Unable to load post.', fallback: modal.close, remount });
                 return;
             }
 
             form.reset({
                 ...result.data,
                 published: !!result.data.published,
-                imageId: result.data.image?.id,
-                certificateTemplateId: result.data.certificateTemplate?.id,
+                imageId: result.data.image?.id
             });
             setLoading(null);
         }
         else {
-            form.reset({ cost: 0 });
+            form.reset({});
             setLoading(null);
         }
     };
@@ -67,9 +67,9 @@ const CourseEditModal = withRemount((props) => {
             setSubmitting(true);
 
             let result = await ({
-                'add': () => client.post(`/courses`, inputs),
-                'edit': () => client.put(`/courses/${courseId}`, inputs),
-                'delete': () => client.delete(`/courses/${courseId}`)
+                'add': () => client.post(`/posts`, inputs),
+                'edit': () => client.put(`/posts/${postId}`, inputs),
+                'delete': () => client.delete(`/posts/${postId}`)
             })[action]();
 
             if (result.error) {
@@ -81,13 +81,13 @@ const CourseEditModal = withRemount((props) => {
             }
 
             if (action == 'add' || action == 'edit') {
-                eventDispatcher.emit(`${action}Course`, (await client.get(`/courses/${result.data || courseId}`, { throwIfError: true })).data.data);
+                eventDispatcher.emit(`${action}Post`, (await client.get(`/posts/${result.data || postId}`, { throwIfError: true })).data.data);
             }
             else if (action == 'delete') {
-                eventDispatcher.emit(`${action}Course`, { id: courseId });
+                eventDispatcher.emit(`${action}Post`, { id: postId });
             }
 
-            toast.success(`Course ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`, { id: componentId });
+            toast.success(`Post ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`, { id: componentId });
             modal.close();
         })();
     };
@@ -97,7 +97,7 @@ const CourseEditModal = withRemount((props) => {
             updateModalProps({ size: 'md', contentClassName: '' });
         }
         else {
-            updateModalProps(CourseEditModal.getModalProps());
+            updateModalProps(PostEditModal.getModalProps());
         }
 
     }, [action]);
@@ -109,13 +109,10 @@ const CourseEditModal = withRemount((props) => {
 
     if (loading) return (<Loader {...loading} />);
 
-    const courseCost = parseFloat(`${form.watch("cost")}`.replace(/,/g, '')) || 0;
-    const coursePrice = ((appSettings.course.rate * courseCost) + courseCost).toFixed(2) * 1;
-
     return (
         <>
             <Modal.Header closeButton>
-                <Modal.Title>{pascalCase(action)} course</Modal.Title>
+                <Modal.Title>{pascalCase(action)} post</Modal.Title>
             </Modal.Header>
             <Modal.Body as={Form} onSubmit={preventDefault(() => submit())}>
                 <>
@@ -126,13 +123,13 @@ const CourseEditModal = withRemount((props) => {
                             <div className="invalid-feedback">{formState.errors.title?.message}</div>
                         </div>
                         <div className="col-12 col-sm-6">
-                            <label className="form-label">Subject</label>
-                            <select {...form.register("subject")} className={`form-select  ${formState.errors.subject ? 'is-invalid' : ''}`}>
-                                {appSettings.course.subjects.map((item) => (
+                            <label className="form-label">Category</label>
+                            <select {...form.register("category")} className={`form-select  ${formState.errors.category ? 'is-invalid' : ''}`}>
+                                {appSettings.post.categories.map((item) => (
                                     <option key={item.value} value={item.value}>{item.name}</option>
                                 ))}
                             </select>
-                            <div className="invalid-feedback">{formState.errors.subject?.message}</div>
+                            <div className="invalid-feedback">{formState.errors.category?.message}</div>
                         </div>
 
                         {client.user.roles.some(role => role == 'admin') && (
@@ -152,41 +149,13 @@ const CourseEditModal = withRemount((props) => {
 
                         <div className="col-12">
                             <label className="form-label">Description</label>
-                            <textarea {...form.register("description")} className={`form-control  ${formState.errors.description ? 'is-invalid' : ''}`} rows="4" />
+                            <FormController name="description" control={form.control}
+                                render={({ field }) => {
+                                    return (<DocumentEditor value={field.value} onChange={(value) => field.onChange(value)} />);
+                                }} />
                             <div className="invalid-feedback">{formState.errors.description?.message}</div>
                         </div>
-                        <div className="col-7">
-                            <label className="form-label">Cost
-                                <OverlayTrigger trigger="hover" rootClose placement="top" overlay={(popoverProps) => (
-                                    <Popover {...popoverProps} arrowProps={{ style: { display: "none" } }}>
-                                        <Popover.Body className="p-3">
-                                            <div className="small">The expense incurred for making this course.</div>
-                                        </Popover.Body>
-                                    </Popover>
 
-                                )}>
-                                    <span className="link-primary svg-icon svg-icon-xs d-inline-block mx-1"><BsInfoCircle /></span>
-                                </OverlayTrigger>
-                                (<span>{courseCost > 0 ? 'paid' : 'free'}</span> course)
-                            </label>
-                            <div className="input-group input-group-merge">
-                                <div className="input-group-prepend input-group-text">{appSettings.currency.symbol}</div>
-                                <FormController name="cost" control={form.control}
-                                    render={({ field }) => {
-                                        return (
-                                            <Cleave value={field.value}
-                                                options={{ numeral: true, numeralThousandsGroupStyle: "thousand" }}
-                                                onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.cost ? 'is-invalid' : ''}`} />
-                                        );
-                                    }} />
-                            </div>
-                            <div className="invalid-feedback">{formState.errors.cost?.message}</div>
-                            <input {...form.register("cost")} type="hidden" />
-                        </div>
-                        <div className="col-5">
-                            <label className="form-label">Price</label>
-                            <input type="text" className="form-control-plaintext" value={coursePrice} readOnly />
-                        </div>
                         <div className="col-12">
                             <label className="form-label">Image</label>
                             <FormController name="imageId" control={form.control}
@@ -195,16 +164,8 @@ const CourseEditModal = withRemount((props) => {
                                 }} />
                             <div className="invalid-feedback">{formState.errors.imageId?.message}</div>
                         </div>
-                        <div className="col-12">
-                            <label className="form-label">Certificate template</label>
-                            <FormController name="certificateTemplateId" control={form.control}
-                                render={({ field }) => {
-                                    return (<MediaUploader length={1} value={field.value} onChange={(value) => field.onChange(value)} extensions={'.doc, .docx'} />);
-                                }} />
-                            <div className="invalid-feedback">{formState.errors.certificateTemplateId?.message}</div>
-                        </div>
                     </div>
-                    {action == 'delete' && <p className="mb-0">Are you sure you want to {action} this course?</p>}
+                    {action == 'delete' && <p className="mb-0">Are you sure you want to {action} this post?</p>}
                 </>
             </Modal.Body>
             <Modal.Footer>
@@ -225,11 +186,11 @@ const CourseEditModal = withRemount((props) => {
 });
 
 
-CourseEditModal.getModalProps = () => {
+PostEditModal.getModalProps = () => {
     return {
         contentClassName: 'h-100',
         size: 'lg',
     };
 };
 
-export default CourseEditModal;
+export default PostEditModal;

@@ -18,7 +18,7 @@ const Loader = ({ status, message, remount, fallback, ...props }) => {
                 {message && <div className="mb-3">{message}</div>}
                 {(fallback || remount) && (
                     <div className="hstack gap-3 mx-auto">
-                        {fallback && <button type="button" className="btn btn-secondary btn-sm" onClick={fallback}>
+                        {fallback && <button type="button" className="btn btn-outline-secondary btn-sm" onClick={fallback}>
                             <span className="svg-icon svg-icon-xs d-inline-block me-1" ><BsArrowLeft /></span><span>Back</span>
                         </button>}
                         {remount && <button type="button" className="btn btn-primary btn-sm" onClick={remount}>

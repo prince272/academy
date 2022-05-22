@@ -1,21 +1,21 @@
 ﻿using Academy.Server.Data.Entities;
 using System.ComponentModel.DataAnnotations;
 
-namespace Academy.Server.Models.Courses
+namespace Academy.Server.Models.Posts
 {
-    public class CourseSearchModel
+    public class PostSearchModel
     {
         public int? UserId { get; set; }
 
-        public CourseSubject? Subject { get; set; }
+        public PostCategory? Category { get; set; }
 
-        public CourseSort Sort { get; set; }
+        public PostSort Sort { get; set; }
 
         public string Query { get; set; }
     }
 
 
-    public enum CourseSort
+    public enum PostSort
     {
         [Display(Name = "Popular")]
         Popular,

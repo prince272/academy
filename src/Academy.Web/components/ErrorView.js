@@ -28,7 +28,7 @@ const ErrorView = ({ error, asPage }) => {
                     </div>
                     {(error.message && <div className="mb-3">{error.message}</div>) || (error.status == 404 && <div className="mb-3">The page you are looking for does not exist.</div>)}
                     <div className="hstack gap-3 mx-auto">
-                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => {
+                        <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => {
                             window.location.assign("/");
                         }}>
                             <span className="svg-icon svg-icon-xs d-inline-block me-1"><BsHouse /></span><span>Home</span>

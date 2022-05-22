@@ -13,7 +13,7 @@ namespace Academy.Server.Data.Entities
 
         public string Code { get; set; }
 
-        public PostCatgory Catgory { get; set; }
+        public PostCategory Category { get; set; }
 
         public string Title { get; set; }
 
@@ -32,7 +32,7 @@ namespace Academy.Server.Data.Entities
         public long Duration { get; set; }
     }
 
-    public enum PostCatgory
+    public enum PostCategory
     {
         [Display(Name = "News")]
         News,

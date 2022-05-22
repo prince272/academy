@@ -97,7 +97,7 @@ const SignUpModal = (props) => {
                                 <button className="btn btn-primary  w-100" type="button" onClick={() => setProvider('username')}>Sign up with Email or Phone</button>
                             </div>
                             <div className="col-12">
-                                <button className="btn btn-secondary w-100" type="button" onClick={() => {
+                                <button className="btn btn-outline-secondary w-100" type="button" onClick={() => {
                                     submitForm('post', `${process.env.NEXT_PUBLIC_SERVER_URL}/authentication/google`, { returnUrl: returnUrl || window.location.href });
                                 }}><span className="svg-icon svg-icon-xs d-inline-block me-2"><SvgGoogleLogo /></span> Sign up with Google</button>
                             </div>

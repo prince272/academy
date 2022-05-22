@@ -43,7 +43,7 @@ const SignOutModal = (props) => {
                         </button>
                     </div>
                     <div className="col-12">
-                        <button className="btn btn-secondary  w-100" type="button" onClick={() => modal.close()}>Cancel</button>
+                        <button className="btn btn-outline-secondary  w-100" type="button" onClick={() => modal.close()}>Cancel</button>
                     </div>
                 </div>
             </Modal.Body>

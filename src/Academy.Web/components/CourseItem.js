@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useClient } from '../utils/client';
 import { withRemount } from '../utils/hooks';
-import Loader from '../components/Loader';
+import Loader from './Loader';
 import { AspectRatio } from 'react-aspect-ratio';
 import { BsCardImage, BsThreeDots, BsPlus, BsBookHalf, BsClockFill, BsPersonFill } from 'react-icons/bs';
 
@@ -27,7 +27,7 @@ const CourseItem = ({ course }) => {
     const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id)));
 
     return (
-        <div className="card position-relative">
+        <div className="card">
             <div className="row g-0">
                 <div className="col-4 col-sm-12">
                     <div className="p-1">
@@ -39,7 +39,7 @@ const CourseItem = ({ course }) => {
                     </div>
                 </div>
                 <div className="col-8 col-sm-12">
-                    <div className="py-1 px-2 h-100 d-flex flex-column">
+                    <div className="py-1 px-2 h-100 d-flex flex-column position-relative">
                         <div className="fs-6 fw-bold mb-2 flex-grow-1" style={{ height: "42px" }}>
                             <ResponsiveEllipsis className="overflow-hidden text-break"
                                 text={course.title || ''}
@@ -89,7 +89,7 @@ const CourseItem = ({ course }) => {
                                 <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Options</Tooltip>}>
                                     {({ ...triggerHandler }) => (
                                         <Dropdown align={'end'}>
-                                            <Dropdown.Toggle {...triggerHandler} variant="outline-secondary" size="sm" bsPrefix=" " className="btn-icon btn-no-focus border-0 m-1">
+                                            <Dropdown.Toggle {...triggerHandler} variant="white" size="sm" bsPrefix=" " className="btn-icon btn-no-focus border-0 m-1">
                                                 <span className="svg-icon svg-icon-xs d-inline-block" ><BsThreeDots /></span>
                                             </Dropdown.Toggle>
 
@@ -111,4 +111,4 @@ const CourseItem = ({ course }) => {
     );
 }
 
-export { CourseItem };
+export default CourseItem;

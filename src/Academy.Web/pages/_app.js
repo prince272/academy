@@ -101,15 +101,10 @@ const Header = () => {
         <Navbar.Collapse className="flex-grow-0">
           <Nav>
             <Nav.Item>
-              <Dropdown>
-                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Courses</Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Link href={{ pathname: "/courses" }} passHref><Dropdown.Item>All</Dropdown.Item></Link>
-                  {appSettings.course.subjects.map((subject => (
-                    <Link key={subject.value} href={{ pathname: "/courses", query: { subject: subject.value } }} passHref><Dropdown.Item>{subject.name}</Dropdown.Item></Link>
-                  )))}
-                </Dropdown.Menu>
-              </Dropdown>
+              <Link href="/courses"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2">Courses</a></Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Link href="/posts"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2">Posts</a></Link>
             </Nav.Item>
             <Nav.Item>
               <Dropdown>

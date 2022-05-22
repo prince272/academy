@@ -5,6 +5,7 @@ using Academy.Server.Extensions.PaymentProcessor;
 using Academy.Server.Extensions.ViewRenderer;
 using Academy.Server.Models;
 using Academy.Server.Models.Courses;
+using Academy.Server.Models.Posts;
 using Academy.Server.Utilities;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
@@ -41,7 +42,7 @@ namespace Academy.Server.Controllers
         }
 
         [HttpGet("/")]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             object[] GetEnumerations<TEnum>() where TEnum : struct, Enum => Enum.GetValues<TEnum>().Select(@enum =>
             {
@@ -60,26 +61,21 @@ namespace Academy.Server.Controllers
             var Course = TypeMerger.Merge(new
             {
                 Sorts = GetEnumerations<CourseSort>(),
-                Subjects = await Enum.GetValues<CourseSubject>().SelectAsync(async subject =>
-                {
-                    var count = await unitOfWork.Query<Course>().CountAsync(_ => _.Subject == subject && _.Published != null);
-                    var display = AttributeHelper.GetMemberAttribute<DisplayAttribute>(subject.GetType().GetMember(subject.ToString())[0]);
-
-                    return new
-                    {
-                        Name = display?.Name ?? subject.ToString().Humanize(),
-                        Description = display?.Description,
-                        Value = subject,
-                        Count = count
-                    };
-                })
+                Subjects = GetEnumerations<CourseSubject>()
             }, appSettings.Course);
+
+            var Post = new
+            {
+                Sorts = GetEnumerations<PostSort>(),
+                Categories = GetEnumerations<PostCategory>()
+            };
 
             return Result.Succeed(new
             {
                 Company,
                 Currency,
-                Course
+                Course,
+                Post
             });
         }
 

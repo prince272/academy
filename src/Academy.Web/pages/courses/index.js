@@ -11,7 +11,7 @@ import { AspectRatio } from 'react-aspect-ratio';
 import { BsCardImage, BsThreeDots, BsPlus, BsBookHalf, BsCaretDownFill, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { OverlayTrigger, Tooltip, ProgressBar } from 'react-bootstrap';
 import { ModalPathPrefix, useModal } from '../../modals';
-import { CourseItem } from '../../components/courses';
+import CourseItem from '../../components/CourseItem';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
 import { useForm } from 'react-hook-form';
 import { sentenceCase } from 'change-case';
@@ -113,15 +113,15 @@ const CoursesPage = withRemount((props) => {
         const crud = (source, path, item, action) => {
             const items = _.get(source, path);
 
-            if (action == 'add') {
-                items.push(item);
+            const index = items.findIndex(_item => _item.id == item.id);
+
+            if (index > -1) {
+                if (action == 'edit') items[index] = item;
+                else if (action == 'delete') items.splice(index, 1);
             }
             else {
-                const index = items.findIndex(_item => _item.id == item.id);
-
-                if (index > -1) {
-                    if (action == 'edit') items[index] = item;
-                    else if (action == 'delete') items.splice(index, 1);
+                if (action == 'add') {
+                    items.push(item);
                 }
             }
 
@@ -193,12 +193,12 @@ const CoursesPage = withRemount((props) => {
 
                         wrapperClassName=""
                         scrollContainerClassName="">
-                        {[{ name: 'All', value: null }, ...appSettings.course.subjects].map((subjectObj) => {
+                        {[{ name: 'All', value: null }, ...appSettings.course.subjects].map((item) => {
                             return (
-                                <ScrollItem key={`scroll-item-${subjectObj.value}`} itemId={`scroll-item-${subjectObj.value}`}>
-                                    <a className={`btn btn-sm ${subjectObj.value == searchProps.subject ? 'btn-primary' : 'btn-outline-secondary'} rounded-pill mx-1 text-nowrap`} onClick={preventDefault(() => setSubject(subjectObj.value))}>
-                                        <span>{subjectObj.name}</span>
-                                        {subjectObj.value == searchProps.subject && <span> ({(page?.items.length || 0)})</span>}
+                                <ScrollItem key={`scroll-item-${item.value}`} itemId={`scroll-item-${item.value}`}>
+                                    <a className={`btn btn-sm ${item.value == searchProps.subject ? 'btn-primary' : 'btn-outline-secondary'} rounded-pill mx-1 text-nowrap`} onClick={preventDefault(() => setSubject(item.value))}>
+                                        <span>{item.name}</span>
+                                        {item.value == searchProps.subject && <span> ({(!loading ? page.items.length : 0)})</span>}
                                     </a>
                                 </ScrollItem>
                             );

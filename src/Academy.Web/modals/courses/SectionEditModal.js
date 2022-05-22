@@ -100,7 +100,7 @@ const SectionEditModal = withRemount((props) => {
             <Modal.Footer>
                 <div className="d-flex gap-3 justify-content-end w-100">
                     {(action == 'edit') && <button type="button" className="btn btn-danger me-auto" onClick={() => setAction('delete')}>Delete</button>}
-                    <button type="button" className="btn btn-secondary" onClick={() => { modal.close(); }}>Cancel</button>
+                    <button type="button" className="btn btn-outline-secondary" onClick={() => { modal.close(); }}>Cancel</button>
 
                     <button className={`btn btn-${action == 'delete' ? 'danger' : 'primary'}`} type="button" onClick={() => submit()} disabled={submitting}>
                         <div className="position-relative d-flex align-items-center justify-content-center">

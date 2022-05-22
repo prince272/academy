@@ -7,7 +7,7 @@ namespace Academy.Server.Models.Posts
     {
         public string Title { get; set; }
 
-        public PostCatgory Catgory { get; set; }
+        public PostCategory Category { get; set; }
 
         public string Description { get; set; }
 

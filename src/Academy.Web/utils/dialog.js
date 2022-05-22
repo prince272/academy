@@ -12,7 +12,7 @@ const ConfirmationDialog = () => {
             </Modal.Header>
             <Modal.Body>{params.body}</Modal.Body>
             <Modal.Footer>
-                <button className="btn btn-secondary" onClick={() => close()} {...params.cancelButtonProps}>Cancel</button>
+                <button className="btn btn-outline-secondary" onClick={() => close()} {...params.cancelButtonProps}>Cancel</button>
                 <button className="btn btn-primary" style={{ minWidth: "88px" }} onClick={() => close(true)} {...params.proceedButtonProps}>Proceed</button>
             </Modal.Footer>
         </Modal>
