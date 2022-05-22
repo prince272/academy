@@ -113,15 +113,19 @@ const Header = () => {
             </Nav.Item>
             <Nav.Item>
               <Dropdown>
-                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Resources</Dropdown.Toggle>
+                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Education</Dropdown.Toggle>
                 <Dropdown.Menu>
-                  <Dropdown.Header>How it works</Dropdown.Header>
                   <Link href="/teach" passHref><Dropdown.Item>For teachers</Dropdown.Item></Link>
                   <Link href="/" passHref><Dropdown.Item>For students</Dropdown.Item></Link>
-                  <Dropdown.Header>Who we are</Dropdown.Header>
+                </Dropdown.Menu>
+              </Dropdown>
+            </Nav.Item>
+            <Nav.Item>
+              <Dropdown>
+                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Company</Dropdown.Toggle>
+                <Dropdown.Menu>
                   <Link href="/contact" passHref><Dropdown.Item>Contact Us</Dropdown.Item></Link>
                   <Link href="/about" passHref><Dropdown.Item>About Us</Dropdown.Item></Link>
-
                 </Dropdown.Menu>
               </Dropdown>
             </Nav.Item>

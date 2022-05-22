@@ -174,8 +174,8 @@ const CoursesPage = withRemount((props) => {
         <>
             <NextSeo title="Courses" />
             <div className="container h-100 py-3">
-                <div className="d-flex align-items-center pt-2 pb-3">
-                    <div className="h3 mb-0">Courses ({page?.items.length || 0})</div>
+                <div className="d-flex align-items-center py-3">
+                    <div className="h3 mb-0">Courses</div>
                 </div>
                 <div className="mb-3">
                     <ScrollMenu
@@ -197,7 +197,8 @@ const CoursesPage = withRemount((props) => {
                             return (
                                 <ScrollItem key={`scroll-item-${subjectObj.value}`} itemId={`scroll-item-${subjectObj.value}`}>
                                     <a className={`btn btn-sm ${subjectObj.value == searchProps.subject ? 'btn-primary' : 'btn-outline-secondary'} rounded-pill mx-1 text-nowrap`} onClick={preventDefault(() => setSubject(subjectObj.value))}>
-                                        {subjectObj.name}
+                                        <span>{subjectObj.name}</span>
+                                        {subjectObj.value == searchProps.subject && <span> ({(page?.items.length || 0)})</span>}
                                     </a>
                                 </ScrollItem>
                             );

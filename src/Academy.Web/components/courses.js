@@ -89,7 +89,7 @@ const CourseItem = ({ course }) => {
                                 <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Options</Tooltip>}>
                                     {({ ...triggerHandler }) => (
                                         <Dropdown align={'end'}>
-                                            <Dropdown.Toggle {...triggerHandler} variant="outline-secondary" size="sm" bsPrefix=" " className="btn-icon btn-no-focus rounded-pill border-0 m-1">
+                                            <Dropdown.Toggle {...triggerHandler} variant="outline-secondary" size="sm" bsPrefix=" " className="btn-icon btn-no-focus border-0 m-1">
                                                 <span className="svg-icon svg-icon-xs d-inline-block" ><BsThreeDots /></span>
                                             </Dropdown.Toggle>
 
