@@ -80,7 +80,7 @@ const CourseItem = ({ course }) => {
                             </div>
                             <div className="hstack text-nowrap">
                                 <div><span className="text-primary"><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
-                                <span className="mx-2">·</span>
+                                <span className="mx-2">•</span>
                                 <div><span className="text-primary"><BsPersonFill /></span> {formatNumber(course.students)}</div>
                             </div>
                         </div>

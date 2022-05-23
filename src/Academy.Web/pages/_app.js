@@ -101,10 +101,10 @@ const Header = () => {
         <Navbar.Collapse className="flex-grow-0">
           <Nav>
             <Nav.Item>
-              <Link href="/courses"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2">Courses</a></Link>
+              <Link href="/courses"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>Learn</a></Link>
             </Nav.Item>
             <Nav.Item>
-              <Link href="/posts"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2">Posts</a></Link>
+              <Link href="/posts"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>Blog</a></Link>
             </Nav.Item>
             <Nav.Item>
               <Dropdown>

@@ -167,7 +167,7 @@ const LessonItem = ({ course, section, lesson, toggler, permitted }) => {
                                                 [
                                                     (permitted || explanations.length > 0) ? (<span key="1"><BsJournalRichtext size="1rem" /> {explanations.length}</span>) : null,
                                                     ((permitted || questions.length > 0) ? (<span key="2" className="text-body"><BsQuestionCircle size="1rem" /> {questions.length}</span>) : null),
-                                                ].filter(curr => curr).reduce((prev, curr, index) => index == 0 ? curr : [prev, (<span key="0" className="mx-2">·</span>), curr], false)
+                                                ].filter(curr => curr).reduce((prev, curr, index) => index == 0 ? curr : [prev, (<span key="0" className="mx-2">•</span>), curr], false)
                                             );
                                         })()
                                         }
@@ -583,9 +583,9 @@ const CoursePage = withRemount(({ remount, ...props }) => {
                                     </div>
                                     <div className="hstack">
                                         <div className="text-primary">{course.price > 0 ? (<span className="text-nowrap"><span>{appSettings.currency.symbol}</span> {course.price}</span>) : (<span>Free</span>)}</div>
-                                        <span className="mx-2">·</span>
+                                        <span className="mx-2">•</span>
                                         <div><span><BsClockFill /></span> {moment.duration(Math.floor(course.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
-                                        <span className="mx-2">·</span>
+                                        <span className="mx-2">•</span>
                                         <div><span><BsPersonFill /></span> {formatNumber(course.students)}</div>
                                     </div>
                                     <div className="d-inline-flex align-items-center my-2 me-2">

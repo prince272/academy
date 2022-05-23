@@ -8,7 +8,7 @@ import * as moment from 'moment';
 import momentDurationFormatSetup from 'moment-duration-format';
 momentDurationFormatSetup(moment);
 
-import { BsGripVertical, BsCardImage, BsChevronDown, BsChevronRight, BsPersonFill, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsQuestionCircle, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill, BsCart, BsCart2, BsBasket2, BsCart4, BsCart3 } from 'react-icons/bs';
+import { BsCalendarDateFill, BsCardImage, BsChevronDown, BsChevronRight, BsPersonFill, BsPlus, BsThreeDots, BsCheck2, BsLockFill, BsX, BsPlayFill, BsQuestionCircle, BsJournalRichtext, BsMusicNoteBeamed, BsChevronLeft, BsAward, BsHourglassBottom, BsClockHistory, BsClockFill, BsCart, BsCart2, BsBasket2, BsCart4, BsCart3 } from 'react-icons/bs';
 
 import DocumentViewer from '../../../components/DocumentViewer';
 import { useRouterQuery } from 'next-router-query';
@@ -25,6 +25,8 @@ const PostPage = (props) => {
     const { postId } = useRouterQuery();
     let [post, setPost] = withAsync(useState(props.post));
     const [loading, setLoading] = withAsync(useState(props.loading));
+
+    const appSettings = useAppSettings();
 
     const load = async () => {
         if (loading) {
@@ -60,15 +62,18 @@ const PostPage = (props) => {
             <div className="container py-5">
                 <div className="row justify-content-center h-100">
                     <div className="col-12 col-md-10 align-self-start">
-                        <div className="card">
-                            <div className="card-body">
+                        <div>
+                            <div>
                                 <div className="mb-3"><Link href="/posts"><a className="link-dark d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs me-1"><BsChevronLeft /></div><div>Back to posts</div></a></Link></div>
                                 <div className="hstack text-nowrap mb-1">
-                                    <div><span className="text-primary"><BsClockFill /></span> {moment.duration(Math.floor(post.duration / 10000)).humanize()} read</div>
-                                    <span className="mx-2">·</span>
-                                    <div><span className="text-primary"><BsPersonFill /></span> 1</div>
+                                    <div><span className="text-primary"><BsClockFill /></span> {moment.duration(Math.floor(post.duration / 10000)).humanize()} to read</div>
+                                    <span className="mx-2">•</span>
+                                    <div><span className="text-primary"><BsCalendarDateFill /></span> {moment(post.created).format("MMMM D, yyyy")}</div>
                                 </div>
                                 <h1 className="h2">{post.title}</h1>
+                                <div className='mb-2'>
+                                    <div className="badge bg-primary fs-6">{appSettings.post.categories.find(category => category.value == post.category)?.name}</div>
+                                </div>
                                 <div className="p-1 mb-3">
                                     <AspectRatio ratio="1280/720">
                                         {post.image ?
