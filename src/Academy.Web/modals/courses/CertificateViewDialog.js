@@ -10,17 +10,10 @@ import { pascalCase } from 'change-case';
 import { downloadFromUrl, preventDefault } from '../../utils/helpers';
 import { withRemount, useConfetti, withAsync } from '../../utils/hooks';
 import Loader from '../../components/Loader';
+import ShareButtons from '../../components/ShareButtons';
 import { useClient } from '../../utils/client';
-import { BsAward, BsAwardFill, BsDownload, BsPatchCheckFill, BsShare } from 'react-icons/bs';
+import { BsAward, BsDownload } from 'react-icons/bs';
 import { DefaultModalProps, useModal } from '../';
-import {
-    EmailShareButton, EmailIcon,
-    FacebookShareButton, FacebookIcon,
-    WhatsappShareButton, WhatsappIcon,
-    LinkedinShareButton, LinkedinIcon,
-    TwitterShareButton, TwitterIcon
-
-} from "react-share";
 import { useEventDispatcher } from '../../utils/eventDispatcher';
 import { useDialog } from '../../utils/dialog';
 import _ from 'lodash';
@@ -96,28 +89,7 @@ const CertificateViewDialog = () => {
                             {!!course.certificate && (
                                 <div className="vstack gap-3">
                                     <button type="button" className="btn btn-primary" onClick={() => { downloadFromUrl(course.certificate.document.url, course.certificate.document.name); }}><span className="svg-icon svg-icon-xs d-inline-block align-text-bottom me-2"><BsDownload /></span>Download certificate</button>
-                                    <div className="fw-bold">Share certificate on:</div>
-                                    <div className="hstack gap-2 mx-auto">
-                                        <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Send to Email</Tooltip>}>
-                                            <EmailShareButton url={course.certificate.document.url}><EmailIcon size={37} round /></EmailShareButton>
-                                        </OverlayTrigger>
-
-                                        <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Share on Whatsapp</Tooltip>}>
-                                            <WhatsappShareButton url={course.certificate.document.url}><WhatsappIcon size={37} round /></WhatsappShareButton>
-                                        </OverlayTrigger>
-
-                                        <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Share on Linkedin</Tooltip>}>
-                                            <LinkedinShareButton url={course.certificate.document.url}><LinkedinIcon size={37} round /></LinkedinShareButton>
-                                        </OverlayTrigger>
-
-                                        <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Share on Facebook</Tooltip>}>
-                                            <FacebookShareButton url={course.certificate.document.url}><FacebookIcon size={37} round /></FacebookShareButton>
-                                        </OverlayTrigger>
-
-                                        <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Share on Twitter</Tooltip>}>
-                                            <TwitterShareButton url={course.certificate.document.url}><TwitterIcon size={37} round /></TwitterShareButton>
-                                        </OverlayTrigger>
-                                    </div>
+                                    <div className="mb-3 d-flex align-items-center"><div className="me-2 fw-bold">Share:</div><ShareButtons share={{ title: course.title, text: course.description, url: course.certificate.document.url }} /> </div>
                                 </div>
                             )}
                         </div>

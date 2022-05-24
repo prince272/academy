@@ -247,7 +247,6 @@ const CoursesPage = withRemount((props) => {
                                 <div className="d-flex justify-content-end">
                                     <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Add course</Tooltip>}>
                                         {({ ...triggerHandler }) => (
-
                                             <Link href={`${ModalPathPrefix}/courses/add`}>
                                                 <a className="btn btn-primary btn-icon rounded-pill pe-auto" {...triggerHandler}>
                                                     <span className="svg-icon svg-icon-sm d-inline-block" ><BsPlus /></span>

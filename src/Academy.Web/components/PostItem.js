@@ -6,7 +6,7 @@ import { useClient } from '../utils/client';
 import { withRemount } from '../utils/hooks';
 import Loader from './Loader';
 import { AspectRatio } from 'react-aspect-ratio';
-import { BsCardImage, BsThreeDots, BsPlus, BsBookHalf, BsClockFill, BsPersonFill } from 'react-icons/bs';
+import { BsCardImage, BsThreeDots, BsCalendarDate, BsBookHalf, BsClockFill, BsPersonFill } from 'react-icons/bs';
 
 import ResponsiveEllipsis from 'react-lines-ellipsis/lib/loose';
 
@@ -40,6 +40,14 @@ const PostItem = ({ post }) => {
                 </div>
                 <div className="col-8 col-sm-12">
                     <div className="py-1 px-2 h-100 d-flex flex-column position-relative">
+                        <div className="hstack gap-3 justify-content-between mb-2">
+                            <div className="text-nowrap">
+                                <div><span className="text-primary align-text-bottom"><BsCalendarDate /></span> {moment(post.created).format("MMMM D, yyyy")}</div>
+                            </div>
+                            <div className="text-nowrap">
+                                <div><span className="text-primary align-text-bottom"><BsClockFill /></span> {moment.duration(Math.floor(post.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })} read</div>
+                            </div>
+                        </div>
                         <div className="fs-6 fw-bold mb-2 flex-grow-1" style={{ height: "42px" }}>
                             <ResponsiveEllipsis className="overflow-hidden text-break"
                                 text={post.title || ''}
@@ -52,7 +60,7 @@ const PostItem = ({ post }) => {
                         {permitted && (
                             <div className="mb-2"><div className={`badge bg-${post.published ? 'success' : 'warning'} py-1`}>{post.published ? 'Published' : 'Unpublished'}</div></div>
                         )}
-                        <div className="hstack gap-3 justify-content-between">
+                        <div>
                             <div className="d-inline-flex align-items-center my-1 me-2">
                                 {(() => {
                                     const teacher = (client.user && client.user.id == post.teacher.id) ? client.user : post.teacher;
@@ -76,9 +84,6 @@ const PostItem = ({ post }) => {
                                     )
                                 })()}
 
-                            </div>
-                            <div className="hstack text-nowrap">
-                                <div><span className="text-primary"><BsClockFill /></span> {moment.duration(Math.floor(post.duration / 10000)).format("w[w] d[d] h[h] m[m]", { trim: "both", largest: 1 })}</div>
                             </div>
                         </div>
                         {permitted && (

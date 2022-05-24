@@ -43,4 +43,15 @@ namespace Academy.Server.Data.Entities
         [Display(Name = "Career Development")]
         Career
     }
+
+    public class PostReaction
+    {
+        public virtual Post Post { get; set; }
+
+        public int PostId { get; set; }
+
+        public string IPAddress { get; set; }
+
+        public string UAString { get; set; }
+    }
 }
