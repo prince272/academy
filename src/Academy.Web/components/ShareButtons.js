@@ -8,7 +8,6 @@ import {
     TwitterShareButton, TwitterIcon
 
 } from "react-share";
-import { RWebShare } from "react-web-share";
 
 const ShareButtons = ({ share }) => {
 
