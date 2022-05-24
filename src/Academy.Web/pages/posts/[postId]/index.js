@@ -27,6 +27,8 @@ import Loader from '../../../components/Loader';
 
 import { SvgWebSearchIllus } from '../../../resources/images/illustrations';
 
+const ScrollItem = ({ children }) => <>{children}</>;
+
 const ScrollLeftArrow = (() => {
     const {
         isFirstItemVisible,
@@ -112,7 +114,11 @@ const RelatedPostsComponent = withRemount(({ category, remount }) => {
                     scrollContainerClassName="">
                     {page.items.map((item, index) => {
                         return (
-                            <div style={{ width: "300px" }} key={`scroll-item-${index}`} itemId={`scroll-item-${index}`} className="mx-2"><PostItem post={item} responsive={false} /></div>
+                            <ScrollItem key={`scroll-item-${index}`} itemId={`scroll-item-${index}`}>
+                                <div className="mx-2" style={{ width: "300px" }}>
+                                    <PostItem post={item} responsive={false} />
+                                </div>
+                            </ScrollItem>
                         );
                     })}
                 </ScrollMenu>
@@ -222,7 +228,7 @@ const PostPage = withRemount(({ remount, ...props }) => {
                                 <div className="fs-5"><DocumentViewer document={post.description} /></div>
                             </div>
                         </div>
-                        <div class="divider-center my-8">  <div className="h4"><Link href={"/posts"}><a>All posts</a></Link></div></div>
+                        <div className="divider-center my-8">  <div className="h4"><Link href={"/posts"}><a>All posts</a></Link></div></div>
                         <RelatedPostsComponent category={post.category} />
                     </div>
                 </div>
