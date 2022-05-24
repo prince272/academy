@@ -20,7 +20,7 @@ momentDurationFormatSetup(moment);
 
 import { formatNumber } from '../utils/helpers';
 
-const PostItem = ({ post }) => {
+const PostItem = ({ post, responsive = true }) => {
     const postId = post.id;
     const appSettings = useAppSettings();
     const client = useClient();
@@ -29,7 +29,7 @@ const PostItem = ({ post }) => {
     return (
         <div className="card">
             <div className="row g-0">
-                <div className="col-4 col-sm-12">
+                <div className={`${responsive ? 'col-4 col-sm-12' : 'col-12'}`}>
                     <div className="p-1">
                         <AspectRatio ratio="1">
                             {post.image ?
@@ -38,7 +38,7 @@ const PostItem = ({ post }) => {
                         </AspectRatio>
                     </div>
                 </div>
-                <div className="col-8 col-sm-12">
+                <div className={`${responsive ? 'col-8 col-sm-12' : 'col-12'}`}>
                     <div className="py-1 px-2 h-100 d-flex flex-column position-relative">
                         <div className="hstack gap-3 justify-content-between mb-2">
                             <div className="text-nowrap">
@@ -61,7 +61,7 @@ const PostItem = ({ post }) => {
                             <div className="mb-2"><div className={`badge bg-${post.published ? 'success' : 'warning'} py-1`}>{post.published ? 'Published' : 'Unpublished'}</div></div>
                         )}
                         <div>
-                            <div className="d-inline-flex align-items-center my-1 me-2">
+                            <div className="d-inline-flex align-items-center mb-1 me-2">
                                 {(() => {
                                     const teacher = (client.user && client.user.id == post.teacher.id) ? client.user : post.teacher;
                                     return (

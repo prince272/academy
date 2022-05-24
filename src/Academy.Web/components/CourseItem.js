@@ -20,7 +20,7 @@ momentDurationFormatSetup(moment);
 
 import { formatNumber } from '../utils/helpers';
 
-const CourseItem = ({ course }) => {
+const CourseItem = ({ course, responsive = true }) => {
     const courseId = course.id;
     const appSettings = useAppSettings();
     const client = useClient();
@@ -29,7 +29,7 @@ const CourseItem = ({ course }) => {
     return (
         <div className="card">
             <div className="row g-0">
-                <div className="col-4 col-sm-12">
+                <div className={`${responsive ? 'col-4 col-sm-12' : 'col-12'}`}>
                     <div className="p-1">
                         <AspectRatio ratio="1">
                             {course.image ?
@@ -38,7 +38,7 @@ const CourseItem = ({ course }) => {
                         </AspectRatio>
                     </div>
                 </div>
-                <div className="col-8 col-sm-12">
+                <div className={`${responsive ? 'col-8 col-sm-12' : 'col-12'}`}>
                     <div className="py-1 px-2 h-100 d-flex flex-column position-relative">
                         <div className="fs-6 fw-bold mb-2 flex-grow-1" style={{ height: "42px" }}>
                             <ResponsiveEllipsis className="overflow-hidden text-break"

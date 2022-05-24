@@ -8,19 +8,131 @@ import * as moment from 'moment';
 import momentDurationFormatSetup from 'moment-duration-format';
 momentDurationFormatSetup(moment);
 
-import { BsCalendarDate, BsCardImage, BsClock, BsChevronLeft, BsPersonFill } from 'react-icons/bs';
+import { BsCalendarDate, BsCardImage, BsClock, BsPersonFill, BsChevronRight, BsChevronLeft } from 'react-icons/bs';
 
 import DocumentViewer from '../../../components/DocumentViewer';
 import ShareButtons from '../../../components/ShareButtons';
 import { useRouterQuery } from 'next-router-query';
 import { createHttpClient, useClient } from '../../../utils/client';
-import { withAsync } from '../../../utils/hooks';
-import { useState, useEffect } from 'react';
+import { withAsync, withRemount } from '../../../utils/hooks';
+import { useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
+
+import PostItem from '../../../components/PostItem';
 
 import ResponsiveEllipsis from 'react-lines-ellipsis/lib/loose';
 
-const PostPage = (props) => {
+import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
+import Loader from '../../../components/Loader';
+
+import { SvgWebSearchIllus } from '../../../resources/images/illustrations';
+
+const ScrollLeftArrow = (() => {
+    const {
+        isFirstItemVisible,
+        scrollPrev,
+        visibleItemsWithoutSeparators,
+        initComplete
+    } = useContext(VisibilityContext);
+
+    const [disabled, setDisabled] = useState(
+        !initComplete || (initComplete && isFirstItemVisible)
+    );
+
+    useEffect(() => {
+        // NOTE: detect if whole component visible
+        if (visibleItemsWithoutSeparators.length) {
+            setDisabled(isFirstItemVisible);
+        }
+    }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
+
+    return (<div className={`d-none d-sm-flex align-items-center py-1 pe-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
+});
+
+const ScrollRightArrow = () => {
+    const {
+        isLastItemVisible,
+        scrollNext,
+        visibleItemsWithoutSeparators
+    } = useContext(VisibilityContext);
+
+    // console.log({ isLastItemVisible });
+    const [disabled, setDisabled] = useState(
+        !visibleItemsWithoutSeparators.length && isLastItemVisible
+    );
+    useEffect(() => {
+        if (visibleItemsWithoutSeparators.length) {
+            setDisabled(isLastItemVisible);
+        }
+    }, [isLastItemVisible, visibleItemsWithoutSeparators]);
+
+
+    return (<div className={`d-none d-sm-flex align-items-center py-1 ps-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
+}
+
+
+const RelatedPostsComponent = withRemount(({ category, remount }) => {
+    const router = useRouter();
+    const client = useClient();
+    const [loading, setLoading] = useState({});
+    const [page, setPage] = useState(null);
+    const appSettings = useAppSettings();
+
+    const load = async (params) => {
+        setLoading({});
+        setPage(null);
+
+        let result = await client.get(`/posts`, { params });
+
+        if (result.error) {
+            const error = result.error;
+            setLoading({ ...error, message: 'Unable to load posts.', remount });
+            return;
+        }
+
+        setPage(result.data);
+        setLoading(null);
+    };
+
+    useEffect(() => { load({ category }); }, []);
+
+    if (loading) return (<Loader {...loading} />);
+
+    return (
+        <>
+            <div className="hstack gap-3 justify-content-between mb-3">
+                <div className="h4">Related posts</div>
+            </div>
+
+            {(!loading && page.items.length) ? (
+                <ScrollMenu
+                    LeftArrow={ScrollLeftArrow}
+                    RightArrow={ScrollRightArrow}
+                    wrapperClassName=""
+                    scrollContainerClassName="">
+                    {page.items.map((item, index) => {
+                        return (
+                            <div style={{ width: "300px" }} key={`scroll-item-${index}`} itemId={`scroll-item-${index}`} className="mx-2"><PostItem post={item} responsive={false} /></div>
+                        );
+                    })}
+                </ScrollMenu>
+            )
+                : ((!loading && !page.items.length) ?
+                    (<>
+                        <div className="d-flex flex-column text-center justify-content-center pt-10 mt-10">
+                            <div className="mb-4">
+                                <SvgWebSearchIllus style={{ width: "auto", height: "128px" }} />
+                            </div>
+                            <div className="mb-3">There are no posts here.</div>
+                        </div>
+                    </>)
+                    : (<Loader {...loading} />)
+                )}
+        </>
+    )
+});
+
+const PostPage = withRemount(({ remount, ...props }) => {
     const router = useRouter();
     const client = useClient();
 
@@ -41,7 +153,7 @@ const PostPage = (props) => {
                 return;
             }
 
-            post = await setCourse(result.data);
+            post = await setPost(result.data);
             await setLoading(null);
         }
     };
@@ -67,9 +179,7 @@ const PostPage = (props) => {
                         <div>
                             <div>
                                 <div className="mb-3"><Link href="/posts"><a className="link-dark d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs me-1"><BsChevronLeft /></div><div>Back to posts</div></a></Link></div>
-                                <div className='mb-2'>
-                                    <div className="badge bg-primary fs-6">{appSettings.post.categories.find(category => category.value == post.category)?.name}</div>
-                                </div>
+                                <div className='mb-2'><div className="badge bg-primary fs-6">{appSettings.post.categories.find(category => category.value == post.category)?.name}</div></div>
                                 <h1 className="h2">{post.title}</h1>
                                 <div className="hstack text-nowrap mb-3">
                                     <div><span className="text-primary align-text-bottom"><BsCalendarDate /></span> {moment(post.created).format("MMMM D, yyyy")}</div>
@@ -109,15 +219,17 @@ const PostPage = (props) => {
                                             (<div className="rounded border svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center"><BsCardImage /></div>)}
                                     </AspectRatio>
                                 </div>
-                                <div className="lead mb-5"><DocumentViewer document={post.description} /></div>
+                                <div className="fs-5"><DocumentViewer document={post.description} /></div>
                             </div>
                         </div>
+                        <div class="divider-center my-8">  <div className="h4"><Link href={"/posts"}><a>All posts</a></Link></div></div>
+                        <RelatedPostsComponent category={post.category} />
                     </div>
                 </div>
             </div>
         </>
     );
-};
+});
 
 PostPage.getPageSettings = () => {
     return ({
