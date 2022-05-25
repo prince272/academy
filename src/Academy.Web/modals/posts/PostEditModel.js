@@ -66,6 +66,11 @@ const PostEditModal = withRemount((props) => {
 
             setSubmitting(true);
 
+            inputs = {
+                ...inputs,
+                description: removePoweredBy(inputs.description),
+            };
+
             let result = await ({
                 'add': () => client.post(`/posts`, inputs),
                 'edit': () => client.put(`/posts/${postId}`, inputs),
@@ -90,6 +95,23 @@ const PostEditModal = withRemount((props) => {
             toast.success(`Post ${action == 'delete' ? (action + 'd') : (action + 'ed')}.`, { id: componentId });
             modal.close();
         })();
+    };
+
+    const removePoweredBy = function (str) {
+        if (str != null) {
+            // Otherwise, fallback to old-school method
+            var dom = document.getElementById(componentId + '_RAW_HTML') || document.createElement("div");
+            dom.id = componentId + '_RAW_HTML';
+            dom.innerHTML = str;
+
+            if (dom.lastElementChild &&
+                dom.lastElementChild.tagName.toLocaleLowerCase() == 'p' &&
+                dom.lastElementChild.getAttribute('data-f-id') === 'pbf') {
+                dom.removeChild(dom.lastElementChild);
+            }
+            return dom.innerHTML;
+        }
+        else return str;
     };
 
     useEffect(() => {
