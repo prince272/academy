@@ -26,6 +26,10 @@ import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
 import Loader from '../../../components/Loader';
 
 import { SvgWebSearchIllus } from '../../../resources/images/illustrations';
+import { useEventDispatcher } from '../../../utils/eventDispatcher';
+
+import parsePhoneNumber from 'libphonenumber-js';
+import { ModalPathPrefix } from '../../../modals';
 
 const ScrollItem = ({ children }) => <>{children}</>;
 
@@ -79,6 +83,7 @@ const RelatedPostsComponent = withRemount(({ category, remount }) => {
     const [loading, setLoading] = useState({});
     const [page, setPage] = useState(null);
     const appSettings = useAppSettings();
+    const eventDispatcher = useEventDispatcher();
 
     const load = async (params) => {
         setLoading({});
@@ -168,6 +173,8 @@ const PostPage = withRemount(({ remount, ...props }) => {
         load();
     }, []);
 
+    const permitted = (client.user && client.user.id == post.teacher.id);
+
     return (
         <>
             <NextSeo
@@ -228,7 +235,42 @@ const PostPage = withRemount(({ remount, ...props }) => {
                                 <div className="fs-5"><DocumentViewer document={post.description} /></div>
                             </div>
                         </div>
-                        <div className="divider-center my-8">  <div className="h4"><Link href={"/posts"}><a>All posts</a></Link></div></div>
+                        <div className="divider-center my-6">Author</div>
+                        {(() => {
+                            const teacher = (client.user && client.user.id == post.teacher.id) ? client.user : post.teacher;
+
+                            return (
+                                <div className="row gy-3">
+                                    <div className="col-md-auto d-flex d-md-block justify-content-center">
+                                        <div className="border rounded bg-white p-1 d-inline-flex">
+                                            {teacher.avatar ?
+                                                (<Image className="rounded" priority unoptimized loader={({ src }) => src} src={teacher.avatar.url} layout="fixed" objectFit="cover" width={128} height={128} alt={post.teacher.fullName} />) :
+                                                (<div className="rounded svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center" style={{ width: "128px", height: "128px" }}><BsCardImage /></div>)}
+                                        </div>
+                                    </div>
+                                    <div className="col-md-9">
+                                        <div className="h2 fw-bold text-center text-md-start">About {teacher.fullName}</div>
+                                        <div className="mb-2 text-start">{teacher.bio}</div>
+                                        {permitted && <div className="mb-2"><Link href={`${ModalPathPrefix}/accounts/profile/edit`}><a>Edit profile</a></Link></div>}
+                                        <div className="text-start">
+                                            <ul>
+                                                {teacher.email && (
+                                                    <li>
+                                                        <p>By email: <a href={`mailto:${teacher.email}`}>{teacher.email}</a></p>
+                                                    </li>
+                                                )}
+                                                {teacher.phoneNumber && (
+                                                    <li>
+                                                        <p>By phone number: {((phoneNumber) => (<a href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
+                                                    </li>
+                                                )}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                        <hr className="my-6" />
                         <RelatedPostsComponent category={post.category} />
                     </div>
                 </div>

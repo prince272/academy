@@ -24,7 +24,7 @@ const CourseItem = ({ course, responsive = true }) => {
     const courseId = course.id;
     const appSettings = useAppSettings();
     const client = useClient();
-    const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher') && course.userId == client.user.id)));
+    const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher') && client.user.id == course.teacher.id)));
 
     return (
         <div className="card">

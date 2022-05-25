@@ -24,7 +24,7 @@ const PostItem = ({ post, responsive = true }) => {
     const postId = post.id;
     const appSettings = useAppSettings();
     const client = useClient();
-    const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher') && post.userId == client.user.id)));
+    const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher') && client.user.id == post.teacher.id)));
 
     return (
         <div className="card">

@@ -15,6 +15,10 @@ namespace Academy.Server.Models.Members
 
         public string Bio { get; set; }
 
+        public string Email { get; set; }
+
+        public string PhoneNumber { get; set; }
+
         public MediaModel Avatar { get; set; }
     }
 
