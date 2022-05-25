@@ -120,7 +120,7 @@ const RelatedPostsComponent = withRemount(({ category, remount }) => {
                     {page.items.map((item, index) => {
                         return (
                             <ScrollItem key={`scroll-item-${index}`} itemId={`scroll-item-${index}`}>
-                                <div className="mx-2" style={{ width: "300px" }}>
+                                <div className="mx-2" style={{ width: "256px" }}>
                                     <PostItem post={item} responsive={false} />
                                 </div>
                             </ScrollItem>
