@@ -285,7 +285,7 @@ const Body = ({ children }) => {
       const location = window.location;
       if (location.pathname.toLowerCase().startsWith(ModalPathPrefix)) {
         modal.open(location.href, false);
-        router.replace("/", {}, { shallow: true });
+        router.replace("/", null, { shallow: true });
       }
 
       setPageLoading(false);
