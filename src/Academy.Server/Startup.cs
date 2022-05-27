@@ -329,7 +329,7 @@ namespace Academy.Server
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
 
-                options.LoginPath = "/accounts/signin";
+                options.LoginPath = "/authentication/redirect";
                 options.LogoutPath = "/accounts/signout";
                 options.ReturnUrlParameter = "returnUrl";
 

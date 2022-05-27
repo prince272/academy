@@ -92,6 +92,7 @@ namespace Academy.Server.Controllers
             return Result.Succeed();
         }
 
+
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] SignInModel form)
         {

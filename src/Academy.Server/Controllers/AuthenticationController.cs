@@ -25,6 +25,14 @@ namespace Academy.Server.Controllers
             signInManager = serviceProvider.GetRequiredService<SignInManager<User>>();
         }
 
+        [HttpGet("redirect")]
+        public IActionResult InternalRedirect(string returnUrl)
+        {
+            if (returnUrl == null) return BadRequest();
+
+            return Redirect(returnUrl);
+        }
+
         [HttpPost("{provider}")]
         public IActionResult External([FromRoute] string provider, string returnUrl)
         {

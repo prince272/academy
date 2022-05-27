@@ -56,8 +56,7 @@ const SignInModal = (props) => {
                 return;
             }
 
-            // await client.signin({ provider: 'username', returnUrl });
-            window.location.href = returnUrl;
+            await client.signin({ provider: 'username', returnUrl });
             setSubmitting(false);
         })();
     };
