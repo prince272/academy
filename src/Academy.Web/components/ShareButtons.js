@@ -13,7 +13,7 @@ const ShareButtons = ({ share }) => {
 
     return (
         <>
-            <div className="hstack gap-2">
+            <div className="hstack gap-2 d-inline-flex">
                 <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Send to Email</Tooltip>}>
                     <EmailShareButton url={share.url}><EmailIcon size={32} round /></EmailShareButton>
                 </OverlayTrigger>

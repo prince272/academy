@@ -225,9 +225,9 @@ namespace Academy.Server.Controllers
             var user = await HttpContext.Request.GetCurrentUserAsync();
             var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
 
-            var courseModel = mapper.Map<PostModel>(post);
+            var postModel = mapper.Map<PostModel>(post);
 
-            return courseModel;
+            return postModel;
         }
     }
 }
