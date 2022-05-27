@@ -87,6 +87,31 @@ const EditProfileModal = (props) => {
                         <textarea {...form.register("bio")} className={`form-control ${formState.errors.bio ? 'is-invalid' : ''}`} rows="4" />
                         <div className="invalid-feedback">{formState.errors.bio?.message}</div>
                     </div>
+                    <div className="col-12">
+                        <label className="form-label">Facebook link</label>
+                        <input {...form.register("facebookLink")} className={`form-control  ${formState.errors.facebookLink ? 'is-invalid' : ''}`} />
+                        <div className="invalid-feedback">{formState.errors.facebookLink?.message}</div>
+                    </div>
+                    <div className="col-12">
+                        <label className="form-label">Instagram link</label>
+                        <input {...form.register("instagramLink")} className={`form-control  ${formState.errors.instagramLink ? 'is-invalid' : ''}`} />
+                        <div className="invalid-feedback">{formState.errors.instagramLink?.message}</div>
+                    </div>
+                    <div className="col-12">
+                        <label className="form-label">Linkedin link</label>
+                        <input {...form.register("linkedinLink")} className={`form-control  ${formState.errors.linkedinLink ? 'is-invalid' : ''}`} />
+                        <div className="invalid-feedback">{formState.errors.linkedinLink?.message}</div>
+                    </div>
+                    <div className="col-12">
+                        <label className="form-label">Twitter link</label>
+                        <input {...form.register("twitterLink")} className={`form-control  ${formState.errors.twitterLink ? 'is-invalid' : ''}`} />
+                        <div className="invalid-feedback">{formState.errors.twitterLink?.message}</div>
+                    </div>
+                    <div className="col-12">
+                        <label className="form-label">WhatsApp link</label>
+                        <input {...form.register("whatsAppLink")} className={`form-control  ${formState.errors.whatsAppLink ? 'is-invalid' : ''}`} />
+                        <div className="invalid-feedback">{formState.errors.whatsAppLink?.message}</div>
+                    </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>

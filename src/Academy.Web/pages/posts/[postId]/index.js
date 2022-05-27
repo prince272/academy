@@ -237,7 +237,7 @@ const PostPage = withRemount(({ remount, ...props }) => {
                                 <div className="fs-5"><DocumentViewer document={post.description} /></div>
                             </div>
                         </div>
-                        <div className="divider-center my-6">Author</div>
+                        <div className="divider-center my-6">About</div>
                         {(() => {
                             const teacher = (client.user && client.user.id == post.teacher.id) ? client.user : post.teacher;
 
@@ -251,16 +251,16 @@ const PostPage = withRemount(({ remount, ...props }) => {
                                         </div>
                                     </div>
                                     <div className="col-md-9">
-                                        <div className="h2 fw-bold text-center text-md-start">About {teacher.fullName}</div>
+                                        <div className="h2 fw-bold text-center text-md-start">{teacher.fullName}</div>
                                         <div className="mb-2 text-start">{teacher.bio}</div>
                                         {permitted && <div className="mb-2"><Link href={`${ModalPathPrefix}/accounts/profile/edit`}><a>Edit profile</a></Link></div>}
                                         <div className="text-start">
                                             <div className="">
                                                 {teacher.email && (
-                                                    <p className="text-nowrap">Email: <a href={`mailto:${teacher.email}`}>{teacher.email}</a></p>
+                                                    <p className="text-nowrap mb-2">Email: <a href={`mailto:${teacher.email}`}>{teacher.email}</a></p>
                                                 )}
                                                 {teacher.phoneNumber && (
-                                                    <p className="text-nowrap">Phone number: {((phoneNumber) => (<a href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
+                                                    <p className="text-nowrap mb-2">Phone number: {((phoneNumber) => (<a href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
                                                 )}
                                                 <div>
                                                     <SocialButtons social={client.user || {}} />

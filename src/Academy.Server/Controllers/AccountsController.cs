@@ -149,6 +149,11 @@ namespace Academy.Server.Controllers
             user.LastName = form.LastName;
             user.Bio = form.Bio;
             user.Avatar = (await unitOfWork.FindAsync<Media>(form.AvatarId));
+            user.FacebookLink = form.FacebookLink;
+            user.InstagramLink = form.InstagramLink;
+            user.LinkedinLink = form.LinkedinLink;
+            user.TwitterLink = form.TwitterLink;
+            user.WhatsAppLink = form.WhatsAppLink;
 
             await unitOfWork.UpdateAsync(user);
 
