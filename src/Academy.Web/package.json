@@ -69,6 +69,7 @@
     "react-player": "^2.10.0",
     "react-scroll": "^1.8.4",
     "react-share": "^4.4.0",
+    "react-social-icons": "^5.13.0",
     "react-textarea-autosize": "^8.3.3",
     "react-top-loading-bar": "^2.1.0",
     "sass": "^1.49.7",

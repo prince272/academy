@@ -31,6 +31,9 @@ import { useEventDispatcher } from '../../../utils/eventDispatcher';
 import parsePhoneNumber from 'libphonenumber-js';
 import { ModalPathPrefix } from '../../../modals';
 
+import SocialButtons from '../../../components/SocialButtons';
+
+
 const ScrollItem = ({ children }) => <>{children}</>;
 
 const ScrollLeftArrow = (() => {
@@ -200,29 +203,29 @@ const PostPage = withRemount(({ remount, ...props }) => {
                                     <div><span className="text-primary align-text-bottom"><BsClock /></span> {moment.duration(Math.floor(post.duration / 10000)).humanize()} to read</div>
                                 </div>
                                 <div className="d-inline-flex align-items-center mb-3 me-2">
-                                        {(() => {
-                                            const teacher = (client.user && client.user.id == post.teacher.id) ? client.user : post.teacher;
-                                            return (
-                                                <>
-                                                    {teacher.avatar ?
-                                                        (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={teacher.avatar.url} width={24} height={24} objectFit="cover" alt={`${teacher.fullName}`} />) :
-                                                        (
-                                                            <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "24px", height: "24px" }}>
-                                                                <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
-                                                            </div>
-                                                        )}
-                                                    <ResponsiveEllipsis className="overflow-hidden text-break fst-italic ms-2"
-                                                        text={teacher.fullName}
-                                                        maxLine='1'
-                                                        ellipsis='...'
-                                                        trimRight
-                                                        basedOn='letters'
-                                                    />
-                                                </>
-                                            )
-                                        })()}
+                                    {(() => {
+                                        const teacher = (client.user && client.user.id == post.teacher.id) ? client.user : post.teacher;
+                                        return (
+                                            <>
+                                                {teacher.avatar ?
+                                                    (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={teacher.avatar.url} width={24} height={24} objectFit="cover" alt={`${teacher.fullName}`} />) :
+                                                    (
+                                                        <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "24px", height: "24px" }}>
+                                                            <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
+                                                        </div>
+                                                    )}
+                                                <ResponsiveEllipsis className="overflow-hidden text-break fst-italic ms-2"
+                                                    text={teacher.fullName}
+                                                    maxLine='1'
+                                                    ellipsis='...'
+                                                    trimRight
+                                                    basedOn='letters'
+                                                />
+                                            </>
+                                        )
+                                    })()}
 
-                                    </div>
+                                </div>
                                 <div className="mb-3 d-flex align-items-center"><div className="me-2 fw-bold">Share:</div><ShareButtons share={{ title: post.title, text: post.description, url: `${process.env.NEXT_PUBLIC_CLIENT_URL}/posts/${postId}` }} /> </div>
                                 <div className="p-1 mb-3">
                                     <AspectRatio ratio="1280/720">
@@ -252,18 +255,17 @@ const PostPage = withRemount(({ remount, ...props }) => {
                                         <div className="mb-2 text-start">{teacher.bio}</div>
                                         {permitted && <div className="mb-2"><Link href={`${ModalPathPrefix}/accounts/profile/edit`}><a>Edit profile</a></Link></div>}
                                         <div className="text-start">
-                                            <ul>
+                                            <div className="">
                                                 {teacher.email && (
-                                                    <li>
-                                                        <p>By email: <a href={`mailto:${teacher.email}`}>{teacher.email}</a></p>
-                                                    </li>
+                                                    <p className="text-nowrap">Email: <a href={`mailto:${teacher.email}`}>{teacher.email}</a></p>
                                                 )}
                                                 {teacher.phoneNumber && (
-                                                    <li>
-                                                        <p>By phone number: {((phoneNumber) => (<a href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
-                                                    </li>
+                                                    <p className="text-nowrap">Phone number: {((phoneNumber) => (<a href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
                                                 )}
-                                            </ul>
+                                                <div>
+                                                    <SocialButtons social={client.user || {}} />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -25,6 +25,16 @@ namespace Academy.Server.Data.Entities
 
         public Media Avatar { get; set; }
 
+        public string FacebookLink { get; set; }
+
+        public string InstagramLink { get; set; }
+
+        public string LinkedinLink { get; set; }
+
+        public string TwitterLink { get; set; }
+
+        public string WhatsAppLink { get; set; }
+
         public virtual ICollection<CourseProgress> CourseProgresses { get; set; } = new List<CourseProgress>();
 
         public ICollection<Certificate> Certificates { get; set; } = new List<Certificate>();
