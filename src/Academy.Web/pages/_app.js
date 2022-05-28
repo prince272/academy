@@ -100,14 +100,15 @@ const Header = () => {
 
         <Navbar.Collapse className="flex-grow-0">
           <Nav>
-            <Nav.Item>
+            <Nav.Item className="mb-3 mb-md-0">
               <Link href="/courses"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>Courses</a></Link>
             </Nav.Item>
-            <Nav.Item>
+
+            <Nav.Item className="mb-3 mb-md-0">
               <Link href="/posts"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>Blog</a></Link>
             </Nav.Item>
 
-            <Nav.Item>
+            <Nav.Item className="mb-3 mb-md-0">
               <Dropdown>
                 <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Education</Dropdown.Toggle>
                 <Dropdown.Menu>
@@ -116,15 +117,18 @@ const Header = () => {
                 </Dropdown.Menu>
               </Dropdown>
             </Nav.Item>
-            <Nav.Item>
+
+            <Nav.Item className="mb-3 mb-md-0">
               <Link href="/contact"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>Contact</a></Link>
             </Nav.Item>
-            <Nav.Item>
+
+            <Nav.Item className="mb-3 mb-md-0">
               <Link href="/about"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>About</a></Link>
             </Nav.Item>
+
             {client.user ? (
               <>
-                <Nav.Item className="">
+                <Nav.Item className="mb-3 mb-md-0">
                   <button className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
                     setExpanded(false);
                     dialog.open({}, BitInfoDialog);
@@ -132,7 +136,8 @@ const Header = () => {
                     <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{client.user.bits}</div></div>
                   </button>
                 </Nav.Item>
-                <Nav.Item>
+
+                <Nav.Item className="mb-3 mb-md-0">
                   <Dropdown>
                     <Dropdown.Toggle variant="outline-secondary" className="border-0 px-2 py-1">
                       <div className="d-flex align-items-center justify-content-center">
@@ -165,13 +170,14 @@ const Header = () => {
               </>
             ) : (
               <>
-                <Nav.Item>
+                <Nav.Item className="mb-3 mb-md-0">
                   <button type="button" className="btn btn-outline-secondary border-0 p-2 mb-2 mb-md-0" onClick={() => {
                     setExpanded(false);
                     router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: window.location.href }) })
                   }}>Sign in</button>
                 </Nav.Item>
-                <Nav.Item>
+
+                <Nav.Item className="mb-3 mb-md-0">
                   <button type="button" className="btn btn-primary border-0 p-2" onClick={() => {
                     setExpanded(false);
                     router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl: window.location.href }) })
