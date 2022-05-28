@@ -106,6 +106,7 @@ const Header = () => {
             <Nav.Item>
               <Link href="/posts"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>Blog</a></Link>
             </Nav.Item>
+
             <Nav.Item>
               <Dropdown>
                 <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Education</Dropdown.Toggle>
@@ -116,13 +117,10 @@ const Header = () => {
               </Dropdown>
             </Nav.Item>
             <Nav.Item>
-              <Dropdown>
-                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Resources</Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Link href="/contact" passHref><Dropdown.Item>Contact Me</Dropdown.Item></Link>
-                  <Link href="/about" passHref><Dropdown.Item>About</Dropdown.Item></Link>
-                </Dropdown.Menu>
-              </Dropdown>
+              <Link href="/contact"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>Contact</a></Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Link href="/about"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>About</a></Link>
             </Nav.Item>
             {client.user ? (
               <>

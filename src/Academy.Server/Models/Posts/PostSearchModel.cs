@@ -5,8 +5,6 @@ namespace Academy.Server.Models.Posts
 {
     public class PostSearchModel
     {
-        public int? UserId { get; set; }
-
         public PostCategory? Category { get; set; }
 
         public PostSort Sort { get; set; }

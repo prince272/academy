@@ -140,10 +140,14 @@ namespace Academy.Server.Controllers
         [HttpGet("/courses")]
         public async Task<IActionResult> List(int pageNumber, int pageSize, [FromQuery] CourseSearchModel search)
         {
-            var user = await HttpContext.Request.GetCurrentUserAsync();
-            var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
-
             var query = unitOfWork.Query<Course>();
+
+            var user = await HttpContext.Request.GetCurrentUserAsync();
+
+            if (user != null && user.HasRoles(RoleConstants.Admin)) { }
+            else query = user != null && user.HasRoles(RoleConstants.Teacher)
+                ? query.Where(_ => _.TeacherId == user.Id)
+                : query.Where(_ => _.Published != null);
 
             if (search.Sort == CourseSort.Popular)
             {
@@ -158,16 +162,6 @@ namespace Academy.Server.Controllers
             if (search.Sort == CourseSort.Updated)
             {
                 query = query.OrderByDescending(_ => _.Updated);
-            }
-
-            if (!permitted)
-            {
-                query = query.Where(course => course.Published != null);
-            }
-
-            if (search.UserId != null)
-            {
-                query = query.Where(_ => _.Id == search.UserId);
             }
 
             if (search.Subject != null)
@@ -994,11 +988,19 @@ namespace Academy.Server.Controllers
         [NonAction]
         private async Task<CourseModel> GetCourseModel(int courseId, int? sectionId = null, int? lessonId = null, bool single = true)
         {
-            var course = await unitOfWork.Query<Course>()
+            var query = unitOfWork.Query<Course>()
                 .AsNoTracking()
-                .Include(_ => _.Teacher)
-                .FirstOrDefaultAsync(_ => _.Id == courseId);
+                .Include(_ => _.Teacher).AsQueryable();
 
+            var user = await HttpContext.Request.GetCurrentUserAsync();
+            var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
+
+            if (user != null && user.HasRoles(RoleConstants.Admin)) { }
+
+            else query = user != null && user.HasRoles(RoleConstants.Teacher)
+                ? query.Where(_ => _.TeacherId == user.Id) : query.Where(_ => _.Published != null);
+
+            var course = await query.FirstOrDefaultAsync(_ => _.Id == courseId);
             if (course == null) return null;
 
             var ids = new int[] { course.Id };
@@ -1036,9 +1038,6 @@ namespace Academy.Server.Controllers
 
             var duration = Sanitizer.GetTextReadingDuration(course.Title ?? string.Empty);
             var progresses = new List<CourseProgress>();
-
-            var user = await HttpContext.Request.GetCurrentUserAsync();
-            var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
 
             course.Sections = sections.OrderBy(_ => _.Index == -1).ThenBy(_ => _.Index).Where(_ => _.CourseId == course.Id).Select(section =>
             {

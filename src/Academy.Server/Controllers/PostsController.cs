@@ -148,11 +148,15 @@ namespace Academy.Server.Controllers
         [HttpGet("/posts")]
         public async Task<IActionResult> List(int pageNumber, int pageSize, [FromQuery] PostSearchModel search)
         {
-            var user = await HttpContext.Request.GetCurrentUserAsync();
-            var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
-
             var query = unitOfWork.Query<Post>()
                 .AsNoTracking();
+
+            var user = await HttpContext.Request.GetCurrentUserAsync();
+
+            if (user != null && user.HasRoles(RoleConstants.Admin)) { }
+
+            else query = user != null && user.HasRoles(RoleConstants.Teacher)
+                ? query.Where(_ => _.TeacherId == user.Id) : query.Where(_ => _.Published != null);
 
             if (search.Sort == PostSort.Popular)
             {
@@ -167,16 +171,6 @@ namespace Academy.Server.Controllers
             if (search.Sort == PostSort.Updated)
             {
                 query = query.OrderByDescending(_ => _.Updated);
-            }
-
-            if (!permitted)
-            {
-                query = query.Where(course => course.Published != null);
-            }
-
-            if (search.UserId != null)
-            {
-                query = query.Where(_ => _.Id == search.UserId);
             }
 
             if (search.Category != null)
@@ -211,19 +205,24 @@ namespace Academy.Server.Controllers
         [NonAction]
         private async Task<PostModel> GetPostModel(int postId, bool single = true)
         {
-            var post = await unitOfWork.Query<Post>().AsNoTracking()
+            var query = unitOfWork.Query<Post>().AsNoTracking()
                 .Include(_ => _.Teacher)
                 .ProjectTo<Post>(new MapperConfiguration(config =>
                 {
                     var map = config.CreateMap<Post, Post>();
                     if (!single) map.ForMember(_ => _.Description, config => config.Ignore());
-                }))
-                .FirstOrDefaultAsync(_ => _.Id == postId);
-
-            if (post == null) return null;
+                }));
 
             var user = await HttpContext.Request.GetCurrentUserAsync();
             var permitted = user != null && (user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher));
+
+            if (user != null && user.HasRoles(RoleConstants.Admin)) { }
+
+            else query = user != null && user.HasRoles(RoleConstants.Teacher)
+                ? query.Where(_ => _.TeacherId == user.Id) : query.Where(_ => _.Published != null);
+
+            var post = await query.FirstOrDefaultAsync(_ => _.Id == postId);
+            if (post == null) return null;
 
             var postModel = mapper.Map<PostModel>(post);
 

@@ -5,8 +5,6 @@ namespace Academy.Server.Models.Courses
 {
     public class CourseSearchModel
     {
-        public int? UserId { get; set; }
-
         public CourseSubject? Subject { get; set; }
 
         public CourseSort Sort { get; set; }
