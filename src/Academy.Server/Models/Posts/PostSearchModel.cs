@@ -9,19 +9,21 @@ namespace Academy.Server.Models.Posts
 
         public PostSort Sort { get; set; }
 
+        public int? RelatedId { get; set; }
+
         public string Query { get; set; }
     }
 
 
     public enum PostSort
     {
-        [Display(Name = "Popular")]
-        Popular,
+        [Display(Name = "Trending")]
+        Trending,
 
-        [Display(Name = "Newest")]
-        Newest,
+        [Display(Name = "Latest")]
+        Latest,
 
-        [Display(Name = "Updated")]
-        Updated
+        [Display(Name = "Recent")]
+        Recent
     }
 }

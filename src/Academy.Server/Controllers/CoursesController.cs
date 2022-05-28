@@ -149,17 +149,17 @@ namespace Academy.Server.Controllers
                 ? query.Where(_ => _.TeacherId == user.Id)
                 : query.Where(_ => _.Published != null);
 
-            if (search.Sort == CourseSort.Popular)
+            if (search.Sort == CourseSort.Trending)
             {
                 query = query.OrderByDescending(_ => _.Progresses.Count());
             }
 
-            if (search.Sort == CourseSort.Newest)
+            if (search.Sort == CourseSort.Latest)
             {
                 query = query.OrderByDescending(_ => _.Created);
             }
 
-            if (search.Sort == CourseSort.Updated)
+            if (search.Sort == CourseSort.Recent)
             {
                 query = query.OrderByDescending(_ => _.Updated);
             }

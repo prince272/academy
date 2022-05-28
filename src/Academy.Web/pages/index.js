@@ -14,24 +14,25 @@ import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
 import Mounted from '../components/Mounted';
 
 import parsePhoneNumber from 'libphonenumber-js';
+import PostsScrollMenu from '../components/PostsScrollMenu';
 
 const ScrollLeftArrow = (() => {
   const {
-      isFirstItemVisible,
-      scrollPrev,
-      visibleItemsWithoutSeparators,
-      initComplete
+    isFirstItemVisible,
+    scrollPrev,
+    visibleItemsWithoutSeparators,
+    initComplete
   } = useContext(VisibilityContext);
 
   const [disabled, setDisabled] = useState(
-      !initComplete || (initComplete && isFirstItemVisible)
+    !initComplete || (initComplete && isFirstItemVisible)
   );
 
   useEffect(() => {
-      // NOTE: detect if whole component visible
-      if (visibleItemsWithoutSeparators.length) {
-          setDisabled(isFirstItemVisible);
-      }
+    // NOTE: detect if whole component visible
+    if (visibleItemsWithoutSeparators.length) {
+      setDisabled(isFirstItemVisible);
+    }
   }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
 
   return (<div className={`d-none d-sm-flex align-items-center py-1 pe-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
@@ -39,19 +40,19 @@ const ScrollLeftArrow = (() => {
 
 const ScrollRightArrow = () => {
   const {
-      isLastItemVisible,
-      scrollNext,
-      visibleItemsWithoutSeparators
+    isLastItemVisible,
+    scrollNext,
+    visibleItemsWithoutSeparators
   } = useContext(VisibilityContext);
 
   // console.log({ isLastItemVisible });
   const [disabled, setDisabled] = useState(
-      !visibleItemsWithoutSeparators.length && isLastItemVisible
+    !visibleItemsWithoutSeparators.length && isLastItemVisible
   );
   useEffect(() => {
-      if (visibleItemsWithoutSeparators.length) {
-          setDisabled(isLastItemVisible);
-      }
+    if (visibleItemsWithoutSeparators.length) {
+      setDisabled(isLastItemVisible);
+    }
   }, [isLastItemVisible, visibleItemsWithoutSeparators]);
 
 
@@ -150,6 +151,31 @@ const HomePage = () => {
         </div>
       </section>
 
+      <section id="sponsor" className="position-relative" style={{
+        backgroundImage: "url('/img/img2.jpg')",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover"
+      }}>
+        <div className="position-absolute top-0 left-0 bg-dark opacity-75 w-100 h-100"></div>
+        <div className="position-relative">
+          <div className="container content-space-2">
+            <div className="row justify-content-center">
+              <div className="col-lg-10 text-center">
+                <span className="d-block mb-4 h6 text-warning">Do you think Academy of Ours is valuable to you?</span>
+                <span className="svg-icon svg-icon-lg d-block text-danger me-2 heart"><BsHeartFill /></span>
+                <h2 className="mb-4 display-4 fw-bold text-white">Help keep Academy of Ours operations running, for anyone, anywhere by donating to us.</h2>
+                <div>
+                  <Link href={`${ModalPathPrefix}/sponsor`}>
+                    <a type="button" className="btn btn-light btn-lg  px-10"><span className="svg-icon svg-icon-sm d-inline-block text-danger me-2 heart"><BsHeartFill /></span>Sponsor</a>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
       <section id="education" className="bg-light">
         <div className="container content-space-1">
           <div className="row">
@@ -183,31 +209,22 @@ const HomePage = () => {
         </div>
       </section>
 
-      <section id="sponsor" className="position-relative" style={{
-        backgroundImage: "url('/img/img2.jpg')",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover"
-      }}>
-        <div className="position-absolute top-0 left-0 bg-dark opacity-75 w-100 h-100"></div>
-        <div className="position-relative">
-          <div className="container content-space-2">
-            <div className="row justify-content-center">
-              <div className="col-lg-10 text-center">
-                <span className="d-block mb-4 h6 text-warning">Do you think Academy of Ours is valuable to you?</span>
-                <span className="svg-icon svg-icon-lg d-block text-danger me-2 heart"><BsHeartFill /></span>
-                <h2 className="mb-4 display-4 fw-bold text-white">Help keep Academy of Ours operations running, for anyone, anywhere by donating to us.</h2>
-                <div>
-                  <Link href={`${ModalPathPrefix}/sponsor`}>
-                    <a type="button" className="btn btn-light btn-lg  px-10"><span className="svg-icon svg-icon-sm d-inline-block text-danger me-2 heart"><BsHeartFill /></span>Sponsor</a>
-                  </Link>
-                </div>
-              </div>
-            </div>
+      <section id="blog" className="bg-white">
+        <div className="container content-space-1">
+          <div className="text-center mx-lg-auto pb-7">
+            <div><span className="badge bg-warning text-uppercase">News</span></div>
+            <h3 className="display-4 fw-bold">Trending <span className="text-primary">News</span></h3>
+            <p className="lead">Get to experiences a surge in popularity.</p>
           </div>
+          <div className="hstack gap-3 justify-content-between mb-3">
+            <div className="h5">Trending news</div>
+            <div className="h5"><Link href="/posts"><a>All posts <span className="svg-icon svg-icon-xs d-inline-block align-text-bottom me-2"><BsChevronRight /></span></a></Link></div>
+          </div>
+          <PostsScrollMenu search={{ sort: "trending", category: "news" }} />
         </div>
       </section>
 
-      <section id="faq" className="bg-white">
+      <section id="faq" className="bg-light">
         <div className="container content-space-1">
 
           <div className="row justify-content-center mb-4">

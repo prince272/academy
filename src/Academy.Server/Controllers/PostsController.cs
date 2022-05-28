@@ -158,17 +158,17 @@ namespace Academy.Server.Controllers
             else query = user != null && user.HasRoles(RoleConstants.Teacher)
                 ? query.Where(_ => _.TeacherId == user.Id) : query.Where(_ => _.Published != null);
 
-            if (search.Sort == PostSort.Popular)
+            if (search.Sort == PostSort.Trending)
             {
 
             }
 
-            if (search.Sort == PostSort.Newest)
+            if (search.Sort == PostSort.Latest)
             {
                 query = query.OrderByDescending(_ => _.Created);
             }
 
-            if (search.Sort == PostSort.Updated)
+            if (search.Sort == PostSort.Recent)
             {
                 query = query.OrderByDescending(_ => _.Updated);
             }

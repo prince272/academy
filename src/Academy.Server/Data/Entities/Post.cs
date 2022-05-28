@@ -40,8 +40,8 @@ namespace Academy.Server.Data.Entities
         [Display(Name = "Insights")]
         Insights,
 
-        [Display(Name = "Career Development")]
-        Career
+        [Display(Name = "Careers")]
+        Careers
     }
 
     public class PostReaction

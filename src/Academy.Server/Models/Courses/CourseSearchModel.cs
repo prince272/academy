@@ -9,19 +9,21 @@ namespace Academy.Server.Models.Courses
 
         public CourseSort Sort { get; set; }
 
+        public int? RelatedId { get; set; }
+
         public string Query { get; set; }
     }
 
 
     public enum CourseSort
     {
-        [Display(Name = "Popular")]
-        Popular,
+        [Display(Name = "Trending")]
+        Trending,
 
-        [Display(Name = "Newest")]
-        Newest,
+        [Display(Name = "Latest")]
+        Latest,
 
-        [Display(Name = "Updated")]
-        Updated
+        [Display(Name = "Recent")]
+        Recent
     }
 }

@@ -32,119 +32,7 @@ import parsePhoneNumber from 'libphonenumber-js';
 import { ModalPathPrefix } from '../../../modals';
 
 import SocialButtons from '../../../components/SocialButtons';
-
-
-const ScrollItem = ({ children }) => <>{children}</>;
-
-const ScrollLeftArrow = (() => {
-    const {
-        isFirstItemVisible,
-        scrollPrev,
-        visibleItemsWithoutSeparators,
-        initComplete
-    } = useContext(VisibilityContext);
-
-    const [disabled, setDisabled] = useState(
-        !initComplete || (initComplete && isFirstItemVisible)
-    );
-
-    useEffect(() => {
-        // NOTE: detect if whole component visible
-        if (visibleItemsWithoutSeparators.length) {
-            setDisabled(isFirstItemVisible);
-        }
-    }, [isFirstItemVisible, visibleItemsWithoutSeparators]);
-
-    return (<div className={`d-none d-sm-flex align-items-center py-1 pe-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollPrev()}><span className="svg-icon svg-icon-xs"><BsChevronLeft /></span></div>);
-});
-
-const ScrollRightArrow = () => {
-    const {
-        isLastItemVisible,
-        scrollNext,
-        visibleItemsWithoutSeparators
-    } = useContext(VisibilityContext);
-
-    // console.log({ isLastItemVisible });
-    const [disabled, setDisabled] = useState(
-        !visibleItemsWithoutSeparators.length && isLastItemVisible
-    );
-    useEffect(() => {
-        if (visibleItemsWithoutSeparators.length) {
-            setDisabled(isLastItemVisible);
-        }
-    }, [isLastItemVisible, visibleItemsWithoutSeparators]);
-
-
-    return (<div className={`d-none d-sm-flex align-items-center py-1 ps-3 mt-n1 cursor-pointer pe-auto ${disabled ? 'invisible' : ''}`} onClick={() => scrollNext()}><span className="svg-icon svg-icon-xs"><BsChevronRight /></span></div>);
-}
-
-
-const RelatedPostsComponent = withRemount(({ category, remount }) => {
-    const router = useRouter();
-    const client = useClient();
-    const [loading, setLoading] = useState({});
-    const [page, setPage] = useState(null);
-    const appSettings = useAppSettings();
-    const eventDispatcher = useEventDispatcher();
-
-    const load = async (params) => {
-        setLoading({});
-        setPage(null);
-
-        let result = await client.get(`/posts`, { params });
-
-        if (result.error) {
-            const error = result.error;
-            setLoading({ ...error, message: 'Unable to load posts.', remount });
-            return;
-        }
-
-        setPage(result.data);
-        setLoading(null);
-    };
-
-    useEffect(() => { load({ category }); }, []);
-
-    if (loading) return (<Loader {...loading} />);
-
-    return (
-        <>
-            <div className="hstack gap-3 justify-content-between mb-3">
-                <div className="h4">Related posts</div>
-            </div>
-
-            {(!loading && page.items.length) ? (
-                <ScrollMenu
-                    LeftArrow={ScrollLeftArrow}
-                    RightArrow={ScrollRightArrow}
-                    wrapperClassName=""
-                    scrollContainerClassName="">
-                    {page.items.map((item, index) => {
-                        return (
-                            <ScrollItem key={`scroll-item-${index}`} itemId={`scroll-item-${index}`}>
-                                <div className="mx-2" style={{ width: "256px" }}>
-                                    <PostItem post={item} responsive={false} />
-                                </div>
-                            </ScrollItem>
-                        );
-                    })}
-                </ScrollMenu>
-            )
-                : ((!loading && !page.items.length) ?
-                    (<>
-                        <div className="d-flex flex-column text-center justify-content-center pt-10 mt-10">
-                            <div className="mb-4">
-                                <SvgWebSearchIllus style={{ width: "auto", height: "128px" }} />
-                            </div>
-                            <div className="mb-3">There are no posts here.</div>
-                        </div>
-                    </>)
-                    : (<Loader {...loading} />)
-                )}
-        </>
-    )
-});
+import PostsScrollMenu from '../../../components/PostsScrollMenu';
 
 const PostPage = withRemount(({ remount, ...props }) => {
     const router = useRouter();
@@ -237,7 +125,7 @@ const PostPage = withRemount(({ remount, ...props }) => {
                                 <div className="fs-5"><DocumentViewer document={post.description} /></div>
                             </div>
                         </div>
-                        <div className="divider-center my-6">About</div>
+                        <div className="divider-center my-6 h5">About</div>
                         {(() => {
                             const teacher = (client.user && client.user.id == post.teacher.id) ? client.user : post.teacher;
 
@@ -272,7 +160,11 @@ const PostPage = withRemount(({ remount, ...props }) => {
                             );
                         })()}
                         <hr className="my-6" />
-                        <RelatedPostsComponent category={post.category} />
+                        <div className="hstack gap-3 justify-content-between mb-3">
+                            <div className="h5">Related posts</div>
+                            <div className="h5"><Link href="/posts"><a>All posts <span className="svg-icon svg-icon-xs d-inline-block align-text-bottom me-2"><BsChevronRight /></span></a></Link></div>
+                        </div>
+                        <PostsScrollMenu search={{ relatedId: post.id }} />
                     </div>
                 </div>
             </div>
