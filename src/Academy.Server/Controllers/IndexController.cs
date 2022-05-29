@@ -94,9 +94,12 @@ namespace Academy.Server.Controllers
             return Result.Succeed();
         }
 
+        [Authorize]
         [HttpPost("/sponsor")]
         public async Task<IActionResult> Sponsor([FromBody] SponsorModel form)
         {
+            var user = await HttpContext.Request.GetCurrentUserAsync();
+
             var payment = new Payment();
             payment.Reason = PaymentReason.Sponsorship;
             payment.Status = PaymentStatus.Pending;
@@ -107,19 +110,13 @@ namespace Academy.Server.Controllers
             payment.IPAddress = Request.GetIPAddress();
             payment.UAString = Request.GetUAString();
             payment.Issued = DateTimeOffset.UtcNow;
-            payment.UserId = null;
-            payment.PhoneNumber = form.PhoneNumber;
-            payment.Email = form.Email;
-            payment.FullName = form.FullName;
+            payment.UserId = user.Id;
+            payment.PhoneNumber = user.PhoneNumber;
+            payment.Email = user.Email;
+            payment.FullName = user.FullName;
 
             await unitOfWork.CreateAsync(payment);
-            return Result.Succeed(data: new
-            {
-                payment.Id,
-                payment.Title,
-                payment.Amount,
-                payment.Status
-            });
+            return Result.Succeed(data: payment.Id);
         }
 
         [Authorize]

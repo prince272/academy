@@ -61,7 +61,8 @@ const useModalProvider = () => {
             },
             {
                 pattern: `${ModalPathPrefix}/sponsor`,
-                modal: SponsorModal
+                modal: SponsorModal,
+                authenticate: true
             },
             {
                 pattern: `${ModalPathPrefix}/accounts/signup`,

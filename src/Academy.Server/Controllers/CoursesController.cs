@@ -221,13 +221,7 @@ namespace Academy.Server.Controllers
             payment.FullName = user.FullName;
 
             await unitOfWork.CreateAsync(payment);
-            return Result.Succeed(data: new
-            {
-                payment.Id,
-                payment.Title,
-                payment.Amount,
-                payment.Status
-            });
+            return Result.Succeed(data: payment.Id);
         }
 
         [Authorize]

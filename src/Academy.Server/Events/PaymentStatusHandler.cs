@@ -64,7 +64,9 @@ namespace Academy.Server.Events
                 }
                 else if (payment.Reason == PaymentReason.Withdrawal)
                 {
-                    var user = await unitOfWork.Query<User>().FirstOrDefaultAsync(_ => _.Code == payment.ReferenceId);
+                    var user = await unitOfWork.Query<User>()
+                        .FirstOrDefaultAsync(_ => _.Id == payment.UserId);
+
                     if (user != null)
                     {
                         user.Balance -= payment.Amount;
@@ -73,13 +75,18 @@ namespace Academy.Server.Events
                 }
                 else if (payment.Reason == PaymentReason.Sponsorship)
                 {
-                    (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = payment.Email },
-                       subject: "Your Sponsorship Has Been Received",
-                       body: await viewRenderer.RenderToStringAsync("Email/SponsorshipReceived", payment))).Forget();
+                    if (payment.Email != null)
+                    {
+                        (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = payment.Email },
+                           subject: "Your Sponsorship Has Been Received By Us",
+                           body: await viewRenderer.RenderToStringAsync("Email/SponsorshipReceived", payment))).Forget();
+                    }
 
-                     (smsSender.SendAsync(payment.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/SponsorshipReceived", payment))).Forget();
+                    if (payment.PhoneNumber != null)
+                    {
+                        (smsSender.SendAsync(payment.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/SponsorshipReceived", payment))).Forget();
+                    }
                 }
-
             }
         }
     }

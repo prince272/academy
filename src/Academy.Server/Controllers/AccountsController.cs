@@ -383,10 +383,7 @@ namespace Academy.Server.Controllers
             await unitOfWork.CreateAsync(payment);
             await paymentProcessor.ProcessAsync(payment);
 
-            return Result.Succeed(data: new
-            {
-                payment.Id,
-            });
+            return Result.Succeed(data: payment.Id);
         }
     }
 }

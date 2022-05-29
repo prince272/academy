@@ -71,136 +71,21 @@ const BitInfoDialog = () => {
   );
 };
 
-const Header = () => {
-  const client = useClient();
-  const router = useRouter();
-  const appSettings = useAppSettings();
-  const dialog = useDialog();
-  const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher'))));
-
-  const [expanded, setExpanded] = useState(false);
-  return (
-
-    <Navbar id="header" collapseOnSelect expanded={expanded} onToggle={(toggle) => setExpanded(toggle)} bg="white" variant="light" expand="md" className={`fixed-top shadow-sm`}>
-      <div className="container">
-        <Link href="/" passHref>
-          <Navbar.Brand className="me-auto" onClick={() => { setExpanded(false); }}>
-            <div className="svg-icon"><SvgAppWordmark style={{ width: "auto", height: "2.5rem" }} /></div>
-          </Navbar.Brand>
-        </Link>
-
-        <Nav.Item className="me-2">
-          <button type="button" className="btn btn-outline-danger p-2 shadow-sm" onClick={() => {
-            setExpanded(false);
-            router.replace({ pathname: `${ModalPathPrefix}/sponsor` })
-          }}>Made with <span className="svg-icon svg-icon-sm d-inline-block me-2 heart"><BsHeartFill /></span></button>
-        </Nav.Item>
-
-        <Navbar.Toggle className="ms-0" />
-
-        <Navbar.Collapse className="flex-grow-0">
-          <Nav>
-            <Nav.Item className="mb-3 mb-md-0">
-              <Link href="/courses"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>Courses</a></Link>
-            </Nav.Item>
-
-            <Nav.Item className="mb-3 mb-md-0">
-              <Link href="/posts"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>Blog</a></Link>
-            </Nav.Item>
-
-            <Nav.Item className="mb-3 mb-md-0">
-              <Dropdown>
-                <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Education</Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Link href="/teach" passHref><Dropdown.Item>For teachers</Dropdown.Item></Link>
-                  <Link href="/" passHref><Dropdown.Item>For students</Dropdown.Item></Link>
-                </Dropdown.Menu>
-              </Dropdown>
-            </Nav.Item>
-
-            <Nav.Item className="mb-3 mb-md-0">
-              <Link href="/contact"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>Contact</a></Link>
-            </Nav.Item>
-
-            <Nav.Item className="mb-3 mb-md-0">
-              <Link href="/about"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setExpanded(false)}>About</a></Link>
-            </Nav.Item>
-
-            {client.user ? (
-              <>
-                <Nav.Item className="mb-3 mb-md-0">
-                  <button className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
-                    setExpanded(false);
-                    dialog.open({}, BitInfoDialog);
-                  }}>
-                    <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{client.user.bits}</div></div>
-                  </button>
-                </Nav.Item>
-
-                <Nav.Item className="mb-3 mb-md-0">
-                  <Dropdown>
-                    <Dropdown.Toggle variant="outline-secondary" className="border-0 px-2 py-1">
-                      <div className="d-flex align-items-center justify-content-center">
-
-                        {client.user.avatar ?
-                          (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={client.user.avatar.url} width={32} height={32} objectFit="cover" alt={`${client.user.firstName} ${client.user.lastName}`} />) :
-                          (
-                            <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "32px", height: "32px" }}>
-                              <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
-                            </div>
-                          )}
-                        <div className="ms-2 text-start lh-1">
-                          <div className="lh-sm">{client.user.firstName}</div>
-                          {permitted && (<div className="text-small text-primary"><span>{appSettings.currency.symbol}</span> <span>{client.user.balance}</span></div>)}
-                        </div>
-                      </div>
-                    </Dropdown.Toggle>
-
-                    <Dropdown.Menu>
-                      <Link href={`${ModalPathPrefix}/accounts/profile/edit`} passHref><Dropdown.Item>Edit profile</Dropdown.Item></Link>
-                      <Link href={`${ModalPathPrefix}/accounts/email/change`} passHref><Dropdown.Item>Change email</Dropdown.Item></Link>
-                      <Link href={`${ModalPathPrefix}/accounts/phoneNumber/change`} passHref><Dropdown.Item>Change phone number</Dropdown.Item></Link>
-                      <Link href={`${ModalPathPrefix}/accounts/password/change`} passHref><Dropdown.Item>Change password</Dropdown.Item></Link>
-                      {permitted && (<Link href={`${ModalPathPrefix}/accounts/withdraw`} passHref><Dropdown.Item>Withdraw</Dropdown.Item></Link>)}
-                      <Dropdown.Divider />
-                      <Link href={`${ModalPathPrefix}/accounts/signout`} passHref><Dropdown.Item>Sign out</Dropdown.Item></Link>
-                    </Dropdown.Menu>
-                  </Dropdown>
-                </Nav.Item>
-              </>
-            ) : (
-              <>
-                <Nav.Item className="mb-3 mb-md-0">
-                  <button type="button" className="btn btn-outline-secondary border-0 p-2 mb-2 mb-md-0" onClick={() => {
-                    setExpanded(false);
-                    router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: window.location.href }) })
-                  }}>Sign in</button>
-                </Nav.Item>
-
-                <Nav.Item className="mb-3 mb-md-0">
-                  <button type="button" className="btn btn-primary border-0 p-2" onClick={() => {
-                    setExpanded(false);
-                    router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl: window.location.href }) })
-                  }}>Sign up</button>
-                </Nav.Item>
-              </>
-            )}
-          </Nav>
-        </Navbar.Collapse>
-      </div>
-    </Navbar>
-  );
-};
-
-const Body = ({ children }) => {
+const Body = ({ children, pageSettings }) => {
   const componentId = useMemo(() => _.uniqueId('Component'), []);
   const modal = useModal();
   const router = useRouter();
   const client = useClient();
+  const dialog = useDialog();
+  const appSettings = useAppSettings();
   const [pageLoading, setPageLoading] = useState(true);
   const eventDispatcher = useEventDispatcher();
   const loadingBarRef = useRef(null);
   const [loadingBarColor, setLoadingBarColor] = useState(null);
+
+  const [headerExpanded, setHeaderExpanded] = useState(false);
+
+  const permitted = (client.user && (client.user.roles.some(role => role == 'admin') || (client.user.roles.some(role => role == 'teacher'))));
 
   useEffect(() => {
 
@@ -298,71 +183,185 @@ const Body = ({ children }) => {
 
   return (
     <>
-      <LoadingBar color={loadingBarColor} ref={loadingBarRef} />
-      {children}
-      {(pageLoading) && (<div className="position-fixed top-50 start-50 translate-middle bg-light w-100 h-100 zi-3"><Loader /></div>)}
+      <div className={`${pageSettings.showHeader ? 'pt-8' : ''} ${pageSettings.showFooter ? 'pb-8' : ''} position-relative`}>
+     
+        {pageSettings.showHeader && client.initialized && (
+          <Navbar id="header" collapseOnSelect expanded={headerExpanded} onToggle={(toggle) => setHeaderExpanded(toggle)} bg="white" variant="light" expand="md" className={`fixed-top shadow-sm`}>
+            <div className="container">
+              <Link href="/" passHref>
+                <Navbar.Brand className="me-auto" onClick={() => { setHeaderExpanded(false); }}>
+                  <div className="svg-icon"><SvgAppWordmark style={{ width: "auto", height: "2.5rem" }} /></div>
+                </Navbar.Brand>
+              </Link>
+
+              <Nav.Item className="me-2">
+                <button type="button" className="btn btn-outline-danger p-2 shadow-sm" onClick={() => {
+                  setHeaderExpanded(false);
+                  router.replace({ pathname: `${ModalPathPrefix}/sponsor` })
+                }}>Made with <span className="svg-icon svg-icon-sm d-inline-block me-2 heart"><BsHeartFill /></span></button>
+              </Nav.Item>
+
+              <Navbar.Toggle className="ms-0" />
+
+              <Navbar.Collapse className="flex-grow-0">
+                <Nav>
+                  <Nav.Item className="mb-3 mb-md-0">
+                    <Link href="/courses"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setHeaderExpanded(false)}>Courses</a></Link>
+                  </Nav.Item>
+
+                  <Nav.Item className="mb-3 mb-md-0">
+                    <Link href="/posts"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setHeaderExpanded(false)}>Blog</a></Link>
+                  </Nav.Item>
+
+                  <Nav.Item className="mb-3 mb-md-0">
+                    <Dropdown>
+                      <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Education</Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        <Link href="/teach" passHref><Dropdown.Item>For teachers</Dropdown.Item></Link>
+                        <Link href="/" passHref><Dropdown.Item>For students</Dropdown.Item></Link>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </Nav.Item>
+
+                  <Nav.Item className="mb-3 mb-md-0">
+                    <Link href="/contact"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setHeaderExpanded(false)}>Contact</a></Link>
+                  </Nav.Item>
+
+                  <Nav.Item className="mb-3 mb-md-0">
+                    <Link href="/about"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setHeaderExpanded(false)}>About</a></Link>
+                  </Nav.Item>
+
+                  {client.user ? (
+                    <>
+                      <Nav.Item className="mb-3 mb-md-0">
+                        <button className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
+                          setHeaderExpanded(false);
+                          dialog.open({}, BitInfoDialog);
+                        }}>
+                          <div className="d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs"><SvgBitCube /></div><div className="ms-1">{client.user.bits}</div></div>
+                        </button>
+                      </Nav.Item>
+
+                      <Nav.Item className="mb-3 mb-md-0">
+                        <Dropdown>
+                          <Dropdown.Toggle variant="outline-secondary" className="border-0 px-2 py-1">
+                            <div className="d-flex align-items-center justify-content-center">
+
+                              {client.user.avatar ?
+                                (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={client.user.avatar.url} width={32} height={32} objectFit="cover" alt={`${client.user.firstName} ${client.user.lastName}`} />) :
+                                (
+                                  <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "32px", height: "32px" }}>
+                                    <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
+                                  </div>
+                                )}
+                              <div className="ms-2 text-start lh-1">
+                                <div className="lh-sm">{client.user.firstName}</div>
+                                {permitted && (<div className="text-small text-primary"><span>{appSettings.currency.symbol}</span> <span>{client.user.balance}</span></div>)}
+                              </div>
+                            </div>
+                          </Dropdown.Toggle>
+
+                          <Dropdown.Menu>
+                            <Link href={`${ModalPathPrefix}/accounts/profile/edit`} passHref><Dropdown.Item>Edit profile</Dropdown.Item></Link>
+                            <Link href={`${ModalPathPrefix}/accounts/email/change`} passHref><Dropdown.Item>Change email</Dropdown.Item></Link>
+                            <Link href={`${ModalPathPrefix}/accounts/phoneNumber/change`} passHref><Dropdown.Item>Change phone number</Dropdown.Item></Link>
+                            <Link href={`${ModalPathPrefix}/accounts/password/change`} passHref><Dropdown.Item>Change password</Dropdown.Item></Link>
+                            {permitted && (<Link href={`${ModalPathPrefix}/accounts/withdraw`} passHref><Dropdown.Item>Withdraw</Dropdown.Item></Link>)}
+                            <Dropdown.Divider />
+                            <Link href={`${ModalPathPrefix}/accounts/signout`} passHref><Dropdown.Item>Sign out</Dropdown.Item></Link>
+                          </Dropdown.Menu>
+                        </Dropdown>
+                      </Nav.Item>
+                    </>
+                  ) : (
+                    <>
+                      <Nav.Item className="mb-3 mb-md-0">
+                        <button type="button" className="btn btn-outline-secondary border-0 p-2 mb-2 mb-md-0" onClick={() => {
+                          setHeaderExpanded(false);
+                          router.replace({ pathname: `${ModalPathPrefix}/accounts/signin`, query: cleanObject({ returnUrl: window.location.href }) })
+                        }}>Sign in</button>
+                      </Nav.Item>
+
+                      <Nav.Item className="mb-3 mb-md-0">
+                        <button type="button" className="btn btn-primary border-0 p-2" onClick={() => {
+                          setHeaderExpanded(false);
+                          router.replace({ pathname: `${ModalPathPrefix}/accounts/signup`, query: cleanObject({ returnUrl: window.location.href }) })
+                        }}>Sign up</button>
+                      </Nav.Item>
+                    </>
+                  )}
+                </Nav>
+              </Navbar.Collapse>
+            </div>
+          </Navbar>
+        )}
+
+        <LoadingBar color={loadingBarColor} ref={loadingBarRef} />
+
+        {children}
+
+        {(pageLoading) && (<div className="position-fixed top-50 start-50 translate-middle bg-light w-100 h-100 zi-3"><Loader /></div>)}
+
+        {pageSettings.showFooter && client.initialized &&
+          <footer id="footer" className="text-center bg-dark text-white py-2">
+            <div className="container pt-4">
+              <div className="hstack gap-3 d-inline-flex flex-wrap justify-content-center">
+                <Link href="/"><a className="link-light">Home</a></Link>
+                <Link href="/courses"><a className="link-light">Courses</a></Link>
+                <Link href="/posts"><a className="link-light">Blog</a></Link>
+                <Link href="/terms"><a className="link-light">Terms of Service</a></Link>
+                <Link href="/privacy"><a className="link-light">Privacy Policy</a></Link>
+                <Link href="/contact"><a className="link-light">Contact Us</a></Link>
+                <Link href="/about"><a className="link-light">About Us</a></Link>
+              </div>
+            </div>
+            <div>
+              <div className="container d-flex flex-wrap justify-content-center justify-content-md-between py-3">
+                <div className="mb-3">Copyright © {new Date().getFullYear()} Academy of Ours. All rights reserved</div>
+                <div className="hstack gap-2 d-inline-flex mb-3">
+                  {appSettings.company.facebookLink && (
+                    <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Check out our facebook</Tooltip>}>
+                      <a href={appSettings.company.facebookLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
+                        <span className="svg-icon svg-icon-xs"><SvgFacebookLogo /></span>
+                      </a>
+                    </OverlayTrigger>
+                  )}
+                  {appSettings.company.instagramLink && (
+                    <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Join our instagram</Tooltip>}>
+                      <a href={appSettings.company.instagramLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
+                        <span className="svg-icon svg-icon-xs"><SvgInstagramLogo /></span>
+                      </a>
+                    </OverlayTrigger>
+                  )}
+                  {appSettings.company.linkedinLink && (
+                    <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Follow us on Linkedin</Tooltip>}>
+                      <a href={appSettings.company.linkedinLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
+                        <span className="svg-icon svg-icon-xs"><SvgLinkedinLogo /></span>
+                      </a>
+                    </OverlayTrigger>
+                  )}
+                  {appSettings.company.twitterLink && (
+                    <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>See what we tweet about</Tooltip>}>
+                      <a href={appSettings.company.linkedinLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
+                        <span className="svg-icon svg-icon-xs"><SvgTwitterLogo /></span>
+                      </a>
+                    </OverlayTrigger>
+                  )}
+                  {appSettings.company.youtubeLink && (
+                    <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Watch our Youtube</Tooltip>}>
+                      <a href={appSettings.company.youtubeLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
+                        <span className="svg-icon svg-icon-xs"><SvgYoutubeLogo /></span>
+                      </a>
+                    </OverlayTrigger>
+                  )}
+                </div>
+              </div>
+            </div>
+          </footer>
+        }
+
+      </div>
     </>
-  );
-};
-
-const Footer = () => {
-  const appSettings = useAppSettings();
-
-  return (
-    <footer id="footer" className="text-center bg-dark text-white py-2">
-      <div className="container pt-4">
-        <div className="hstack gap-3 d-inline-flex flex-wrap justify-content-center">
-          <Link href="/"><a className="link-light">Home</a></Link>
-          <Link href="/courses"><a className="link-light">Courses</a></Link>
-          <Link href="/terms"><a className="link-light">Terms of Service</a></Link>
-          <Link href="/privacy"><a className="link-light">Privacy Policy</a></Link>
-          <Link href="/contact"><a className="link-light">Contact Us</a></Link>
-          <Link href="/about"><a className="link-light">About Us</a></Link>
-        </div>
-      </div>
-      <div>
-        <div className="container d-flex flex-wrap justify-content-center justify-content-md-between py-3">
-          <div className="mb-3">Copyright © {new Date().getFullYear()} Academy of Ours. All rights reserved</div>
-          <div className="hstack gap-2 d-inline-flex mb-3">
-            {appSettings.company.facebookLink && (
-              <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Check out our facebook</Tooltip>}>
-                <a href={appSettings.company.facebookLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
-                  <span className="svg-icon svg-icon-xs"><SvgFacebookLogo /></span>
-                </a>
-              </OverlayTrigger>
-            )}
-            {appSettings.company.instagramLink && (
-              <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Join our instagram</Tooltip>}>
-                <a href={appSettings.company.instagramLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
-                  <span className="svg-icon svg-icon-xs"><SvgInstagramLogo /></span>
-                </a>
-              </OverlayTrigger>
-            )}
-            {appSettings.company.linkedinLink && (
-              <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Follow us on Linkedin</Tooltip>}>
-                <a href={appSettings.company.linkedinLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
-                  <span className="svg-icon svg-icon-xs"><SvgLinkedinLogo /></span>
-                </a>
-              </OverlayTrigger>
-            )}
-            {appSettings.company.twitterLink && (
-              <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>See what we tweet about</Tooltip>}>
-                <a href={appSettings.company.linkedinLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
-                  <span className="svg-icon svg-icon-xs"><SvgTwitterLogo /></span>
-                </a>
-              </OverlayTrigger>
-            )}
-            {appSettings.company.youtubeLink && (
-              <OverlayTrigger overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>Watch our Youtube</Tooltip>}>
-                <a href={appSettings.company.youtubeLink} target="_blank" rel="noreferrer" className="btn btn-soft-light btn-icon btn-sm rounded-pill">
-                  <span className="svg-icon svg-icon-xs"><SvgYoutubeLogo /></span>
-                </a>
-              </OverlayTrigger>
-            )}
-          </div>
-        </div>
-      </div>
-    </footer>
   );
 };
 
@@ -409,13 +408,11 @@ export default function MyApp({ Component, pageProps, appSettings, error }) {
               <ClientProvider>
                 <DialogProvider>
                   <ModalProvider>
-                    <div className={`${pageSettings.showHeader ? 'pt-8' : ''} ${pageSettings.showFooter ? 'pb-8' : ''} position-relative`}>
-                      {pageSettings.showHeader && <Header />}
-                      <Body>
-                        <Component {...pageProps} />
-                      </Body>
-                      {pageSettings.showFooter && <Footer />}
-                    </div>
+                    
+                    <Body {...{ pageSettings }}>
+                      <Component {...pageProps} />
+                    </Body>
+
                     <Toaster position="top-center" reverseOrder={true} toastOptions={{
                       className: 'bg-light text-dark',
                     }} />

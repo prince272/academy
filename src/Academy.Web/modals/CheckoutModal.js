@@ -29,7 +29,9 @@ const CheckoutModal = withRemount((props) => {
     const [submitting, setSubmitting] = useState(false);
     const componentId = useMemo(() => _.uniqueId('Component'), []);
     const appSettings = useAppSettings();
-    let [payment, setPayment] = withAsync(useState(JSON.parse(route.query.payment)));
+    const paymentId = route.query.paymentId;
+
+    let [payment, setPayment] = withAsync(useState(null));
 
     if (!route.query.returnUrl) throw new Error(`The query parameter 'returnUrl' was not found. url: ${route.url}`);
 
@@ -40,7 +42,7 @@ const CheckoutModal = withRemount((props) => {
 
         form.setValue('mode', 'mobile');
 
-        let result = await client.get(`/payments/${payment.id}/status`);
+        let result = await client.get(`/payments/${paymentId}`);
 
         if (result.error) {
             const error = result.error;
@@ -49,7 +51,7 @@ const CheckoutModal = withRemount((props) => {
             return;
         }
 
-        payment = await setPayment({ ...payment, ...result.data });
+        payment = await setPayment(result.data);
 
         if (payment.status == 'processing') {
             verifyPayment();
@@ -64,7 +66,7 @@ const CheckoutModal = withRemount((props) => {
             setSubmitting(true);
 
             const paymentMode = form.watch('mode');
-            let result = await client.post(`/payments/${payment.id}/checkout`, { ...inputs, mode: paymentMode })
+            let result = await client.post(`/payments/${paymentId}/checkout`, { ...inputs, mode: paymentMode })
 
             if (result.error) {
                 const error = result.error;
@@ -121,6 +123,26 @@ const CheckoutModal = withRemount((props) => {
                 </div>
                 {payment.status == 'pending' && (
                     <div>
+                        <ol class="list-group mt-3">
+                            <li class="list-group-item">
+                                <div className="hstack justify-content-between gap-2">
+                                    <div className="fw-bold">Full name</div>
+                                    <div>{payment.fullName}</div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div className="hstack justify-content-between gap-2">
+                                    <div className="fw-bold">Reference Id</div>
+                                    <div>{payment.referenceId}</div>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                <div className="hstack justify-content-between gap-2">
+                                    <div className="fw-bold">Amount</div>
+                                    <div>{appSettings.currency.symbol}{payment.amount}</div>
+                                </div>
+                            </li>
+                        </ol>
                         <div className="list-group list-group-flush">
                             <div className="list-group-item p-0">
                                 <div className="px-4">

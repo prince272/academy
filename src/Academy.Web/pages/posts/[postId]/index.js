@@ -143,17 +143,13 @@ const PostPage = withRemount(({ remount, ...props }) => {
                                         <div className="mb-2 text-start">{teacher.bio}</div>
                                         {permitted && <div className="mb-2"><Link href={`${ModalPathPrefix}/accounts/profile/edit`}><a>Edit profile</a></Link></div>}
                                         <div className="text-start">
-                                            <div className="">
-                                                {teacher.email && (
-                                                    <p className="text-nowrap mb-2">Email: <a href={`mailto:${teacher.email}`}>{teacher.email}</a></p>
-                                                )}
-                                                {teacher.phoneNumber && (
-                                                    <p className="text-nowrap mb-2">Phone number: {((phoneNumber) => (<a href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
-                                                )}
-                                                <div>
-                                                    <SocialButtons social={client.user || {}} />
-                                                </div>
-                                            </div>
+                                            {teacher.email && (
+                                                <p className="text-nowrap mb-2">Email: <a href={`mailto:${teacher.email}`}>{teacher.email}</a></p>
+                                            )}
+                                            {teacher.phoneNumber && (
+                                                <p className="text-nowrap mb-2">Phone number: {((phoneNumber) => (<a href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
+                                            )}
+                                             <SocialButtons social={client.user || {}} />
                                         </div>
                                     </div>
                                 </div>

@@ -13,7 +13,7 @@ import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import Loader from '../../../../components/Loader';
 import DocumentViewer from '../../../../components/DocumentViewer';
 
-import { BsInfoCircle , BsArrowLeft, BsCheckCircleFill, BsFilm, BsGripVertical, BsJournalRichtext, BsXCircleFill, BsXLg } from 'react-icons/bs';
+import { BsInfoCircle, BsArrowLeft, BsCheckCircleFill, BsFilm, BsGripVertical, BsJournalRichtext, BsXCircleFill, BsXLg } from 'react-icons/bs';
 
 import LinesEllipsisLoose from 'react-lines-ellipsis/lib/loose'
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
@@ -333,9 +333,9 @@ const LearnPage = withRemount(({ remount }) => {
                 return;
             }
 
-            const payment = result.data;
+            const paymentId = result.data;
             router.replace(`/courses/${courseId}`)
-            router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { returnUrl: window.location.href, payment: JSON.stringify(payment) } });
+            router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { returnUrl: window.location.href, paymentId } });
             return;
         }
 

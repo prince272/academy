@@ -10,7 +10,7 @@ namespace Academy.Server.Data.Entities
 
         public string FullName { get; set; }
 
-        public int? UserId { get; set; }
+        public int UserId { get; set; }
 
         public string TransactionId { get; set; }
 

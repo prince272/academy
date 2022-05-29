@@ -54,7 +54,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
                     try
                     {
                         var payments = await unitOfWork.Query<Payment>()
-                            .Where(_ => _.Status == PaymentStatus.Processing)
+                            .Where(_ => _.Status == PaymentStatus.Pending || _.Status == PaymentStatus.Processing)
                             .ToListAsync(cancellationToken);
 
                         foreach (var payment in payments)

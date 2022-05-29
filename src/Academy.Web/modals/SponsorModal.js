@@ -13,6 +13,8 @@ import Cleave from 'cleave.js/react';
 import { ModalPathPrefix } from './';
 import { BsHeartFill } from 'react-icons/bs';
 import _ from 'lodash';
+import { AspectRatio } from 'react-aspect-ratio';
+import { SvgOnlineWishesIllus } from '../resources/images/illustrations';
 
 const SponsorModal = (props) => {
     const { route, modal } = props;
@@ -39,7 +41,7 @@ const SponsorModal = (props) => {
 
             let result = await client.post('/sponsor', inputs);
 
-            if (result.error) {               
+            if (result.error) {
                 const error = result.error;
                 Object.entries(error.details).forEach(([name, message]) => form.setError(name, { type: 'server', message }));
                 toast.error(error.message, { id: componentId });
@@ -47,8 +49,7 @@ const SponsorModal = (props) => {
                 return;
             }
 
-            const payment = result.data;
-            router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { returnUrl: route.url, payment: JSON.stringify(payment) } });
+            router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { returnUrl: route.url, paymentId: result.data } });
         })();
     };
 
@@ -65,7 +66,22 @@ const SponsorModal = (props) => {
                     <p>If you think Academy of Ours is valuable to you, Sponsor!</p>
                 </div>
                 <div className="row g-3">
-                    <div className="col-12 col-sm-5">
+                    <div className="col-12">
+                        <div className="px-5 pb-5">
+                            <AspectRatio ratio="3/2">
+                                <SvgOnlineWishesIllus />
+                            </AspectRatio>
+                        </div>
+                        <div className="d-flex mx-n2">
+                            {[50, 100, 300, 600].map(item => {
+
+                                return (
+                                    <button type="button" className={`w-100 mx-2 btn ${form.watch('amount') == item ? 'btn-primary' : 'btn-outline-secondary'}`} onClick={() => form.setValue('amount', item)}>{appSettings.currency.symbol}{item}</button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                    <div className="col-12">
                         <label className="form-label">Amount</label>
                         <div className="input-group input-group-merge">
                             <div className="input-group-prepend input-group-text">{appSettings.currency.symbol}</div>
@@ -80,31 +96,9 @@ const SponsorModal = (props) => {
                         </div>
                         <div className="invalid-feedback">{formState.errors.amount?.message}</div>
                     </div>
-                    <div className="col-12 col-sm-7">
-                        <label className="form-label">Full name</label>
-                        <input {...form.register("fullName")} className={`form-control  ${formState.errors.fullName ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{formState.errors.fullName?.message}</div>
-                    </div>
-                    <div className="col-12 col-sm-7">
-                        <label className="form-label">Email</label>
-                        <input {...form.register("email")} className={`form-control  ${formState.errors.email ? 'is-invalid' : ''}`} />
-                        <div className="invalid-feedback">{formState.errors.email?.message}</div>
-                    </div>
-                    <div className="col-12 col-sm-5">
-                        <label className="form-label">Phone number</label>
-                        <FormController name="phoneNumber" control={form.control} render={({ field }) => {
-                            return (<PhoneInput value={field.value} onChange={(value) => field.onChange(value)} className={`form-control  ${formState.errors.phoneNumber ? 'is-invalid' : ''}`} defaultCountry={appSettings.company.countryCode} />);
-                        }} />
-                        <div className="invalid-feedback">{formState.errors.phoneNumber?.message}</div>
-                    </div>
-                    <div className="col-12">
-                        <label className="form-label">Message</label>
-                        <textarea {...form.register("message")} className={`form-control ${formState.errors.message ? 'is-invalid' : ''}`} rows="3" placeholder={`Say something nice...`} />
-                        <div className="invalid-feedback">{formState.errors.message?.message}</div>
-                    </div>
                 </div>
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer className="pt-0">
                 <button className="btn btn-primary px-10 w-100" type="button" disabled={submitting} onClick={() => submit()}>
                     <div className="position-relative d-flex align-items-center justify-content-center">
                         <div className={`${submitting ? 'invisible' : ''}`}>Proceed</div>
@@ -119,7 +113,7 @@ const SponsorModal = (props) => {
 
 SponsorModal.getModalProps = () => {
     return {
-
+        size: "sm"
     };
 };
 

@@ -22,6 +22,8 @@ import SvgWellDoneIllus from '../illustrations/well-done.svg';
 import SvgCompleteIllus from '../illustrations/complete.svg';
 import SvgWebSearchIllus from '../illustrations/web-search.svg';
 import SvgOnlinePaymentsIllus from '../illustrations/online-payments.svg';
+import SvgDifferentLoveIllus from '../illustrations/different-love.svg';
+import SvgOnlineWishesIllus from '../illustrations/online-wishes.svg';
 
 export {
     SvgOnlineLearningIllus,
@@ -47,5 +49,7 @@ export {
     SvgWellDoneIllus,
     SvgCompleteIllus,
     SvgWebSearchIllus,
-    SvgOnlinePaymentsIllus
+    SvgOnlinePaymentsIllus,
+    SvgDifferentLoveIllus,
+    SvgOnlineWishesIllus
 };

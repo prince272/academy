@@ -149,11 +149,12 @@ namespace Academy.Server.Extensions.PaymentProcessor
         {
             if (payment == null) throw new ArgumentNullException(nameof(payment));
 
-            var maxVerityInMinutes = 5;
+            var maxProcessingInMinutes = 5;
+            var maxPendingInMinutes = 5;
 
             if (payment.Status == PaymentStatus.Processing)
             {
-                if ((DateTimeOffset.UtcNow - payment.Issued) >= TimeSpan.FromMinutes(maxVerityInMinutes))
+                if ((DateTimeOffset.UtcNow - payment.Issued) >= TimeSpan.FromMinutes(maxProcessingInMinutes))
                 {
                     payment.Status = PaymentStatus.Failed;
                     await unitOfWork.UpdateAsync(payment);
@@ -176,7 +177,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
             }
             else if (payment.Status == PaymentStatus.Pending)
             {
-                if ((DateTimeOffset.UtcNow - payment.Issued) >= TimeSpan.FromMinutes(maxVerityInMinutes))
+                if ((DateTimeOffset.UtcNow - payment.Issued) >= TimeSpan.FromMinutes(maxPendingInMinutes))
                 {
                     payment.Status = PaymentStatus.Failed;
                     await unitOfWork.UpdateAsync(payment);

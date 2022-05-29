@@ -72,14 +72,14 @@ namespace Academy.Server.Controllers
             });
         }
 
-        [HttpGet("{paymentId}/status")]
-        public async Task<IActionResult> GetStatus(int paymentId)
+        [HttpGet("{paymentId}")]
+        public async Task<IActionResult> Read(int paymentId)
         {
             var query = unitOfWork.Query<Payment>();
             var payment = await query.FirstOrDefaultAsync(_ => _.Id == paymentId);
             if (payment == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            return Result.Succeed(data: new { payment.Status });
+            return Result.Succeed(data: payment);
         }
 
         [HttpPost("{paymentId}/verify")]
