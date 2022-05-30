@@ -15,6 +15,7 @@ import { BsHeartFill } from 'react-icons/bs';
 import _ from 'lodash';
 import { AspectRatio } from 'react-aspect-ratio';
 import { SvgOnlineWishesIllus } from '../resources/images/illustrations';
+import { SvgAppWordmark } from '../resources/images/icons';
 
 const SponsorModal = (props) => {
     const { route, modal } = props;
@@ -62,16 +63,12 @@ const SponsorModal = (props) => {
             <Modal.Header bsPrefix="modal-close" closeButton></Modal.Header>
             <Modal.Body as={Form} onSubmit={preventDefault(() => submit())}>
                 <div className="text-center mb-5">
-                    <h5><span className="svg-icon svg-icon-sm d-inline-block text-danger me-2 heart"><BsHeartFill /></span>Sponsor</h5>
-                    <p>If you think Academy of Ours is valuable to you, Sponsor!</p>
+                    <div><h5><span className="svg-icon svg-icon-sm d-inline-block text-danger me-2 heart"><BsHeartFill /></span>Become a Sponsor</h5></div>
+                    <p>If you think Academy of Ours is valuable to you, Please consider becoming a sponsor!</p>
                 </div>
                 <div className="row g-3">
                     <div className="col-12">
-                        <div className="px-5 pb-5">
-                            <AspectRatio ratio="3/2">
-                                <SvgOnlineWishesIllus />
-                            </AspectRatio>
-                        </div>
+                        <label className="form-label">Suggested amount</label>
                         <div className="d-flex mx-n2">
                             {[50, 100, 300, 600].map(item => {
 

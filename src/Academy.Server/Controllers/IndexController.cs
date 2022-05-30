@@ -104,7 +104,7 @@ namespace Academy.Server.Controllers
             payment.Reason = PaymentReason.Sponsorship;
             payment.Status = PaymentStatus.Pending;
             payment.Type = PaymentType.Payin;
-            payment.Title = "Sponsorship";
+            payment.Title = "Become a Sponsor";
             payment.ReferenceId = Compute.GenerateCode("SPON");
             payment.Amount = form.Amount;
             payment.IPAddress = Request.GetIPAddress();

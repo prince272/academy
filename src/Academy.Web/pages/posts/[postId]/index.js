@@ -8,7 +8,7 @@ import * as moment from 'moment';
 import momentDurationFormatSetup from 'moment-duration-format';
 momentDurationFormatSetup(moment);
 
-import { BsCalendarDate, BsCardImage, BsClock, BsPersonFill, BsChevronRight, BsChevronLeft } from 'react-icons/bs';
+import { BsCalendarDate, BsCardImage, BsClock, BsPersonFill, BsChevronRight, BsChevronLeft, BsCupStraw } from 'react-icons/bs';
 
 import DocumentViewer from '../../../components/DocumentViewer';
 import ShareButtons from '../../../components/ShareButtons';
@@ -33,6 +33,39 @@ import { ModalPathPrefix } from '../../../modals';
 
 import SocialButtons from '../../../components/SocialButtons';
 import PostsScrollMenu from '../../../components/PostsScrollMenu';
+import { Collapse } from 'react-bootstrap';
+
+const ProfileInfo = ({ profile }) => {
+    const client = useClient();
+    const permitted = (client.user && client.user.id == profile.id);
+    const [showContact, setShowContact] = useState(false);
+
+    return (
+        <div className="row gy-3">
+            <div className="col-md-auto d-flex d-md-block justify-content-center">
+                <div className="border rounded bg-white p-1 d-inline-flex">
+                    {profile.avatar ?
+                        (<Image className="rounded" priority unoptimized loader={({ src }) => src} src={profile.avatar.url} layout="fixed" objectFit="cover" width={128} height={128} alt={profile.fullName} />) :
+                        (<div className="rounded svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center" style={{ width: "128px", height: "128px" }}><BsCardImage /></div>)}
+                </div>
+            </div>
+            <div className="col-md-9">
+                <div className="h2 fw-bold text-center text-md-start">{profile.fullName}</div>
+                <div className="mb-3 text-start">{profile.bio}</div>
+                <div className="mb-3 d-flex mx-n2">
+                    <button type="button" className="btn btn-outline-dark btn-sm w-100 w-md-auto mx-2" onClick={() => setShowContact(!showContact)}>{showContact ? 'Hide' : 'Show'} contact</button>
+                    <button type="button" className="btn btn-dark btn-sm w-100 w-md-auto mx-2">Buy me a coffee</button>
+                </div>
+                <Collapse in={showContact}>
+                    <div>
+                        {permitted && <div className="mb-3"><Link href={`${ModalPathPrefix}/accounts/profile/edit`}><a>Edit profile</a></Link></div>}
+                        <SocialButtons social={profile || {}} />
+                    </div>
+                </Collapse>
+            </div>
+        </div>
+    )
+}
 
 const PostPage = withRemount(({ remount, ...props }) => {
     const router = useRouter();
@@ -126,35 +159,7 @@ const PostPage = withRemount(({ remount, ...props }) => {
                             </div>
                         </div>
                         <div className="divider-center my-6 h5">About</div>
-                        {(() => {
-                            const teacher = (client.user && client.user.id == post.teacher.id) ? client.user : post.teacher;
-
-                            return (
-                                <div className="row gy-3">
-                                    <div className="col-md-auto d-flex d-md-block justify-content-center">
-                                        <div className="border rounded bg-white p-1 d-inline-flex">
-                                            {teacher.avatar ?
-                                                (<Image className="rounded" priority unoptimized loader={({ src }) => src} src={teacher.avatar.url} layout="fixed" objectFit="cover" width={128} height={128} alt={post.teacher.fullName} />) :
-                                                (<div className="rounded svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center" style={{ width: "128px", height: "128px" }}><BsCardImage /></div>)}
-                                        </div>
-                                    </div>
-                                    <div className="col-md-9">
-                                        <div className="h2 fw-bold text-center text-md-start">{teacher.fullName}</div>
-                                        <div className="mb-2 text-start">{teacher.bio}</div>
-                                        {permitted && <div className="mb-2"><Link href={`${ModalPathPrefix}/accounts/profile/edit`}><a>Edit profile</a></Link></div>}
-                                        <div className="text-start">
-                                            {teacher.email && (
-                                                <p className="text-nowrap mb-2">Email: <a href={`mailto:${teacher.email}`}>{teacher.email}</a></p>
-                                            )}
-                                            {teacher.phoneNumber && (
-                                                <p className="text-nowrap mb-2">Phone number: {((phoneNumber) => (<a href={phoneNumber.getURI()}>{phoneNumber.formatInternational()}</a>))(parsePhoneNumber(appSettings.company.phoneNumber))}</p>
-                                            )}
-                                             <SocialButtons social={client.user || {}} />
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })()}
+                        <ProfileInfo profile={(client.user && client.user.id == post.teacher.id) ? client.user : post.teacher} />
                         <hr className="my-6" />
                         <div className="hstack gap-3 justify-content-between mb-3">
                             <div className="h5">Related posts</div>

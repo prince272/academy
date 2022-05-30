@@ -190,15 +190,15 @@ const Body = ({ children, pageSettings }) => {
             <div className="container">
               <Link href="/" passHref>
                 <Navbar.Brand className="me-auto" onClick={() => { setHeaderExpanded(false); }}>
-                  <div className="svg-icon"><SvgAppWordmark style={{ width: "auto", height: "2.5rem" }} /></div>
+                  <div className="svg-icon"><SvgAppWordmark style={{ width: "auto", height: "2rem" }} /></div>
                 </Navbar.Brand>
               </Link>
 
               <Nav.Item className="me-2">
-                <button type="button" className="btn btn-outline-danger p-2 shadow-sm" onClick={() => {
+                <button type="button" className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
                   setHeaderExpanded(false);
                   router.replace({ pathname: `${ModalPathPrefix}/sponsor` })
-                }}>Made with <span className="svg-icon svg-icon-sm d-inline-block me-2 heart"><BsHeartFill /></span></button>
+                }}>Made with <span className="svg-icon svg-icon-sm d-inline-block me-2 heart text-danger"><BsHeartFill /></span></button>
               </Nav.Item>
 
               <Navbar.Toggle className="ms-0" />
