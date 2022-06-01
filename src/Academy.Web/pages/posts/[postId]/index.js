@@ -102,7 +102,7 @@ const PostPage = withRemount(({ remount, ...props }) => {
     const permitted = (client.user && client.user.id == post.teacher.id);
 
     if (loading) return (<Loader {...loading} />);
-    
+
     return (
         <>
             <NextSeo
@@ -120,38 +120,43 @@ const PostPage = withRemount(({ remount, ...props }) => {
                         <div>
                             <div>
                                 <div className="mb-3"><Link href="/posts"><a className="link-dark d-inline-flex align-items-center"><div className="svg-icon svg-icon-xs me-1"><BsChevronLeft /></div><div>Back to posts</div></a></Link></div>
-                                <div className='mb-3'><div className="badge bg-primary fs-6">{appSettings.post.categories.find(category => category.value == post.category)?.name}</div></div>
-                                <h1 className="h2">{post.title}</h1>
-                                <div className="hstack text-nowrap mb-3">
-                                    <div><span className="text-primary align-text-bottom"><BsCalendarDate /></span> {moment(post.created).format("MMMM D, yyyy")}</div>
-                                    <span className="mx-2">•</span>
-                                    <div><span className="text-primary align-text-bottom"><BsClock /></span> {moment.duration(Math.floor(post.duration / 10000)).humanize()} to read</div>
-                                </div>
-                                <div className="d-inline-flex align-items-center mb-3 me-2">
-                                    {(() => {
-                                        const teacher = (client.user && client.user.id == post.teacher.id) ? client.user : post.teacher;
-                                        return (
-                                            <>
-                                                {teacher.avatar ?
-                                                    (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={teacher.avatar.url} width={24} height={24} objectFit="cover" alt={`${teacher.fullName}`} />) :
-                                                    (
-                                                        <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "24px", height: "24px" }}>
-                                                            <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
-                                                        </div>
-                                                    )}
-                                                <ResponsiveEllipsis className="overflow-hidden text-break fst-italic ms-2"
-                                                    text={teacher.fullName}
-                                                    maxLine='1'
-                                                    ellipsis='...'
-                                                    trimRight
-                                                    basedOn='letters'
-                                                />
-                                            </>
-                                        )
-                                    })()}
+                                <div className="hstack gap-3 flex-wrap justify-content-between mb-3">
 
+                                    <div>
+                                        <div className="d-inline-flex align-items-center me-2 mb-3">
+                                            {(() => {
+                                                const teacher = (client.user && client.user.id == post.teacher.id) ? client.user : post.teacher;
+                                                return (
+                                                    <>
+                                                        {teacher.avatar ?
+                                                            (<Image className="rounded-pill" priority unoptimized loader={({ src }) => src} src={teacher.avatar.url} width={24} height={24} objectFit="cover" alt={`${teacher.fullName}`} />) :
+                                                            (
+                                                                <div className="rounded-pill d-flex align-items-center justify-content-center bg-light text-dark" style={{ width: "24px", height: "24px" }}>
+                                                                    <div className="svg-icon svg-icon-xs d-inline-block" ><BsPersonFill /></div>
+                                                                </div>
+                                                            )}
+                                                        <ResponsiveEllipsis className="overflow-hidden text-break fst-italic ms-2"
+                                                            text={teacher.fullName}
+                                                            maxLine='1'
+                                                            ellipsis='...'
+                                                            trimRight
+                                                            basedOn='letters'
+                                                        />
+                                                    </>
+                                                )
+                                            })()}
+
+                                        </div>
+                                        <div className="hstack text-nowrap">
+                                            <div><span className="text-primary align-text-bottom"><BsCalendarDate /></span> {moment(post.created).format("MMMM D, yyyy")}</div>
+                                            <span className="mx-2">•</span>
+                                            <div><span className="text-primary align-text-bottom"><BsClock /></span> {moment.duration(Math.floor(post.duration / 10000)).humanize()} to read</div>
+                                        </div>
+
+                                    </div>
+                                    <div className="d-flex align-items-center"><div className="me-2 fw-bold">Share:</div><ShareButtons share={{ title: post.title, text: post.description, url: `${process.env.NEXT_PUBLIC_CLIENT_URL}/posts/${postId}` }} /> </div>
                                 </div>
-                                <div className="mb-3 d-flex align-items-center"><div className="me-2 fw-bold">Share:</div><ShareButtons share={{ title: post.title, text: post.description, url: `${process.env.NEXT_PUBLIC_CLIENT_URL}/posts/${postId}` }} /> </div>
+
                                 <div className="p-1 mb-3">
                                     <AspectRatio ratio="1280/720">
                                         {post.image ?
@@ -159,6 +164,8 @@ const PostPage = withRemount(({ remount, ...props }) => {
                                             (<div className="rounded border svg-icon svg-icon-lg text-muted bg-light d-flex justify-content-center align-items-center"><BsCardImage /></div>)}
                                     </AspectRatio>
                                 </div>
+                                <div className='mb-2'><div className="badge bg-primary fs-6">{appSettings.post.categories.find(category => category.value == post.category)?.name}</div></div>
+                                <h1 className="h2">{post.title}</h1>
                                 <div className="fs-5"><DocumentViewer document={post.description} /></div>
                             </div>
                         </div>
@@ -171,7 +178,7 @@ const PostPage = withRemount(({ remount, ...props }) => {
                                     { label: "surprised", node: <span>😮</span> },
                                     { label: "sad", node: <span>😔</span> },
                                     { label: "angry", node: <span>😡</span> },
-                                ]} 
+                                ]}
                                 iconSize={32} /></div>
                         </div>
                         <div className="divider-center my-6 h5 text-reset">About</div>
