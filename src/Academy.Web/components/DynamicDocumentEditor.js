@@ -3,7 +3,7 @@ import "froala-editor/css/froala_editor.pkgd.min.css";
 import "froala-editor/css/froala_style.css";
 import "froala-editor/js/plugins.pkgd.min.js";
 import FroalaEditor from "react-froala-wysiwyg";
-function DocumentEditor({ value, onChange }) {
+function DynamicDocumentEditor({ value, onChange }) {
 
   return (
     <div>
@@ -56,4 +56,4 @@ function DocumentEditor({ value, onChange }) {
     </div>
   );
 }
-export default DocumentEditor;
+export default DynamicDocumentEditor;

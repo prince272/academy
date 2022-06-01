@@ -35,6 +35,8 @@ import SocialButtons from '../../../components/SocialButtons';
 import PostsScrollMenu from '../../../components/PostsScrollMenu';
 import { Collapse } from 'react-bootstrap';
 
+import { ReactionBarSelector } from '@charkour/react-reactions';
+
 const ProfileInfo = ({ profile }) => {
     const client = useClient();
     const permitted = (client.user && client.user.id == profile.id);
@@ -99,6 +101,8 @@ const PostPage = withRemount(({ remount, ...props }) => {
 
     const permitted = (client.user && client.user.id == post.teacher.id);
 
+    if (loading) return (<Loader {...loading} />);
+    
     return (
         <>
             <NextSeo
@@ -158,7 +162,19 @@ const PostPage = withRemount(({ remount, ...props }) => {
                                 <div className="fs-5"><DocumentViewer document={post.description} /></div>
                             </div>
                         </div>
-                        <div className="divider-center my-6 h5">About</div>
+                        <div className="vstack gap-3 align-items-center text-center pt-4 pb-3">
+                            <div className="h6 mb-0">How do you feel about this post?</div>
+                            <div className="d-inline-flex"><ReactionBarSelector
+                                reactions={[
+                                    { label: "like", node: <span>👍</span> },
+                                    { label: "love", node: <span>❤️</span> },
+                                    { label: "surprised", node: <span>😮</span> },
+                                    { label: "sad", node: <span>😔</span> },
+                                    { label: "angry", node: <span>😡</span> },
+                                ]} 
+                                iconSize={32} /></div>
+                        </div>
+                        <div className="divider-center my-6 h5 text-reset">About</div>
                         <ProfileInfo profile={(client.user && client.user.id == post.teacher.id) ? client.user : post.teacher} />
                         <hr className="my-6" />
                         <div className="hstack gap-3 justify-content-between mb-3">

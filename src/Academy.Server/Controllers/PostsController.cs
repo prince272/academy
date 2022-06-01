@@ -145,6 +145,30 @@ namespace Academy.Server.Controllers
             return Result.Succeed(data: postModel);
         }
 
+        [HttpPost("{postId}/reaction")]
+        public async Task<IActionResult> Reaction(int postId, [FromBody] PostReactionModel form)
+        {
+            var post = await unitOfWork.Query<Post>()
+                .FirstOrDefaultAsync(_ => _.Id == postId);
+            if (post == null) return Result.Failed(StatusCodes.Status404NotFound);
+
+            var ipAddress = Request.GetIPAddress();
+
+            var reaction = await unitOfWork.Query<PostReaction>().FirstOrDefaultAsync(_ => _.PostId == post.Id && _.IPAddress == ipAddress);
+            if (reaction == null)
+            {
+                reaction = new PostReaction();
+                reaction.PostId = post.Id;
+                reaction.IPAddress = Request.GetIPAddress();
+                reaction.UAString = Request.GetUAString();
+                await unitOfWork.CreateAsync(reaction);
+            }
+
+            reaction.Type = form.Type;
+            await unitOfWork.UpdateAsync(reaction);
+            return Result.Succeed();
+        }
+
         [HttpGet("/posts")]
         public async Task<IActionResult> List(int pageNumber, int pageSize, [FromQuery] PostSearchModel search)
         {

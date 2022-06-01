@@ -1,11 +1,11 @@
 import dynamic from 'next/dynamic';
 
-const DynamicEditor = dynamic(() => import('../components/DynamicEditor'), {
+const DynamicDocumentEditor = dynamic(() => import('../components/DynamicDocumentEditor'), {
     ssr: false,
 });
 
 const DocumentEditor = props => {
-    return ( <DynamicEditor {...props} />);
+    return ( <DynamicDocumentEditor {...props} />);
 };
 
 export default DocumentEditor;

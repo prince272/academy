@@ -44,8 +44,10 @@ namespace Academy.Server.Data.Entities
         Careers
     }
 
-    public class PostReaction
+    public class PostReaction : IEntity
     {
+        public int Id { get; set; }
+
         public virtual Post Post { get; set; }
 
         public int PostId { get; set; }
@@ -53,5 +55,16 @@ namespace Academy.Server.Data.Entities
         public string IPAddress { get; set; }
 
         public string UAString { get; set; }
+
+        public PostReactionType Type { get; set; }
+    }
+
+    public enum PostReactionType
+    {
+        Like,
+        Love,
+        Surprised,
+        Sad,
+        Angry
     }
 }
