@@ -2,6 +2,7 @@ import dynamic from 'next/dynamic';
 
 const DynamicDocumentViewer = dynamic(() => import('../components/DynamicDocumentViewer'), {
     ssr: false,
+    
 });
 
 const DocumentViewer = props => {
