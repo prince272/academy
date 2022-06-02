@@ -63,6 +63,7 @@ namespace Academy.Server.Data.Entities
     {
         Like,
         Love,
+        Happy,
         Surprised,
         Sad,
         Angry

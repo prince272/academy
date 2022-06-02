@@ -146,7 +146,7 @@ namespace Academy.Server.Controllers
         }
 
         [HttpPost("{postId}/reaction")]
-        public async Task<IActionResult> Reaction(int postId, [FromBody] PostReactionModel form)
+        public async Task<IActionResult> Reaction(int postId, [FromBody] PostReactionTypeModel form)
         {
             var post = await unitOfWork.Query<Post>()
                 .FirstOrDefaultAsync(_ => _.Id == postId);
@@ -164,8 +164,16 @@ namespace Academy.Server.Controllers
                 await unitOfWork.CreateAsync(reaction);
             }
 
-            reaction.Type = form.Type;
-            await unitOfWork.UpdateAsync(reaction);
+            if (form.Type.HasValue)
+            {
+                reaction.Type = form.Type.Value;
+                await unitOfWork.UpdateAsync(reaction);
+            }
+            else
+            {
+                await unitOfWork.DeleteAsync(reaction);
+            }
+
             return Result.Succeed();
         }
 
@@ -248,8 +256,18 @@ namespace Academy.Server.Controllers
             var post = await query.FirstOrDefaultAsync(_ => _.Id == postId);
             if (post == null) return null;
 
-            var postModel = mapper.Map<PostModel>(post);
+            var ipAddress = Request.GetIPAddress();
 
+            var reactions = (await Enum.GetValues<PostReactionType>().SelectAsync(async reactionType =>
+            {
+                var reactionCount = await unitOfWork.Query<PostReaction>().CountAsync(_ => _.PostId == post.Id && _.Type == reactionType && _.IPAddress != ipAddress);
+                return new PostReactionModel { Type = reactionType, Count = reactionCount };
+            })).ToArray();
+
+            var postModel = mapper.Map<PostModel>(post);
+            postModel.ReactionCount = reactions.Select(_ => _.Count).Sum();
+            postModel.ReactionType = (await unitOfWork.Query<PostReaction>().FirstOrDefaultAsync(_ => _.PostId == post.Id && _.IPAddress == ipAddress))?.Type;
+            postModel.Reactions = reactions;
             return postModel;
         }
     }

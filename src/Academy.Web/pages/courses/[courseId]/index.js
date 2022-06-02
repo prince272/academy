@@ -470,7 +470,7 @@ const CoursePage = withRemount(({ remount, ...props }) => {
 
             if (result.error) {
                 const error = result.error;
-                setLoading({ ...error, message: 'Unable to load course.', remount });
+                setLoading({ ...error, message: 'Unable to load course.', fallback: () => router.replace('/courses'), remount });
                 return;
             }
 

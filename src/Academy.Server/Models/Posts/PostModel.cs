@@ -3,6 +3,7 @@ using Academy.Server.Models.Courses;
 using Academy.Server.Models.Members;
 using System;
 using AutoMapper;
+using System.Collections.Generic;
 
 namespace Academy.Server.Models.Posts
 {
@@ -29,6 +30,12 @@ namespace Academy.Server.Models.Posts
         public MediaModel Image { get; set; }
 
         public long Duration { get; set; }
+
+        public PostReactionModel[] Reactions { get; set; }
+
+        public int ReactionCount { get; set; }
+
+        public PostReactionType? ReactionType { get; set; }
     }
 
     public class PostModelProfile : Profile

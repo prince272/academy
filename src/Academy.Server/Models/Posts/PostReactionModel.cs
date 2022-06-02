@@ -4,6 +4,8 @@ namespace Academy.Server.Models.Posts
 {
     public class PostReactionModel
     {
-        public PostReactionType  Type { get; set; }
+        public PostReactionType Type { get; set; }
+
+        public int Count { get; set; }
     }
 }

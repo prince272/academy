@@ -12,4 +12,11 @@ namespace Academy.Server.Data.Configurations
             builder.Property(_ => _.Image).HasJsonValueConversion(); ;
         }
     }
+
+    public class PostReactionConfiguration : IEntityTypeConfiguration<PostReaction>
+    {
+        public void Configure(EntityTypeBuilder<PostReaction> builder)
+        {
+        }
+    }
 }
