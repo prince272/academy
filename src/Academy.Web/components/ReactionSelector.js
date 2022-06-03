@@ -37,7 +37,7 @@ const ReactionSelectorEmoji = ({ icon, type, value, onChange, hoveringType, setH
             transformOrigin: 'bottom',
             cursor: 'pointer',
             transition: '200ms transform cubic-bezier(0.23, 1, 0.32, 1)',
-            transform: (hoveringType == type || (!hoveringType && value == type)) ? 'scale(1.25)' : undefined,
+
             filter: (hoveringType == type || (!hoveringType && value == type)) ? "grayscale(0%)" : "grayscale(100%)",
             webkitFilter: (hoveringType == type || (!hoveringType && value == type)) ? "grayscale(0%)" : "grayscale(100%)",
             mozFilter: (hoveringType == type || (!hoveringType && value == type)) ? "grayscale(0%)" : "grayscale(100%)",
@@ -61,9 +61,8 @@ const ReactionSelectorEmoji = ({ icon, type, value, onChange, hoveringType, setH
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={handleClick}>
-            <OverlayTrigger placement="top" overlay={tooltipProps => <Tooltip {...tooltipProps} className="mb-2" arrowProps={{ style: { display: "none" } }}>{pascalCase(type)}</Tooltip>}>
-                <div style={styles.icon}
-                />
+            <OverlayTrigger placement="top" overlay={tooltipProps => <Tooltip {...tooltipProps} arrowProps={{ style: { display: "none" } }}>{pascalCase(type)}</Tooltip>}>
+                <div style={styles.icon} />
             </OverlayTrigger>
         </div>
     );
