@@ -1,4 +1,4 @@
-﻿namespace Academy.Server.Models.Members
+﻿namespace Academy.Server.Models.Teachers
 {
     public class TeacherSearchModel
     {

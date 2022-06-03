@@ -1,9 +1,9 @@
 ﻿using Academy.Server.Data.Entities;
 using Academy.Server.Models.Courses;
-using Academy.Server.Models.Members;
 using System;
 using AutoMapper;
 using System.Collections.Generic;
+using Academy.Server.Models.Teachers;
 
 namespace Academy.Server.Models.Posts
 {
@@ -36,7 +36,6 @@ namespace Academy.Server.Models.Posts
         public int ReactionCount { get; set; }
 
         public PostReactionType? ReactionType { get; set; }
-        public string IPAddress { get; internal set; }
     }
 
     public class PostModelProfile : Profile

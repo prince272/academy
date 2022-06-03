@@ -1,9 +1,11 @@
 ﻿using Academy.Server.Data;
 using Academy.Server.Data.Entities;
+using Academy.Server.Data.Middlewares;
+using Academy.Server.Extensions;
 using Academy.Server.Extensions.EmailSender;
-using Academy.Server.Middlewares;
 using Academy.Server.Services;
 using Academy.Server.Utilities;
+using Academy.Server.Utilities.AnonymousId;
 using Academy.Server.Workers;
 using AutoMapper;
 using FluentValidation.AspNetCore;
@@ -431,6 +433,8 @@ namespace Academy.Server
             app.UseResponseCompression();
 
             app.UseStaticFiles();
+
+            app.UseAnonymousId();
 
             app.UseRouting();
             app.UseResponseCaching();

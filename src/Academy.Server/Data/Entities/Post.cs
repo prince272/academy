@@ -52,9 +52,7 @@ namespace Academy.Server.Data.Entities
 
         public int PostId { get; set; }
 
-        public string IPAddress { get; set; }
-
-        public string UAString { get; set; }
+        public string AnonymousId { get; set; }
 
         public PostReactionType Type { get; set; }
     }

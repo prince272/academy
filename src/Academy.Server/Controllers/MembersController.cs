@@ -1,6 +1,6 @@
 ﻿using Academy.Server.Data;
 using Academy.Server.Data.Entities;
-using Academy.Server.Models.Members;
+using Academy.Server.Models.Teachers;
 using Academy.Server.Utilities;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;

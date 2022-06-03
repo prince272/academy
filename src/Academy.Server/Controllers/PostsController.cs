@@ -152,15 +152,14 @@ namespace Academy.Server.Controllers
                 .FirstOrDefaultAsync(_ => _.Id == postId);
             if (post == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            var ipAddress = Request.GetIPAddress();
+            var anonymousId = Request.GetAnonymousId();
 
-            var reaction = await unitOfWork.Query<PostReaction>().FirstOrDefaultAsync(_ => _.PostId == post.Id && _.IPAddress == ipAddress);
+            var reaction = await unitOfWork.Query<PostReaction>().FirstOrDefaultAsync(_ => _.PostId == post.Id && _.AnonymousId == anonymousId);
             if (reaction == null)
             {
                 reaction = new PostReaction();
                 reaction.PostId = post.Id;
-                reaction.IPAddress = Request.GetIPAddress();
-                reaction.UAString = Request.GetUAString();
+                reaction.AnonymousId = anonymousId;
                 await unitOfWork.CreateAsync(reaction);
             }
 
@@ -256,19 +255,18 @@ namespace Academy.Server.Controllers
             var post = await query.FirstOrDefaultAsync(_ => _.Id == postId);
             if (post == null) return null;
 
-            var ipAddress = Request.GetIPAddress();
+            var anonymousId = Request.GetAnonymousId();
 
             var reactions = (await Enum.GetValues<PostReactionType>().SelectAsync(async reactionType =>
             {
-                var reactionCount = await unitOfWork.Query<PostReaction>().CountAsync(_ => _.PostId == post.Id && _.Type == reactionType && _.IPAddress != ipAddress);
+                var reactionCount = await unitOfWork.Query<PostReaction>().CountAsync(_ => _.PostId == post.Id && _.Type == reactionType);
                 return new PostReactionModel { Type = reactionType, Count = reactionCount };
             })).ToArray();
 
             var postModel = mapper.Map<PostModel>(post);
             postModel.ReactionCount = reactions.Select(_ => _.Count).Sum();
-            postModel.ReactionType = (await unitOfWork.Query<PostReaction>().FirstOrDefaultAsync(_ => _.PostId == post.Id && _.IPAddress == ipAddress))?.Type;
+            postModel.ReactionType = (await unitOfWork.Query<PostReaction>().FirstOrDefaultAsync(_ => _.PostId == post.Id && _.AnonymousId == anonymousId))?.Type;
             postModel.Reactions = reactions;
-            postModel.IPAddress = ipAddress;
             return postModel;
         }
     }

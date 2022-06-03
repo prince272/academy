@@ -1,8 +1,8 @@
 ﻿using Academy.Server.Data.Entities;
 using Academy.Server.Extensions.StorageProvider;
 using Academy.Server.Models.Accounts;
-using Academy.Server.Models.Members;
 using Academy.Server.Models.Students;
+using Academy.Server.Models.Teachers;
 using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;

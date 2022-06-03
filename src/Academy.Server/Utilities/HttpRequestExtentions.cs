@@ -1,4 +1,5 @@
 ﻿using Academy.Server.Data.Entities;
+using Academy.Server.Utilities.AnonymousId;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -73,6 +74,11 @@ namespace Academy.Server.Utilities
                 result = result.Split(':').FirstOrDefault();
 
             return result;
+        }
+
+        public static string GetAnonymousId(this HttpRequest httpRequest)
+        {
+            return httpRequest.HttpContext.Features.Get<IAnonymousIdFeature>().AnonymousId;
         }
 
         public static string GetUAString(this HttpRequest httpRequest)

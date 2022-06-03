@@ -149,9 +149,6 @@ const PostPage = withRemount(({ remount, ...props }) => {
                             <ReactionSelector reactions={post.reactions} value={post.reactionType} onChange={async (type) => {
                                 await client.post(`/posts/${postId}/react`, { type });
                             }} />
-                            <p>ip addresss: {post.ipAddress}</p>
-                            <p>type: {post.reactionType}</p>
-                            <p>count: {post.reactionCount}</p>
                         </div>
                         <div className="divider-center my-6 h5 text-reset">About</div>
                         <ProfileInfo profile={(client.user && client.user.id == post.teacher.id) ? client.user : post.teacher} />

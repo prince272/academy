@@ -1,7 +1,7 @@
 ﻿using Academy.Server.Data.Entities;
 using Academy.Server.Models.Courses;
 
-namespace Academy.Server.Models.Members
+namespace Academy.Server.Models.Teachers
 {
     public class TeacherModel
     {
