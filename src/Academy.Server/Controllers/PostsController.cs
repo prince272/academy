@@ -145,7 +145,7 @@ namespace Academy.Server.Controllers
             return Result.Succeed(data: postModel);
         }
 
-        [HttpPost("{postId}/reaction")]
+        [HttpPost("{postId}/react")]
         public async Task<IActionResult> Reaction(int postId, [FromBody] PostReactionTypeModel form)
         {
             var post = await unitOfWork.Query<Post>()

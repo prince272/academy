@@ -53,7 +53,7 @@ namespace Academy.Server.Events
                 {
                     var course = unitOfWork.Query<Course>()
                         .Include(_ => _.Teacher)
-                        .FirstOrDefault(_ => _.Code == payment.ReferenceId);
+                        .FirstOrDefault(_ => _.Code == payment.Code);
 
                     if (course != null)
                     {
@@ -78,7 +78,7 @@ namespace Academy.Server.Events
                     if (payment.Email != null)
                     {
                         (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = payment.Email },
-                           subject: "Your Sponsorship Has Been Received By Us",
+                           subject: "Your Sponsorship Has Been Received",
                            body: await viewRenderer.RenderToStringAsync("Email/SponsorshipReceived", payment))).Forget();
                     }
 

@@ -18,7 +18,7 @@ namespace Academy.Server.Data.Entities
 
         public PaymentReason Reason { get; set; }
 
-        public string ReferenceId { get; set; }
+        public string Code { get; set; }
 
         public PaymentMode Mode { get; set; }
 

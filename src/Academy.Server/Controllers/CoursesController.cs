@@ -210,7 +210,7 @@ namespace Academy.Server.Controllers
             payment.Status = PaymentStatus.Pending;
             payment.Type = PaymentType.Payin;
             payment.Title = $"Purchase {course.Title}";
-            payment.ReferenceId = course.Code;
+            payment.Code = course.Code;
             payment.Amount = course.Price;
             payment.IPAddress = Request.GetIPAddress();
             payment.UAString = Request.GetUAString();
@@ -1079,7 +1079,7 @@ namespace Academy.Server.Controllers
                 .AsNoTracking()
                 .AnyAsync(_ => _.UserId == user.Id &&
                                _.Reason == PaymentReason.Course &&
-                               _.ReferenceId == course.Code &&
+                               _.Code == course.Code &&
                                _.Status == PaymentStatus.Complete) : false;
 
             var courseStudents = await unitOfWork.Query<User>()

@@ -37,6 +37,9 @@ const ReactionSelectorEmoji = ({ icon, type, selectedType, setSelectedType, hove
             cursor: 'pointer',
             transition: '200ms transform cubic-bezier(0.23, 1, 0.32, 1)',
             transform: (hoveringType == type || (!hoveringType && selectedType == type)) ? 'scale(1.25)' : undefined,
+            filter: (hoveringType == type || (!hoveringType && selectedType == type)) ? "grayscale(0%)" : "grayscale(100%)",
+            webkitFilter: (hoveringType == type || (!hoveringType && selectedType == type)) ? "grayscale(0%)" : "grayscale(100%)",
+            mozFilter: (hoveringType == type || (!hoveringType && selectedType == type)) ? "grayscale(0%)" : "grayscale(100%)",
         }
     };
 

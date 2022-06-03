@@ -147,7 +147,7 @@ const PostPage = withRemount(({ remount, ...props }) => {
                         </div>
                         <div className="vstack gap-3 align-items-center text-center pt-4 pb-3">
                             <ReactionSelector reactions={post.reactions} value={post.reactionType} onChange={async (type) => {
-                                await client.post(`/posts/${postId}/reaction`, { type });
+                                await client.post(`/posts/${postId}/react`, { type });
                             }} />
                         </div>
                         <div className="divider-center my-6 h5 text-reset">About</div>

@@ -105,7 +105,7 @@ namespace Academy.Server.Controllers
             payment.Status = PaymentStatus.Pending;
             payment.Type = PaymentType.Payin;
             payment.Title = "Become a Sponsor";
-            payment.ReferenceId = Compute.GenerateCode("SPON");
+            payment.Code = Compute.GenerateCode("SPON");
             payment.Amount = form.Amount;
             payment.IPAddress = Request.GetIPAddress();
             payment.UAString = Request.GetUAString();

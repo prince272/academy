@@ -367,7 +367,7 @@ namespace Academy.Server.Controllers
             payment.Status = PaymentStatus.Pending;
             payment.Type = PaymentType.Payout;
             payment.Title = $"Payment to {user.FullName}";
-            payment.ReferenceId = user.Code;
+            payment.Code = user.Code;
             payment.Amount = form.Amount;
             payment.IPAddress = Request.GetIPAddress();
             payment.UAString = Request.GetUAString();
