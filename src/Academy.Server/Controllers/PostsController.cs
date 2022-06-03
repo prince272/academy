@@ -268,6 +268,7 @@ namespace Academy.Server.Controllers
             postModel.ReactionCount = reactions.Select(_ => _.Count).Sum();
             postModel.ReactionType = (await unitOfWork.Query<PostReaction>().FirstOrDefaultAsync(_ => _.PostId == post.Id && _.IPAddress == ipAddress))?.Type;
             postModel.Reactions = reactions;
+            postModel.IPAddress = ipAddress;
             return postModel;
         }
     }

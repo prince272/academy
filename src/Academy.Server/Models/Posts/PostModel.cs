@@ -36,6 +36,7 @@ namespace Academy.Server.Models.Posts
         public int ReactionCount { get; set; }
 
         public PostReactionType? ReactionType { get; set; }
+        public string IPAddress { get; internal set; }
     }
 
     public class PostModelProfile : Profile

@@ -184,7 +184,8 @@ const Body = ({ children, pageSettings }) => {
   return (
     <>
       <div className={`${pageSettings.showHeader ? 'pt-8' : ''} ${pageSettings.showFooter ? 'pb-8' : ''} position-relative`}>
-     
+        <LoadingBar color={loadingBarColor} ref={loadingBarRef} />
+
         {pageSettings.showHeader && client.initialized && (
           <Navbar id="header" collapseOnSelect expanded={headerExpanded} onToggle={(toggle) => setHeaderExpanded(toggle)} bg="white" variant="light" expand="md" className={`fixed-top shadow-sm`}>
             <div className="container">
@@ -296,8 +297,6 @@ const Body = ({ children, pageSettings }) => {
           </Navbar>
         )}
 
-        <LoadingBar color={loadingBarColor} ref={loadingBarRef} />
-
         {children}
 
         {(pageLoading) && (<div className="position-fixed top-50 start-50 translate-middle bg-light w-100 h-100 zi-3"><Loader /></div>)}
@@ -408,7 +407,7 @@ export default function MyApp({ Component, pageProps, appSettings, error }) {
               <ClientProvider>
                 <DialogProvider>
                   <ModalProvider>
-                    
+
                     <Body {...{ pageSettings }}>
                       <Component {...pageProps} />
                     </Body>

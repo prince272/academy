@@ -149,6 +149,7 @@ const PostPage = withRemount(({ remount, ...props }) => {
                             <ReactionSelector reactions={post.reactions} value={post.reactionType} onChange={async (type) => {
                                 await client.post(`/posts/${postId}/react`, { type });
                             }} />
+                            {post.ipAddress}
                             {post.reactionType}
                         </div>
                         <div className="divider-center my-6 h5 text-reset">About</div>
