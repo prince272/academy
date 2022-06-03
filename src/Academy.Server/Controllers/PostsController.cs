@@ -146,7 +146,7 @@ namespace Academy.Server.Controllers
         }
 
         [HttpPost("{postId}/react")]
-        public async Task<IActionResult> Reaction(int postId, [FromBody] PostReactionTypeModel form)
+        public async Task<IActionResult> React(int postId, [FromBody] PostReactionTypeModel form)
         {
             var post = await unitOfWork.Query<Post>()
                 .FirstOrDefaultAsync(_ => _.Id == postId);
@@ -259,7 +259,7 @@ namespace Academy.Server.Controllers
 
             var reactions = (await Enum.GetValues<PostReactionType>().SelectAsync(async reactionType =>
             {
-                var reactionCount = await unitOfWork.Query<PostReaction>().CountAsync(_ => _.PostId == post.Id && _.Type == reactionType);
+                var reactionCount = await unitOfWork.Query<PostReaction>().CountAsync(_ => _.PostId == post.Id && _.Type == reactionType && _.AnonymousId != anonymousId);
                 return new PostReactionModel { Type = reactionType, Count = reactionCount };
             })).ToArray();
 

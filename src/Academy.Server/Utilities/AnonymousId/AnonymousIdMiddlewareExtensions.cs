@@ -1,17 +1,19 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Academy.Server.Utilities.AnonymousId
 {
     public static class AnonymousIdMiddlewareExtensions
     {
-        public static IApplicationBuilder UseAnonymousId(this IApplicationBuilder builder)
+        public static IServiceCollection AddAnonymousId(this IServiceCollection services, Action<AnonymousIdCookieOptionsBuilder> configure)
         {
-            return builder.UseMiddleware<AnonymousIdMiddleware>(new AnonymousIdCookieOptionsBuilder().Build());
+            return services.Configure(configure);
         }
 
-        public static IApplicationBuilder UseAnonymousId(this IApplicationBuilder builder, AnonymousIdCookieOptionsBuilder options)
+        public static IApplicationBuilder UseAnonymousId(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<AnonymousIdMiddleware>(options.Build());
+            return builder.UseMiddleware<AnonymousIdMiddleware>();
         }
     }
 }

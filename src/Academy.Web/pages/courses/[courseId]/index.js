@@ -688,7 +688,7 @@ export async function getServerSideProps(ctx) {
     return {
         props: {
             course: !result.error ? result.data : null,
-            loading: result.error || null
+            loading: result.error ? {} : null
         }, // will be passed to the page component as props
     }
 }

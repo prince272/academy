@@ -76,6 +76,7 @@ const PostPage = withRemount(({ remount, ...props }) => {
 
     const { postId } = useRouterQuery();
     let [post, setPost] = withAsync(useState(props.post));
+    const [reactionType, setReactionType] = withAsync(useState(null));
     const [loading, setLoading] = withAsync(useState(props.loading));
     const appSettings = useAppSettings();
 
@@ -91,9 +92,10 @@ const PostPage = withRemount(({ remount, ...props }) => {
             }
 
             post = await setPost(result.data);
-            await setReactionType(post.reactionType);
             await setLoading(null);
         }
+
+        await setReactionType(post.reactionType);
     };
 
     useEffect(() => {
@@ -146,7 +148,8 @@ const PostPage = withRemount(({ remount, ...props }) => {
                             </div>
                         </div>
                         <div className="vstack gap-3 align-items-center text-center pt-4 pb-3">
-                            <ReactionSelector reactions={post.reactions} value={post.reactionType} onChange={async (type) => {
+                            <ReactionSelector reactions={post.reactions} value={reactionType} onChange={async (type) => {
+                                setReactionType((prevType) => prevType == type ? null : type);
                                 await client.post(`/posts/${postId}/react`, { type });
                             }} />
                         </div>
@@ -177,7 +180,7 @@ export async function getServerSideProps(ctx) {
     return {
         props: {
             post: !result.error ? result.data : null,
-            loading: result.error || null
+            loading: result.error ? {} : null
         }, // will be passed to the page component as props
     }
 }

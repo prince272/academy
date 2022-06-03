@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { useCallback, useEffect, useState } from "react";
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { pascalCase } from 'change-case';
+import { useAlternativePrevious, withAsync } from '../utils/hooks';
 
 const icons = (() => {
     const variants = {
@@ -23,7 +24,7 @@ const icons = (() => {
 })();
 
 
-const ReactionSelectorEmoji = ({ icon, type, selectedType, setSelectedType, hoveringType, setHoveringType }) => {
+const ReactionSelectorEmoji = ({ icon, type, value, onChange, hoveringType, setHoveringType }) => {
     const styles = {
         wrapper: {
             padding: '5px',
@@ -36,15 +37,15 @@ const ReactionSelectorEmoji = ({ icon, type, selectedType, setSelectedType, hove
             transformOrigin: 'bottom',
             cursor: 'pointer',
             transition: '200ms transform cubic-bezier(0.23, 1, 0.32, 1)',
-            transform: (hoveringType == type || (!hoveringType && selectedType == type)) ? 'scale(1.25)' : undefined,
-            filter: (hoveringType == type || (!hoveringType && selectedType == type)) ? "grayscale(0%)" : "grayscale(100%)",
-            webkitFilter: (hoveringType == type || (!hoveringType && selectedType == type)) ? "grayscale(0%)" : "grayscale(100%)",
-            mozFilter: (hoveringType == type || (!hoveringType && selectedType == type)) ? "grayscale(0%)" : "grayscale(100%)",
+            transform: (hoveringType == type || (!hoveringType && value == type)) ? 'scale(1.25)' : undefined,
+            filter: (hoveringType == type || (!hoveringType && value == type)) ? "grayscale(0%)" : "grayscale(100%)",
+            webkitFilter: (hoveringType == type || (!hoveringType && value == type)) ? "grayscale(0%)" : "grayscale(100%)",
+            mozFilter: (hoveringType == type || (!hoveringType && value == type)) ? "grayscale(0%)" : "grayscale(100%)",
         }
     };
 
     const handleClick = () => {
-        setSelectedType((prevType) => prevType == type ? null : type);
+        onChange && onChange(type);
     };
 
     const handleMouseEnter = useCallback(() => {
@@ -69,15 +70,13 @@ const ReactionSelectorEmoji = ({ icon, type, selectedType, setSelectedType, hove
 };
 
 const ReactionSelector = ({ iconSize, variant, value, onChange, ...props }) => {
-
-    const [selectedType, setSelectedType] = useState(null);
     const [hoveringType, setHoveringType] = useState(null);
 
     const getReactions = () => () => {
         const humanize = ((count, type) => {
             let comment = ``;
 
-            if (type == selectedType) {
+            if (type == value) {
 
                 if (count == 1) comment += `You and ${count} person `;
                 else if (count == 0) comment += `You `;
@@ -111,20 +110,15 @@ const ReactionSelector = ({ iconSize, variant, value, onChange, ...props }) => {
         })
     };
 
-    const [reactions, setReactions] = useState(getReactions());
-    const reaction = reactions.find(r => r.type == hoveringType) || reactions.find(r => r.type == selectedType);
+    const [reactions, setReactions] = withAsync(useState(getReactions()));
+    const reaction = reactions.find(r => r.type == hoveringType) || reactions.find(r => r.type == value);
 
-    useEffect(() => {
-        updateReactions();
-        onChange && onChange(selectedType);
-    }, [selectedType]);
+    useEffect(async () => {
+        await updateReactions();
+    }, [useAlternativePrevious(value)]);
 
-    useEffect(() => {
-        setSelectedType(value);
-    }, [value]);
-
-    const updateReactions = () => {
-        setReactions(getReactions());
+    const updateReactions = async () => {
+       await setReactions(getReactions());
     };
 
     const styles = {
@@ -146,7 +140,7 @@ const ReactionSelector = ({ iconSize, variant, value, onChange, ...props }) => {
                             <ReactionSelectorEmoji
                                 icon={icons.find(variant, reaction.type)}
                                 type={reaction.type}
-                                {...{ updateReactions, selectedType, setSelectedType, hoveringType, setHoveringType }}
+                                {...{ updateReactions, value, onChange, hoveringType, setHoveringType }}
                             />
                         </div>
                     )

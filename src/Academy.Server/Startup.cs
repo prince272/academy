@@ -56,7 +56,7 @@ namespace Academy.Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var webUrl = Configuration.GetSection("IdentityServer:Clients:Web").GetValue<string>("Origin");
+            var domain = Configuration.GetSection("IdentityServer:Clients:Web").GetValue<string>("Origin");
 
             services.Configure<AppSettings>(options =>
             {
@@ -100,7 +100,7 @@ namespace Academy.Server
 
                     PhoneNumber = "+233550362337",
 
-                    WebLink = webUrl,
+                    WebLink = domain,
                     MapLink = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d75551.8964035619!2d-0.19444572554201875!3d5.610157527892059!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf9b079dcc55cf%3A0x373d56b9a01d602d!2s4%20Agbaamo%20St%2C%20Accra!5e0!3m2!1sen!2sgh!4v1595846305553!5m2!1sen!2sgh",
                     FacebookLink = "https://www.facebook.com/princeowusu272/",
                     InstagramLink = "",
@@ -165,7 +165,7 @@ namespace Academy.Server
                 options.AddDefaultPolicy(builder =>
                 {
                     builder
-                    .WithOrigins(webUrl)
+                    .WithOrigins(domain)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()
@@ -320,13 +320,26 @@ namespace Academy.Server
 
             services.AddResponseCompression();
 
+            services.AddAnonymousId(options =>
+            {
+                options.Domain = new Uri(domain).Host;
+                options.HttpOnly = true;
+                options.SameSite = SameSiteMode.None;
+                options.Expiration = TimeSpan.FromDays(30);
+                options.SecurePolicy = WebEnvironment.IsDevelopment() 
+                ? CookieSecurePolicy.SameAsRequest
+                : CookieSecurePolicy.Always;
+            });
 
             services.ConfigureApplicationCookie(options =>
             {
                 // Cookie settings
+                options.Cookie.Domain = new Uri(domain).Host;
                 options.Cookie.HttpOnly = true;
-                options.Cookie.Domain = new Uri(webUrl).Host;
                 options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = WebEnvironment.IsDevelopment()
+                ? CookieSecurePolicy.SameAsRequest
+                : CookieSecurePolicy.Always;
 
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
@@ -434,14 +447,13 @@ namespace Academy.Server
 
             app.UseStaticFiles();
 
-            app.UseAnonymousId();
-
             app.UseRouting();
             app.UseResponseCaching();
 
             app.UseAuthentication();
             app.UseIdentityServer();
             app.UseAuthorization();
+            app.UseAnonymousId();
 
             app.UseSession();
 
