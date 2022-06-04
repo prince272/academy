@@ -11,7 +11,6 @@ import { Accordion } from 'react-bootstrap';
 import { ModalPathPrefix } from '../modals';
 import { useAppSettings } from '../utils/appSettings';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
-import Mounted from '../components/Mounted';
 
 import parsePhoneNumber from 'libphonenumber-js';
 import PostsScrollMenu from '../components/PostsScrollMenu';

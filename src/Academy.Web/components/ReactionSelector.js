@@ -111,6 +111,12 @@ const ReactionSelector = ({ iconSize, variant, value, onChange, ...props }) => {
 
     const [reactions, setReactions] = withAsync(useState(getReactions()));
     const reaction = reactions.find(r => r.type == hoveringType) || reactions.find(r => r.type == value);
+    const reactionCount = reactions.map(r => r.count).reduce((accumulator, current) => {
+        return accumulator + current;
+      }, 0);
+    const comment = reaction ? reaction.comment : 
+    (reactionCount == 0 && !value) ? `Be the first to react to this post` :
+     (reactionCount == 1) ? `1 person reacted to this post` : `${reactionCount} people reacted to this post`;
 
     useEffect(async () => {
         await updateReactions();
@@ -132,6 +138,7 @@ const ReactionSelector = ({ iconSize, variant, value, onChange, ...props }) => {
 
     return (
         <div style={{ display: "inline-block" }}>
+            <div className="text-center fw-bold fs-italic mb-2">What's your reaction about this post?</div>
             <div className="border rounded-pill" style={styles.selector}>
                 {_.map(reactions, (reaction) => {
                     return (
@@ -145,7 +152,7 @@ const ReactionSelector = ({ iconSize, variant, value, onChange, ...props }) => {
                     )
                 })}
             </div>
-            <div className="text-center fs-italic pt-2">{reaction ? reaction.comment : 'No reaction yet.'}</div>
+            <div className="text-center fs-italic mt-2">{comment}</div>
         </div>
     );
 };

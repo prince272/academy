@@ -4,18 +4,18 @@ import { Form, Modal } from 'react-bootstrap';
 import { useForm, Controller as FormController } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
-import { cleanObject, preventDefault } from '../utils/helpers';
-import { useClient } from '../utils/client';
+import { cleanObject, preventDefault } from '../../utils/helpers';
+import { useClient } from '../../utils/client';
 import { sentenceCase } from 'change-case';
-import PhoneInput from '../components/PhoneInput';
-import { useAppSettings } from '../utils/appSettings';
+import PhoneInput from '../../components/PhoneInput';
+import { useAppSettings } from '../../utils/appSettings';
 import Cleave from 'cleave.js/react';
-import { ModalPathPrefix } from './';
-import { BsHeartFill } from 'react-icons/bs';
+import { ModalPathPrefix } from '..';
+import { FaCoffee } from 'react-icons/fa';
 import _ from 'lodash';
 import { AspectRatio } from 'react-aspect-ratio';
-import { SvgOnlineWishesIllus } from '../resources/images/illustrations';
-import { SvgAppWordmark } from '../resources/images/icons';
+import { SvgOnlineWishesIllus } from '../../resources/images/illustrations';
+import { SvgAppWordmark } from '../../resources/images/icons';
 
 const SponsorModal = (props) => {
     const { route, modal } = props;
@@ -23,7 +23,7 @@ const SponsorModal = (props) => {
     const form = useForm({ shouldUnregister: true });
     const formState = form.formState;
     const [submitting, setSubmitting] = useState(false);
-
+    const userId = route.query.userId;
     const componentId = useMemo(() => _.uniqueId('Component'), []);
     const appSettings = useAppSettings();
 
@@ -40,7 +40,7 @@ const SponsorModal = (props) => {
         form.handleSubmit(async (inputs) => {
             setSubmitting(true);
 
-            let result = await client.post('/sponsor', inputs);
+            let result = await client.post(`/users/${userId}/sponsor`, inputs);
 
             if (result.error) {
                 const error = result.error;
@@ -63,14 +63,14 @@ const SponsorModal = (props) => {
             <Modal.Header bsPrefix="modal-close" closeButton></Modal.Header>
             <Modal.Body as={Form} onSubmit={preventDefault(() => submit())}>
                 <div className="text-center mb-5">
-                    <div><h5><span className="svg-icon svg-icon-sm d-inline-block text-danger me-2 heart"><BsHeartFill /></span>Become a Sponsor</h5></div>
-                    <p>If you think Academy of Ours is valuable to you, Please consider becoming a sponsor!</p>
+                    <div><h5><span className="svg-icon svg-icon-sm d-inline-block text-primary me-2"><FaCoffee /></span>Buy Me a Coffee</h5></div>
+                    <p>Please consider supporting because a supporter is worth a 1000 followers.</p>
                 </div>
                 <div className="row g-3">
                     <div className="col-12">
                         <label className="form-label">Suggested amount</label>
                         <div className="d-flex mx-n2">
-                            {[50, 100, 300, 600].map(item => {
+                            {[5, 20, 100, 200].map(item => {
 
                                 return (
                                     <button type="button" className={`w-100 mx-2 btn ${form.watch('amount') == item ? 'btn-primary' : 'btn-outline-secondary'}`} onClick={() => form.setValue('amount', item)}>{appSettings.currency.symbol}{item}</button>

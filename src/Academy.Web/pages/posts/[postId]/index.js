@@ -40,6 +40,7 @@ import ReactionSelector from '../../../components/ReactionSelector';
 
 const ProfileInfo = ({ profile }) => {
     const client = useClient();
+    const router = useRouter();
     const permitted = (client.user && client.user.id == profile.id);
     const [showContact, setShowContact] = useState(false);
 
@@ -57,7 +58,9 @@ const ProfileInfo = ({ profile }) => {
                 <div className="mb-3 text-start">{profile.bio}</div>
                 <div className="mb-3 d-flex mx-n2">
                     <button type="button" className="btn btn-outline-dark btn-sm w-100 w-md-auto mx-2" onClick={() => setShowContact(!showContact)}>{showContact ? 'Hide' : 'Show'} contact</button>
-                    <button type="button" className="btn btn-dark btn-sm w-100 w-md-auto mx-2">Buy me a coffee</button>
+                    <button type="button" className="btn btn-dark btn-sm w-100 w-md-auto mx-2" onClick={() => {
+                        router.replace({ pathname: `${ModalPathPrefix}/users/${profile.id}/sponsor` })
+                    }}>Buy me a coffee</button>
                 </div>
                 <Collapse in={showContact}>
                     <div>

@@ -126,14 +126,8 @@ const CheckoutModal = withRemount((props) => {
                         <ol class="list-group mt-3">
                             <li class="list-group-item">
                                 <div className="hstack justify-content-between gap-2">
-                                    <div className="fw-bold">Full name</div>
-                                    <div>{payment.fullName}</div>
-                                </div>
-                            </li>
-                            <li class="list-group-item">
-                                <div className="hstack justify-content-between gap-2">
-                                    <div className="fw-bold">Reference Id</div>
-                                    <div>{payment.referenceId}</div>
+                                    <div className="fw-bold">Code</div>
+                                    <div>{payment.code}</div>
                                 </div>
                             </li>
                             <li class="list-group-item">

@@ -48,8 +48,6 @@ namespace Academy.Server.Utilities.AnonymousId
                 }
                 else
                 {
-                    cookieOptions.Expires = DateTime.UtcNow.AddSeconds(cookieOptions.Timeout);
-
                     var data = new AnonymousIdData(Guid.NewGuid().ToString(), cookieOptions.Expires.Value.DateTime);
                     encodedData = AnonymousIdEncoder.Encode(data);
 

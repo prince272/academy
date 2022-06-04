@@ -337,11 +337,11 @@ namespace Academy.Server
                 options.Cookie.Domain = new Uri(domain).Host;
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SameSite = SameSiteMode.None;
+                options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.Cookie.SecurePolicy = WebEnvironment.IsDevelopment()
                 ? CookieSecurePolicy.SameAsRequest
                 : CookieSecurePolicy.Always;
 
-                options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
 
                 options.LoginPath = "/authentication/redirect";
@@ -434,9 +434,15 @@ namespace Academy.Server
                 await context.Response.WriteAsJsonAsync(response.Value);
             }));
 
+            app.UseExceptionHandler(_ => _.Run(async context =>
+            {
+                var response = Result.Failed(StatusCodes.Status500InternalServerError);
+                context.Response.StatusCode = response.StatusCode ?? throw new NullReferenceException();
+                await context.Response.WriteAsJsonAsync(response.Value);
+            }));
+
             if (WebEnvironment.IsDevelopment())
             {
-                // app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Academy.Server v1"));
             }

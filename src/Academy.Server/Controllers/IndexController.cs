@@ -95,31 +95,6 @@ namespace Academy.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("/sponsor")]
-        public async Task<IActionResult> Sponsor([FromBody] SponsorModel form)
-        {
-            var user = await HttpContext.Request.GetCurrentUserAsync();
-
-            var payment = new Payment();
-            payment.Reason = PaymentReason.Sponsorship;
-            payment.Status = PaymentStatus.Pending;
-            payment.Type = PaymentType.Payin;
-            payment.Title = "Become a Sponsor";
-            payment.Code = Compute.GenerateCode("SPON");
-            payment.Amount = form.Amount;
-            payment.IPAddress = Request.GetIPAddress();
-            payment.UAString = Request.GetUAString();
-            payment.Issued = DateTimeOffset.UtcNow;
-            payment.UserId = user.Id;
-            payment.PhoneNumber = user.PhoneNumber;
-            payment.Email = user.Email;
-            payment.FullName = user.FullName;
-
-            await unitOfWork.CreateAsync(payment);
-            return Result.Succeed(data: payment.Id);
-        }
-
-        [Authorize]
         [HttpPost("teach")]
         public async Task<IActionResult> Teach([FromBody] TeachModal form)
         {

@@ -144,7 +144,7 @@ const CodeViewer = (props) => {
 
 const DynamicDocumentViewer = ({ document }) => {
     return (
-        <>
+        <div>
             <div>
                 {parse(ReactDOMServer.renderToStaticMarkup(<FroalaEditorView model={document} />) || '', {
                     replace: domNode => {
@@ -158,7 +158,12 @@ const DynamicDocumentViewer = ({ document }) => {
                     }
                 })}
             </div>
-        </>
+            <style jsx>{`
+            div > :global(div) {
+                font-size: 1rem !important;
+            }
+          `}</style>
+        </div>
     );
 };
 

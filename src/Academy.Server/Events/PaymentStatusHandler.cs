@@ -65,7 +65,7 @@ namespace Academy.Server.Events
                 else if (payment.Reason == PaymentReason.Withdrawal)
                 {
                     var user = await unitOfWork.Query<User>()
-                        .FirstOrDefaultAsync(_ => _.Id == payment.UserId);
+                        .FirstOrDefaultAsync(_ => _.Code == payment.Code);
 
                     if (user != null)
                     {

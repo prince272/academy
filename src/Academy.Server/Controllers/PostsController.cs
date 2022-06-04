@@ -176,7 +176,7 @@ namespace Academy.Server.Controllers
             return Result.Succeed();
         }
 
-        [HttpGet("/posts")]
+        [HttpGet]
         public async Task<IActionResult> List(int pageNumber, int pageSize, [FromQuery] PostSearchModel search)
         {
             var query = unitOfWork.Query<Post>()

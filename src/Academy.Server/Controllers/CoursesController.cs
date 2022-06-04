@@ -137,7 +137,7 @@ namespace Academy.Server.Controllers
             return Result.Succeed(data: courseModel);
         }
 
-        [HttpGet("/courses")]
+        [HttpGet]
         public async Task<IActionResult> List(int pageNumber, int pageSize, [FromQuery] CourseSearchModel search)
         {
             var query = unitOfWork.Query<Course>();

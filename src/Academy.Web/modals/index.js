@@ -25,10 +25,12 @@ import SectionEditModal from './courses/SectionEditModal';
 // posts
 import PostEditModel from './posts/PostEditModel';
 
+// users
+import SponsorModal from './users/SponsorModal';
+
 // home
 import CheckoutModal from './CheckoutModal';
 import ContactModal from './ContactModal';
-import SponsorModal from './SponsorModal';
 import TeachModal from './TeachModal';
 
 
@@ -53,15 +55,10 @@ const useModalProvider = () => {
             {
                 pattern: `${ModalPathPrefix}/contact`,
                 modal: ContactModal
-            },         
+            },
             {
                 pattern: `${ModalPathPrefix}/teach`,
                 modal: TeachModal,
-                authenticate: true
-            },
-            {
-                pattern: `${ModalPathPrefix}/sponsor`,
-                modal: SponsorModal,
                 authenticate: true
             },
             {
@@ -137,6 +134,11 @@ const useModalProvider = () => {
             {
                 pattern: `${ModalPathPrefix}/checkout`,
                 modal: CheckoutModal,
+            },
+            {
+                pattern: `${ModalPathPrefix}/users/:userId/sponsor`,
+                modal: SponsorModal,
+                authenticate: true
             },
         ];
     }, []);
