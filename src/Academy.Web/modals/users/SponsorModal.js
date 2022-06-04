@@ -64,7 +64,7 @@ const SponsorModal = (props) => {
             <Modal.Body as={Form} onSubmit={preventDefault(() => submit())}>
                 <div className="text-center mb-5">
                     <div><h5><span className="svg-icon svg-icon-sm d-inline-block text-primary me-2"><FaCoffee /></span>Buy Me a Coffee</h5></div>
-                    <p>Please consider supporting because a supporter is worth a 1000 followers.</p>
+                    <p>A supporter is worth a 1000 followers.<br/>Please consider buying a cup of coffee for me!</p>
                 </div>
                 <div className="row g-3">
                     <div className="col-12">

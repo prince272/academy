@@ -198,7 +198,7 @@ const Body = ({ children, pageSettings }) => {
               <Nav.Item className="me-2">
                 <button type="button" className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
                   setHeaderExpanded(false);
-                  router.replace({ pathname: `${ModalPathPrefix}/sponsor` })
+                  router.replace({ pathname: `${ModalPathPrefix}/users/1/sponsor` })
                 }}>Made with <span className="svg-icon svg-icon-sm d-inline-block me-2 heart text-danger"><BsHeartFill /></span></button>
               </Nav.Item>
 

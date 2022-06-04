@@ -75,6 +75,15 @@ namespace Academy.Server.Events
                 }
                 else if (payment.Reason == PaymentReason.Sponsorship)
                 {
+                    var user = await unitOfWork.Query<User>()
+                        .FirstOrDefaultAsync(_ => _.Code == payment.Code);
+
+                    if (user != null)
+                    {
+                        user.Balance += payment.Amount;
+                        await unitOfWork.UpdateAsync(user);
+                    }
+
                     if (payment.Email != null)
                     {
                         (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = payment.Email },
