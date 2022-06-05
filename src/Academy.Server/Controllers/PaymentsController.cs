@@ -34,7 +34,7 @@ namespace Academy.Server.Controllers
         }
 
         [HttpPost("{paymentId}/checkout/mobile")]
-        public async Task<IActionResult> MobileCheckout(int paymentId, string returnUrl, MobileDetailsModel form)
+        public async Task<IActionResult> MobileCheckout(int paymentId, string returnUrl, MobilePayinDetailsModel form)
         {
             var paymentDetails = PaymentDetails.SetMobileDetails((await paymentProcessor.GetIssuersAsync()).Where(_ => _.Mode == PaymentMode.Mobile).ToArray(), form.MobileNumber);
             return await Checkout(paymentId, paymentDetails, returnUrl);
@@ -70,7 +70,18 @@ namespace Academy.Server.Controllers
             var payment = await query.FirstOrDefaultAsync(_ => _.Id == paymentId);
             if (payment == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            return Result.Succeed(data: payment);
+            return Result.Succeed(data: new
+            {
+                payment.Id,
+                payment.Title,
+                payment.Mode,
+                payment.Type,
+                payment.Code,
+                payment.Status,
+                payment.ReturnUrl,
+                payment.RedirectUrl,
+                payment.Amount
+            });
         }
 
         [HttpGet("{paymentId}/verify")]

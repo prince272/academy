@@ -7,18 +7,16 @@ using System;
 
 namespace Academy.Server.Models.Payments
 {
-    public class PayoutDetailsModel
+    public class MobilePayoutDetailsModel
     {
         public string MobileNumber { get; set; }
 
         public decimal Amount { get; set; }
-
-        public PaymentMode Mode { get; set; }
     }
 
-    public class MobileCashoutValidator : AbstractValidator<PayoutDetailsModel>
+    public class MobilePayoutDetailsValidator : AbstractValidator<MobilePayoutDetailsModel>
     {
-        public MobileCashoutValidator(IServiceProvider serviceProvider)
+        public MobilePayoutDetailsValidator(IServiceProvider serviceProvider)
         {
             RuleFor(_ => _.MobileNumber).Phone().When(_ => _.Mode == PaymentMode.Mobile);
             var settings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;

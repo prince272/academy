@@ -4,14 +4,14 @@ using FluentValidation;
 
 namespace Academy.Server.Models.Payments
 {
-    public class MobileDetailsModel
+    public class MobilePayinDetailsModel
     {
         public string MobileNumber { get; set; }
     }
 
-    public class MobileDetailsValidator : AbstractValidator<MobileDetailsModel>
+    public class MobilePayinDetailsValidator : AbstractValidator<MobilePayinDetailsModel>
     {
-        public MobileDetailsValidator()
+        public MobilePayinDetailsValidator()
         {
             RuleFor(_ => _.MobileNumber).Phone();
         }

@@ -56,7 +56,7 @@ namespace Academy.Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var domain = Configuration.GetSection("IdentityServer:Clients:Web").GetValue<string>("Origin");
+            var clientWebUrl = Configuration.GetSection("Clients:Web").GetValue<string>("Url");
 
             services.Configure<AppSettings>(options =>
             {
@@ -100,7 +100,7 @@ namespace Academy.Server
 
                     PhoneNumber = "+233550362337",
 
-                    WebLink = domain,
+                    WebLink = clientWebUrl,
                     MapLink = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d75551.8964035619!2d-0.19444572554201875!3d5.610157527892059!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf9b079dcc55cf%3A0x373d56b9a01d602d!2s4%20Agbaamo%20St%2C%20Accra!5e0!3m2!1sen!2sgh!4v1595846305553!5m2!1sen!2sgh",
                     FacebookLink = "https://www.facebook.com/princeowusu272/",
                     InstagramLink = "",
@@ -165,7 +165,7 @@ namespace Academy.Server
                 options.AddDefaultPolicy(builder =>
                 {
                     builder
-                    .WithOrigins(domain)
+                    .WithOrigins(clientWebUrl)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()
@@ -296,7 +296,14 @@ namespace Academy.Server
                 options.Authentication.CookieSlidingExpiration = true;
 
             })
-                .AddApiAuthorization<User, AppDbContext>();
+                .AddApiAuthorization<User, AppDbContext>(options =>
+                {
+                    var clients = Configuration.GetSection("Clients");
+
+                    options.Clients.AddSPA("Web", 
+                        spa => spa.WithRedirectUri(clients.GetValue<string>("Web:RedirectUrl"))
+                                  .WithLogoutRedirectUri(clients.GetValue<string>("Web:LogoutRedirectUrl")));
+                });
 
             services.AddAuthentication()
                         //.AddFacebook(options =>
@@ -319,7 +326,7 @@ namespace Academy.Server
 
             services.AddAnonymousId(options =>
             {
-                options.Domain = new Uri(domain).Host;
+                options.Domain = new Uri(clientWebUrl).Host;
                 options.HttpOnly = true;
                 options.SameSite = SameSiteMode.None;
                 options.Expiration = TimeSpan.FromDays(30);
@@ -331,7 +338,7 @@ namespace Academy.Server
             services.ConfigureApplicationCookie(options =>
             {
                 // Cookie settings
-                options.Cookie.Domain = new Uri(domain).Host;
+                options.Cookie.Domain = new Uri(clientWebUrl).Host;
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SameSite = SameSiteMode.None;
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);

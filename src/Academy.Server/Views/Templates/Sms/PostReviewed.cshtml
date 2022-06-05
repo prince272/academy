@@ -1,0 +1,10 @@
+﻿@model Post
+@inject IOptions<AppSettings> AppSettingsAccessor
+@{
+    var appSettings = AppSettingsAccessor.Value;
+    Layout = null;
+}
+
+Hello @(Model.Teacher.FullName),
+Your post with the title of "@(Model.Title)" is being reviewed. We will contact you concerning the status of your post.
+Thank you!

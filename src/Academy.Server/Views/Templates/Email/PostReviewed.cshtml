@@ -1,10 +1,9 @@
-﻿@model (User User, ChangeAccountModel Form)
+﻿@model Post
+@inject IOptions<AppSettings> AppSettingsAccessor
 @{
+    var appSettings = AppSettingsAccessor.Value;
     Layout = "Email/_Layout";
 }
-
-@section head { }
-
 
 <!-- content-lg-left -->
 <table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation">
@@ -16,9 +15,7 @@
               <tbody>
                 <tr>
                   <td class="o_bg-white o_px-md o_py o_sans o_text o_text-secondary" align="left">
-                      <p>Hello <b>@(Model.User.FullName)</b>,<br />The security code to change your account is <b>@(Model.Form.Code)</b>.</p>
-                      <br />
-                      <p>If you didn’t request to change your account, there’s nothing to worry about — you can safely ignore it.</p>
+                       <p>Hello <b>@(Model.Teacher.FullName)</b>,<br />Your post with the title of "<a href="@($"{appSettings.Company.WebLink}/posts/{Model.Id}")">@(Model.Title)</a>" is being reviewed. We will contact you concerning the status of your post.<br />Thank you!</p>
                   </td>
                 </tr>
               </tbody>

@@ -85,16 +85,12 @@ namespace Academy.Server.Events
                     }
 
                     if (payment.Email != null)
-                    {
                         (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = payment.Email },
                            subject: "Your Sponsorship Has Been Received",
                            body: await viewRenderer.RenderToStringAsync("Email/SponsorshipReceived", payment))).Forget();
-                    }
 
                     if (payment.PhoneNumber != null)
-                    {
                         (smsSender.SendAsync(payment.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/SponsorshipReceived", payment))).Forget();
-                    }
                 }
             }
         }

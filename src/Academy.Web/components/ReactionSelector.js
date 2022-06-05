@@ -115,8 +115,7 @@ const ReactionSelector = ({ iconSize, variant, value, onChange, ...props }) => {
         return accumulator + current;
       }, 0);
     const comment = reaction ? reaction.comment : 
-    (reactionCount == 0 && !value) ? `Be the first to react to this post` :
-     (reactionCount == 1) ? `1 person reacted to this post` : `${reactionCount} people reacted to this post`;
+    (reactionCount == 0 && !value) ? `Be the first to react to this post` : `You haven't reacted to this post`;
 
     useEffect(async () => {
         await updateReactions();

@@ -56,7 +56,7 @@ const WithdrawModal = withRemount((props) => {
             setSubmitting(true);
 
             const paymentMode = form.watch('mode');
-            let result = await client.post(`/accounts/withdraw`, { ...inputs, mode: paymentMode }, { params: { returnUrl: route.url } });
+            let result = await client.post(`/accounts/${paymentMode}/deposit`, inputs, { params: { returnUrl: route.url } });
 
             if (result.error) {
                 const error = result.error;
