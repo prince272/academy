@@ -18,7 +18,7 @@ namespace Academy.Server.Models.Payments
     {
         public MobilePayoutDetailsValidator(IServiceProvider serviceProvider)
         {
-            RuleFor(_ => _.MobileNumber).Phone().When(_ => _.Mode == PaymentMode.Mobile);
+            RuleFor(_ => _.MobileNumber).Phone();
             var settings = serviceProvider.GetRequiredService<IOptions<AppSettings>>().Value;
             RuleFor(_ => _.Amount).LessThanOrEqualTo(settings.Currency.Limit).GreaterThan(0);
         }

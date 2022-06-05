@@ -137,7 +137,7 @@ const CourseEditModal = withRemount((props) => {
 
                         {client.user.roles.some(role => role == 'admin') && (
                             <div className="col-12 col-sm-6">
-                                <label className="form-label">State</label>
+                                <label className="form-label">Status</label>
                                 <select {...form.register("published")} className={`form-select  ${formState.errors.published ? 'is-invalid' : ''}`}>
                                     {[
                                         { value: false, name: 'Unpublished' },

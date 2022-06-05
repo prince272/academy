@@ -76,6 +76,7 @@ namespace Academy.Server.Controllers
 
             post.Image = (await unitOfWork.FindAsync<Media>(form.ImageId));
             post.TeacherId = user.Id; // Set the owner of the post.
+            post.Teacher = user;
             post.Code = Compute.GenerateCode("POST");
 
             post.Created = DateTimeOffset.UtcNow;
@@ -86,26 +87,7 @@ namespace Academy.Server.Controllers
 
             if ((post.Published != null) != (prevPublished != null))
             {
-                if (post.Published != null)
-                {
-                    if (post.Teacher.Email != null)
-                        (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = post.Teacher.Email },
-                           subject: "Your Post Has Been Published",
-                           body: await viewRenderer.RenderToStringAsync("Email/PostPublished", post))).Forget();
-
-                    if (post.Teacher.PhoneNumber != null)
-                        (smsSender.SendAsync(post.Teacher.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/PostPublished", post))).Forget();
-                }
-                else
-                {
-                    if (post.Teacher.Email != null)
-                        (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = post.Teacher.Email },
-                           subject: "Your Post Is Being Reviewed",
-                           body: await viewRenderer.RenderToStringAsync("Email/PostReviewed", post))).Forget();
-
-                    if (post.Teacher.PhoneNumber != null)
-                        (smsSender.SendAsync(post.Teacher.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/PostReviewed", post))).Forget();
-                }
+                await NotifyPublication(post);
             }
 
             return Result.Succeed(data: post.Id);
@@ -145,29 +127,37 @@ namespace Academy.Server.Controllers
 
             if ((post.Published != null) != (prevPublished != null))
             {
-                if (post.Published != null)
+                if ((post.Published != null) != (prevPublished != null))
                 {
-                    if (post.Teacher.Email != null)
-                        (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = post.Teacher.Email },
-                           subject: "Your Post Has Been Published",
-                           body: await viewRenderer.RenderToStringAsync("Email/PostPublished", post))).Forget();
-
-                    if (post.Teacher.PhoneNumber != null)
-                        (smsSender.SendAsync(post.Teacher.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/PostPublished", post))).Forget();
-                }
-                else
-                {
-                    if (post.Teacher.Email != null)
-                        (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = post.Teacher.Email },
-                           subject: "Your Post Is Being Reviewed",
-                           body: await viewRenderer.RenderToStringAsync("Email/PostReviewed", post))).Forget();
-
-                    if (post.Teacher.PhoneNumber != null)
-                        (smsSender.SendAsync(post.Teacher.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/PostReviewed", post))).Forget();
+                    await NotifyPublication(post);
                 }
             }
 
             return Result.Succeed();
+        }
+
+        public async Task NotifyPublication(Post post)
+        {
+            if (post.Published != null)
+            {
+                if (post.Teacher.Email != null)
+                    (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = post.Teacher.Email },
+                       subject: "Your Post Has Been Published",
+                       body: await viewRenderer.RenderToStringAsync("Email/PostPublished", post))).Forget();
+
+                if (post.Teacher.PhoneNumber != null)
+                    (smsSender.SendAsync(post.Teacher.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/PostPublished", post))).Forget();
+            }
+            else
+            {
+                if (post.Teacher.Email != null)
+                    (emailSender.SendAsync(account: appSettings.Company.Emails.Info, address: new EmailAddress { Email = post.Teacher.Email },
+                       subject: "Your Post Is Being Reviewed",
+                       body: await viewRenderer.RenderToStringAsync("Email/PostReviewed", post))).Forget();
+
+                if (post.Teacher.PhoneNumber != null)
+                    (smsSender.SendAsync(post.Teacher.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/PostReviewed", post))).Forget();
+            }
         }
 
         [Authorize]

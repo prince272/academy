@@ -194,3 +194,51 @@ export function submitForm(method, action, nameValueObj) {
     form.submit();
     document.body.removeChild(form);
 }
+
+// Convert css styles to inline styles with javascript keeping the style units
+// source: https://stackoverflow.com/questions/62292885/convert-css-styles-to-inline-styles-with-javascript-keeping-the-style-units
+export function computedStyleToInlineStyle(element, recursive = true) {
+
+    if (!element) {
+        throw new Error("No element specified.");
+    }
+
+    const matches = matchRules(element);
+
+    // we need to preserve any pre-existing inline styles.
+    var srcRules = document.createElement(element.tagName).style;
+    srcRules.cssText = element.style.cssText;
+
+    matches.forEach(rule => {
+        for (var prop of rule.style) {
+
+            let val = srcRules.getPropertyValue(prop) || rule.style.getPropertyValue(prop);
+            let priority = rule.style.getPropertyPriority(prop);
+
+            element.style.setProperty(prop, val, priority);
+        }
+    });
+
+    if (recursive) {
+        Array.from(element.children).forEach(child => {
+            applyInline(child, recursive);
+        });
+    }
+}
+
+function matchRules(el, sheets) {
+    sheets = sheets || document.styleSheets;
+    var ret = [];
+
+    for (var i in sheets) {
+        if (sheets.hasOwnProperty(i)) {
+            var rules = sheets[i].rules || sheets[i].cssRules;
+            for (var r in rules) {
+                if (el.matches(rules[r].selectorText)) {
+                    ret.push(rules[r]);
+                }
+            }
+        }
+    }
+    return ret;
+}

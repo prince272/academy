@@ -5,7 +5,7 @@ import { useForm, Controller as FormController, useFieldArray } from 'react-hook
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import { pascalCase } from 'change-case';
-import { arrayMove, preventDefault } from '../../utils/helpers';
+import { arrayMove, computedStyleToInlineStyle, preventDefault } from '../../utils/helpers';
 import { withRemount } from '../../utils/hooks';
 import MediaUploader, { MediaExtensions } from '../../components/MediaUploader';
 import DocumentEditor from '../../components/DocumentEditor';
@@ -145,6 +145,8 @@ const ContentEditModal = withRemount((props) => {
             var dom = document.getElementById(componentId + '_RAW_HTML') || document.createElement("div");
             dom.id = componentId + '_RAW_HTML';
             dom.innerHTML = str;
+
+            computedStyleToInlineStyle(dom);
 
             if (dom.lastElementChild &&
                 dom.lastElementChild.tagName.toLocaleLowerCase() == 'p' &&

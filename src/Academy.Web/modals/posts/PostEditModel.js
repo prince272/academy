@@ -5,7 +5,7 @@ import { useForm, Controller as FormController } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import { pascalCase } from 'change-case';
-import { preventDefault } from '../../utils/helpers';
+import { computedStyleToInlineStyle, preventDefault } from '../../utils/helpers';
 
 import Cleave from 'cleave.js/react';
 
@@ -104,6 +104,8 @@ const PostEditModal = withRemount((props) => {
             dom.id = componentId + '_RAW_HTML';
             dom.innerHTML = str;
 
+            computedStyleToInlineStyle(dom);
+
             if (dom.lastElementChild &&
                 dom.lastElementChild.tagName.toLocaleLowerCase() == 'p' &&
                 dom.lastElementChild.getAttribute('data-f-id') === 'pbf') {
@@ -156,7 +158,7 @@ const PostEditModal = withRemount((props) => {
 
                         {client.user.roles.some(role => role == 'admin') && (
                             <div className="col-12 col-sm-6">
-                                <label className="form-label">State</label>
+                                <label className="form-label">Status</label>
                                 <select {...form.register("published")} className={`form-select  ${formState.errors.published ? 'is-invalid' : ''}`}>
                                     {[
                                         { value: false, name: 'Unpublished' },
