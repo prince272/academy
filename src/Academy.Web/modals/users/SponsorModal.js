@@ -33,6 +33,10 @@ const SponsorModal = (props) => {
         Object.entries({
             amount: 0
         }).forEach(([name, value]) => { form.setValue(name, value); });
+
+        if (route.query.status == 'succeeded') {
+            modal.close();
+        }
     };
 
     const submit = () => {
@@ -40,7 +44,7 @@ const SponsorModal = (props) => {
         form.handleSubmit(async (inputs) => {
             setSubmitting(true);
 
-            let result = await client.post(`/users/${userId}/sponsor`, inputs);
+            let result = await client.post(`/users/${userId}/sponsor`, inputs, { params: { returnUrl: route.url } });
 
             if (result.error) {
                 const error = result.error;
@@ -50,7 +54,7 @@ const SponsorModal = (props) => {
                 return;
             }
 
-            router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { returnUrl: route.url, paymentId: result.data } });
+            router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { paymentId: result.data } });
         })();
     };
 
@@ -64,7 +68,7 @@ const SponsorModal = (props) => {
             <Modal.Body as={Form} onSubmit={preventDefault(() => submit())}>
                 <div className="text-center mb-5">
                     <div><h5><span className="svg-icon svg-icon-sm d-inline-block text-primary me-2"><FaCoffee /></span>Buy Me a Coffee</h5></div>
-                    <p>A supporter is worth a 1000 followers.<br/>Please consider buying a cup of coffee for me!</p>
+                    <p>A supporter is worth a 1000 followers.<br />Please consider buying a cup of coffee for me!</p>
                 </div>
                 <div className="row g-3">
                     <div className="col-12">

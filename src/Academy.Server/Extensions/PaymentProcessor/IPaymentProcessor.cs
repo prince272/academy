@@ -6,7 +6,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
 {
     public interface IPaymentProcessor
     {
-        Task ProcessAsync(Payment payment, CancellationToken cancellationToken = default);
+        Task ProcessAsync(Payment payment, PaymentDetails paymentDetails, CancellationToken cancellationToken = default);
 
         Task VerifyAsync(Payment payment, CancellationToken cancellationToken = default);
 

@@ -186,8 +186,7 @@ namespace Academy.Server.Controllers
 
             var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async courseId =>
             {
-                var courseModel = await GetCourseModel(courseId);
-                if (courseModel == null) throw new ArgumentException();
+                var courseModel = await GetCourseModel(courseId) ?? throw new ArgumentNullException(nameof(courseId));
                 courseModel.Sections = null;
                 return courseModel;
             });
@@ -197,8 +196,11 @@ namespace Academy.Server.Controllers
 
         [Authorize]
         [HttpPost("{courseId}/purchase")]
-        public async Task<IActionResult> Purchase(int courseId)
+        public async Task<IActionResult> Purchase(int courseId, string returnUrl)
         {
+            if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
+                throw new ArgumentException("Url is not valid.", nameof(returnUrl));
+
             var course = await unitOfWork.Query<Course>()
                 .FirstOrDefaultAsync(_ => _.Id == courseId);
             if (course == null) return Result.Failed(StatusCodes.Status404NotFound);
@@ -219,6 +221,7 @@ namespace Academy.Server.Controllers
             payment.PhoneNumber = user.PhoneNumber;
             payment.Email = user.Email;
             payment.FullName = user.FullName;
+            payment.ReturnUrl = returnUrl;
 
             await unitOfWork.CreateAsync(payment);
             return Result.Succeed(data: payment.Id);
@@ -557,8 +560,7 @@ namespace Academy.Server.Controllers
 
             var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async userId =>
             {
-                var user = await query.FirstOrDefaultAsync(_ => _.Id == userId);
-                if (user == null) throw new ArgumentException();
+                var user = await query.FirstOrDefaultAsync(_ => _.Id == userId) ?? throw new ArgumentNullException(nameof(userId));
                 return mapper.Map<StudentSearchModel>(user);
             });
 
@@ -1080,7 +1082,7 @@ namespace Academy.Server.Controllers
                 .AnyAsync(_ => _.UserId == user.Id &&
                                _.Reason == PaymentReason.Course &&
                                _.Code == course.Code &&
-                               _.Status == PaymentStatus.Complete) : false;
+                               _.Status == PaymentStatus.Succeeded) : false;
 
             var courseStudents = await unitOfWork.Query<User>()
                 .AsNoTracking()

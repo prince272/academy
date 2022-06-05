@@ -74,7 +74,7 @@ namespace Academy.Server.Extensions.PaymentProcessor
                         errorLogged = true;
                     }
 
-                    await Task.Delay(10000, cancellationToken);
+                    await Task.Delay(2000, cancellationToken);
                 }
             }
 

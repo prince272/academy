@@ -225,8 +225,7 @@ namespace Academy.Server.Controllers
 
             var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async postId =>
             {
-                var postModel = await GetPostModel(postId);
-                if (postModel == null) throw new ArgumentException();
+                var postModel = await GetPostModel(postId) ?? throw new ArgumentNullException(nameof(postId));
                 return postModel;
             });
 

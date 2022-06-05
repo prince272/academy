@@ -47,7 +47,7 @@ namespace Academy.Server.Events
         {
             var payment = notification.Payment;
 
-            if (payment.Status == PaymentStatus.Complete)
+            if (payment.Status == PaymentStatus.Succeeded)
             {
                 if (payment.Reason == PaymentReason.Course)
                 {

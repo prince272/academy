@@ -325,7 +325,7 @@ const LearnPage = withRemount(({ remount }) => {
 
         if (course.price > 0 && !course.purchased) {
 
-            result = await client.post(`/courses/${courseId}/purchase`);
+            result = await client.post(`/courses/${courseId}/purchase`, null, { params: { returnUrl: window.location.href } });
 
             if (result.error) {
                 const error = result.error;
@@ -335,7 +335,7 @@ const LearnPage = withRemount(({ remount }) => {
 
             const paymentId = result.data;
             router.replace(`/courses/${courseId}`)
-            router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { returnUrl: window.location.href, paymentId } });
+            router.replace({ pathname: `${ModalPathPrefix}/checkout`, query: { paymentId } });
             return;
         }
 

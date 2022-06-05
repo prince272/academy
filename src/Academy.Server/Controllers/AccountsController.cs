@@ -339,51 +339,55 @@ namespace Academy.Server.Controllers
             return Result.Succeed();
         }
 
-        [Authorize]
-        [HttpPost("withdraw")]
-        public async Task<IActionResult> Withdraw([FromBody] PayoutDetailsModel form)
-        {
-            var paymentDetails = (PaymentDetails)null;
-            try
-            {
-                if (form.Mode == PaymentMode.Mobile)
-                {
-                    paymentDetails = new PaymentDetails((await paymentProcessor.GetIssuersAsync()).Where(_ => _.Type == PaymentIssuerType.Mobile).ToArray(), form.MobileNumber);
-                }
-                else throw new ArgumentNullException($"The payment mode is not valid.", nameof(form.Mode));
-            }
-            catch (ArgumentException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.ParamName, ex.Message)); }
+        //[Authorize]
+        //[HttpPost("withdraw")]
+        //public async Task<IActionResult> Withdraw(string returnUrl, [FromBody] PayoutDetailsModel form)
+        //{
+        //    if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
+        //        throw new ArgumentException("Url is not valid.", nameof(returnUrl));
 
-            var user = await HttpContext.Request.GetCurrentUserAsync();
+        //    var paymentDetails = (PaymentDetails)null;
+        //    try
+        //    {
+        //        if (form.Mode == PaymentMode.Mobile)
+        //        {
+        //            paymentDetails = new PaymentDetails((await paymentProcessor.GetIssuersAsync()).Where(_ => _.Mode == PaymentIssuerType.Mobile).ToArray(), form.MobileNumber);
+        //        }
+        //        else throw new BadRequestExecption($"The payment mode is not valid.", nameof(form.Mode));
+        //    }
+        //    catch (ArgumentException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.ParamName, ex.Message)); }
 
-            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher);
-            if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
+        //    var user = await HttpContext.Request.GetCurrentUserAsync();
 
-            if (user.Balance < form.Amount)
-                return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Amount), "Balance is insufficient."));
+        //    var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher);
+        //    if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
 
-            var payment = new Payment();
-            payment.Reason = PaymentReason.Withdrawal;
-            payment.Status = PaymentStatus.Pending;
-            payment.Type = PaymentType.Payout;
-            payment.Title = $"Payment to {user.FullName}";
-            payment.Code = user.Code;
-            payment.Amount = form.Amount;
-            payment.IPAddress = Request.GetIPAddress();
-            payment.UAString = Request.GetUAString();
-            payment.Issued = DateTimeOffset.UtcNow;
-            payment.UserId = user.Id;
-            payment.PhoneNumber = user.PhoneNumber;
-            payment.Email = user.Email;
-            payment.FullName = user.FullName;
+        //    if (user.Balance < form.Amount)
+        //        return Result.Failed(StatusCodes.Status400BadRequest, new Error(nameof(form.Amount), "Balance is insufficient."));
 
-            payment.Mode = form.Mode;
-            payment.SetData(nameof(PaymentDetails), paymentDetails);
+        //    var payment = new Payment();
+        //    payment.Reason = PaymentReason.Withdrawal;
+        //    payment.Status = PaymentStatus.Pending;
+        //    payment.Type = PaymentType.Payout;
+        //    payment.Title = $"Payment to {user.FullName}";
+        //    payment.Code = user.Code;
+        //    payment.Amount = form.Amount;
+        //    payment.IPAddress = Request.GetIPAddress();
+        //    payment.UAString = Request.GetUAString();
+        //    payment.Issued = DateTimeOffset.UtcNow;
+        //    payment.UserId = user.Id;
+        //    payment.PhoneNumber = user.PhoneNumber;
+        //    payment.Email = user.Email;
+        //    payment.FullName = user.FullName;
+        //    payment.ReturnUrl = returnUrl;
 
-            await unitOfWork.CreateAsync(payment);
-            await paymentProcessor.ProcessAsync(payment);
+        //    payment.Mode = form.Mode;
+        //    payment.SetData(nameof(PaymentDetails), paymentDetails);
 
-            return Result.Succeed(data: payment.Id);
-        }
+        //    await unitOfWork.CreateAsync(payment);
+        //    await paymentProcessor.ProcessAsync(payment);
+
+        //    return Result.Succeed(data: payment.Id);
+        //}
     }
 }

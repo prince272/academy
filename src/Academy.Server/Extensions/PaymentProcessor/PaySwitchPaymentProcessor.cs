@@ -4,6 +4,7 @@ using Academy.Server.Events;
 using Academy.Server.Utilities;
 using Humanizer;
 using MediatR;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -46,55 +47,19 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
         public string Gateway => "PaySwitch";
 
-        public async Task ProcessAsync(Payment payment, CancellationToken cancellationToken = default)
+        public async Task ProcessAsync(Payment payment, PaymentDetails paymentDetails, CancellationToken cancellationToken = default)
         {
             if (payment == null) throw new ArgumentNullException(nameof(payment));
-
-            if (payment.Status != PaymentStatus.Pending)
-                throw new ArgumentException($"The payment with the status of '{payment.Status}' cannot be processed. Payment Id: '{payment.Id}'.", nameof(payment));
+            if (paymentDetails == null) throw new ArgumentNullException(nameof(paymentDetails));
 
             payment.Gateway = Gateway;
             payment.TransactionId = GenerateTransactionId();
+            payment.Mode = paymentDetails.Mode;
 
-            if (payment.Type == PaymentType.Payout)
+            if (payment.Type == PaymentType.Payin)
             {
                 if (payment.Mode == PaymentMode.Mobile)
                 {
-                    var mobileDetails = payment.GetData<PaymentDetails>(nameof(PaymentDetails)) ?? throw new NullReferenceException();
-
-                    var requestHeaders = new Dictionary<string, string>();
-                    var requestData = new Dictionary<string, string>
-                                    {
-                                        { "merchant_id", paymentOptions.MerchantId },
-                                        { "transaction_id", payment.TransactionId },
-                                        { "amount", (payment.Amount * 100).ToString("000000000000") },
-                                        { "processing_code", "404000" },
-                                        { "r-switch", "FLT" },
-                                        { "pass_code", paymentOptions.MerchantSecret },
-                                        { "desc", $"Payment of {payment.Reason.Humanize()}" },
-                                        { "account_number", mobileDetails.MobileNumber.TrimStart('+') },
-                                        { "account_issuer", mobileDetails.Issuer.Code },
-                                    };
-
-                    var response = await httpClient.SendAsJsonAsync(HttpMethod.Post, "/v1.1/transaction/process", requestData, requestHeaders, cancellationToken);
-                    var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>();
-
-                    if (responseData["code"] == "000")
-                    {
-                        payment.Status = PaymentStatus.Complete;
-                        await unitOfWork.UpdateAsync(payment);
-                        await mediator.Publish(new PaymentStatusNotification(payment), cancellationToken);
-                        return;
-                    }
-                }
-                else throw new ArgumentException($"The payment with the mode of '{payment.Mode}' cannot be processed. Payment Id: '{payment.Id}'.", nameof(payment));
-            }
-            else if (payment.Type == PaymentType.Payin)
-            {
-                if (payment.Mode == PaymentMode.Mobile)
-                {
-                    var mobileDetails = payment.GetData<PaymentDetails>(nameof(PaymentDetails)) ?? throw new NullReferenceException();
-
                     var requestHeaders = new Dictionary<string, string>();
                     var requestData = new Dictionary<string, string>
                                     {
@@ -102,17 +67,28 @@ namespace Academy.Server.Extensions.PaymentProcessor
                                         { "transaction_id", payment.TransactionId },
                                         { "amount", (payment.Amount * 100).ToString("000000000000") },
                                         { "processing_code", "000200" },
-                                        { "r-switch", mobileDetails.Issuer.Code },
+                                        { "r-switch", paymentDetails.Issuer.Code },
                                         { "desc", $"Payment of {payment.Reason.Humanize()}" },
-                                        { "subscriber_number", mobileDetails.MobileNumber.TrimStart('+') },
+                                        { "subscriber_number", paymentDetails.Number.TrimStart('+') },
                                     };
 
-                    httpClient.SendAsJsonAsync(HttpMethod.Post, "/v1.1/transaction/process", requestData, requestHeaders, cancellationToken).Forget();
-
-                    payment.SetData(nameof(PaymentDetails), mobileDetails);
-                    payment.Status = PaymentStatus.Processing;
-                    await unitOfWork.UpdateAsync(payment);
-                    return;
+                    try
+                    {
+                        var response = await httpClient.SendAsJsonAsync(HttpMethod.Post, "/v1.1/transaction/process", requestData, requestHeaders, cancellationToken)
+                              .TimeoutAfter(TimeSpan.FromSeconds(5));
+                        var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>();
+                    }
+                    catch (TimeoutException)
+                    {
+                        payment.Status = PaymentStatus.Processing;
+                        payment.Processing = DateTimeOffset.UtcNow;
+                        await unitOfWork.UpdateAsync(payment);
+                        return;
+                    }
+                    catch
+                    {
+                        throw;
+                    }
                 }
                 else if (payment.Mode == PaymentMode.External)
                 {
@@ -127,19 +103,49 @@ namespace Academy.Server.Extensions.PaymentProcessor
                         { "email", appSettings.Company.Emails.App.Email },
                     };
 
-
                     var response = await httpClient.SendAsJsonAsync(HttpMethod.Post, "https://checkout.theteller.net/initiate", requestData, requestHeaders, cancellationToken);
                     var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>();
 
-                    if (responseData["code"] == "200")
+                    if (responseData["code"] != "200")
                     {
                         payment.Status = PaymentStatus.Processing;
-                        payment.ExternalUrl = responseData.GetValueOrDefault("checkout_url");
+                        payment.Processing = DateTimeOffset.UtcNow;
+                        payment.RedirectUrl = responseData.GetValueOrDefault("checkout_url");
                         await unitOfWork.UpdateAsync(payment);
                         return;
                     }
                 }
-                else throw new ArgumentException($"The payment with the mode of '{payment.Mode}' cannot be processed. Payment Id: '{payment.Id}'.", nameof(payment));
+            }
+            else if (payment.Type == PaymentType.Payout)
+            {
+                if (payment.Mode == PaymentMode.Mobile)
+                {
+                    var requestHeaders = new Dictionary<string, string>();
+                    var requestData = new Dictionary<string, string>
+                                    {
+                                        { "merchant_id", paymentOptions.MerchantId },
+                                        { "transaction_id", payment.TransactionId },
+                                        { "amount", (payment.Amount * 100).ToString("000000000000") },
+                                        { "processing_code", "404000" },
+                                        { "r-switch", "FLT" },
+                                        { "pass_code", paymentOptions.MerchantSecret },
+                                        { "desc", $"Payment of {payment.Reason.Humanize()}" },
+                                        { "account_number", paymentDetails.Number.TrimStart('+') },
+                                        { "account_issuer", paymentDetails.Issuer.Code },
+                                    };
+
+                    var response = await httpClient.SendAsJsonAsync(HttpMethod.Post, "/v1.1/transaction/process", requestData, requestHeaders, cancellationToken);
+                    var responseData = await response.Content.ReadAsJsonAsync<Dictionary<string, string>>();
+
+                    if (responseData["code"] == "000")
+                    {
+                        payment.Status = PaymentStatus.Succeeded;
+                        payment.Completed = DateTimeOffset.UtcNow;
+                        await unitOfWork.UpdateAsync(payment);
+                        await mediator.Publish(new PaymentStatusNotification(payment), cancellationToken);
+                        return;
+                    }
+                }
             }
 
             throw new InvalidOperationException("Unable to process payment.");
@@ -149,19 +155,10 @@ namespace Academy.Server.Extensions.PaymentProcessor
         {
             if (payment == null) throw new ArgumentNullException(nameof(payment));
 
-            var maxProcessingInMinutes = 5;
-            var maxPendingInMinutes = 5;
+            var maxInMinutes = 1;
 
-            if (payment.Status == PaymentStatus.Processing)
+            try
             {
-                if ((DateTimeOffset.UtcNow - payment.Issued) >= TimeSpan.FromMinutes(maxProcessingInMinutes))
-                {
-                    payment.Status = PaymentStatus.Failed;
-                    await unitOfWork.UpdateAsync(payment);
-                    await mediator.Publish(new PaymentStatusNotification(payment), cancellationToken);
-                    return;
-                }
-
                 var requestHeaders = new Dictionary<string, string>();
                 var requestData = new Dictionary<string, string>();
                 var response = await httpClient.SendAsJsonAsync(HttpMethod.Get, $"/v1.1/users/transactions/{payment.TransactionId}/status", requestData, requestHeaders, cancellationToken);
@@ -169,20 +166,26 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
                 if (responseData.GetValueOrDefault("code") == "000")
                 {
-                    payment.Status = PaymentStatus.Complete;
+                    payment.Status = PaymentStatus.Succeeded;
                     payment.Completed = DateTimeOffset.UtcNow;
+                    payment.ReturnUrl = QueryHelpers.AddQueryString(payment.ReturnUrl, "status", payment.Status.ToString().Camelize());
                     await unitOfWork.UpdateAsync(payment);
                     await mediator.Publish(new PaymentStatusNotification(payment), cancellationToken);
                 }
+                else
+                {
+                    throw new InvalidOperationException("Unable to verify payment.");
+                }
             }
-            else if (payment.Status == PaymentStatus.Pending)
+            catch (Exception)
             {
-                if ((DateTimeOffset.UtcNow - payment.Issued) >= TimeSpan.FromMinutes(maxPendingInMinutes))
+                if ((DateTimeOffset.UtcNow - payment.Issued) >= TimeSpan.FromMinutes(maxInMinutes))
                 {
                     payment.Status = PaymentStatus.Failed;
+                    payment.Completed = DateTimeOffset.UtcNow;
+                    payment.ReturnUrl = QueryHelpers.AddQueryString(payment.ReturnUrl, "status", payment.Status.ToString().Camelize());
                     await unitOfWork.UpdateAsync(payment);
                     await mediator.Publish(new PaymentStatusNotification(payment), cancellationToken);
-                    return;
                 }
             }
         }
@@ -191,9 +194,9 @@ namespace Academy.Server.Extensions.PaymentProcessor
         {
             var issuers = new PaymentIssuer[]
             {
-                new PaymentIssuer("MTN", "^233(24|54|55|59)", "MTN", PaymentIssuerType.Mobile),
-                new PaymentIssuer("VDF", "^233(20|50)", "Vodafone", PaymentIssuerType.Mobile),
-                new PaymentIssuer("ATL", "^233(27|57|26|56)", "AirtelTigo", PaymentIssuerType.Mobile)
+                new PaymentIssuer("MTN", "^233(24|54|55|59)", "MTN", PaymentMode.Mobile),
+                new PaymentIssuer("VDF", "^233(20|50)", "Vodafone", PaymentMode.Mobile),
+                new PaymentIssuer("ATL", "^233(27|57|26|56)", "AirtelTigo", PaymentMode.Mobile)
             };
             return Task.FromResult(issuers);
         }
@@ -203,29 +206,32 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
     public class PaymentDetails
     {
-        public PaymentDetails(PaymentIssuer[] mobileIssuers, string mobileNumber)
+        public static PaymentDetails SetMobileDetails(PaymentIssuer[] mobileIssuers, string mobileNumber)
         {
             if (string.IsNullOrWhiteSpace(mobileNumber))
                 throw new ArgumentException("'Mobile number' must not be empty.", nameof(mobileNumber));
 
             PhoneNumber mobileNumberInfo = null;
 
-            try
-            {
-                var mobileUtil = PhoneNumberUtil.GetInstance();
-                if (!mobileUtil.IsValidNumber(mobileNumberInfo = mobileUtil.Parse(mobileNumber, null)))
-                    throw new ArgumentException("'Mobile number' is not valid.", nameof(mobileNumber));
-            }
-            catch (NumberParseException)
-            {
+            var mobileUtil = PhoneNumberUtil.GetInstance();
+            if (!mobileUtil.IsValidNumber(mobileNumberInfo = mobileUtil.Parse(mobileNumber, null)))
                 throw new ArgumentException("'Mobile number' is not valid.", nameof(mobileNumber));
-            }
 
             var mobileIssuer = mobileIssuers.FirstOrDefault(_ => Regex.IsMatch($"{mobileNumberInfo.CountryCode}{mobileNumberInfo.NationalNumber}", _.Pattern));
             if (mobileIssuer == null) throw new ArgumentException($"'Mobile number' is not supported by any of these mobile issuers. {mobileIssuers.Select(_ => _.Name).Humanize()}", nameof(mobileNumber));
 
-            Issuer = mobileIssuer;
-            MobileNumber = mobileNumber;
+            var paymentDetails = new PaymentDetails();
+            paymentDetails.Issuer = mobileIssuer;
+            paymentDetails.Number = mobileNumber;
+            paymentDetails.Mode = PaymentMode.Mobile;
+            return paymentDetails;
+        }
+
+        public static PaymentDetails SetExternalDetails()
+        {
+            var paymentDetails = new PaymentDetails();
+            paymentDetails.Mode = PaymentMode.Mobile;
+            return paymentDetails;
         }
 
         public PaymentDetails()
@@ -233,19 +239,21 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
         }
 
-        public string MobileNumber { get; set; }
+        public PaymentMode Mode { get; set; }
+
+        public string Number { get; set; }
 
         public PaymentIssuer Issuer { get; set; }
     }
 
     public class PaymentIssuer
     {
-        public PaymentIssuer(string code, string pattern, string name, PaymentIssuerType type)
+        public PaymentIssuer(string code, string pattern, string name, PaymentMode mode)
         {
             Code = code;
             Pattern = pattern;
             Name = name;
-            Type = type;
+            Mode = mode;
         }
 
         public string Code { get; set; }
@@ -254,11 +262,6 @@ namespace Academy.Server.Extensions.PaymentProcessor
 
         public string Name { get; set; }
 
-        public PaymentIssuerType Type { get; set; }
-    }
-
-    public enum PaymentIssuerType
-    {
-        Mobile
+        public PaymentMode Mode { get; set; }
     }
 }

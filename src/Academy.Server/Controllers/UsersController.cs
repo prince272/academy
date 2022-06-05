@@ -46,8 +46,11 @@ namespace Academy.Server.Controllers
 
         [Authorize]
         [HttpPost("{userId}/sponsor")]
-        public async Task<IActionResult> Sponsor(int userId, [FromBody] SponsorModel form)
+        public async Task<IActionResult> Sponsor(int userId, string returnUrl, [FromBody] SponsorModel form)
         {
+            if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
+                throw new ArgumentException("Url is not valid.", nameof(returnUrl));
+
             var user = await unitOfWork.Query<User>().FirstOrDefaultAsync(_ => _.Id == userId);
             if (user == null) return Result.Failed(StatusCodes.Status404NotFound);
 
@@ -65,6 +68,7 @@ namespace Academy.Server.Controllers
             payment.PhoneNumber = user.PhoneNumber;
             payment.Email = user.Email;
             payment.FullName = user.FullName;
+            payment.ReturnUrl = returnUrl;
 
             await unitOfWork.CreateAsync(payment);
             return Result.Succeed(data: payment.Id);

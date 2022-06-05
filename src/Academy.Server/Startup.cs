@@ -174,10 +174,7 @@ namespace Academy.Server
                 });
             });
 
-            services.AddControllers(options =>
-            {
-                options.Filters.Add<ExceptionActionFilter>();
-            })
+            services.AddControllers(options => { })
                 .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver
@@ -425,21 +422,8 @@ namespace Academy.Server
             // Register Syncfusion license.
             SyncfusionLicenseProvider.RegisterLicense("NTY0NTk4QDMxMzkyZTM0MmUzMFE0Ni93eHhJNjcvQ29ySG1VTGlzb1JLaFdEakJaQkRDQWppSkhmenZxNFk9");
 
-            app.UseCors();
-
-            app.UseStatusCodePages(_ => _.Run(async context =>
-            {
-                var response = Result.Failed(context.Response.StatusCode);
-                context.Response.StatusCode = response.StatusCode ?? throw new NullReferenceException();
-                await context.Response.WriteAsJsonAsync(response.Value);
-            }));
-
-            app.UseExceptionHandler(_ => _.Run(async context =>
-            {
-                var response = Result.Failed(StatusCodes.Status500InternalServerError);
-                context.Response.StatusCode = response.StatusCode ?? throw new NullReferenceException();
-                await context.Response.WriteAsJsonAsync(response.Value);
-            }));
+            app.UseStatusCodePagesWithReExecute("/error/{0}");
+            app.UseExceptionHandler("/error/500");
 
             if (WebEnvironment.IsDevelopment())
             {
@@ -448,20 +432,19 @@ namespace Academy.Server
             }
 
             app.UseHttpsRedirection();
-
-            app.UseResponseCompression();
-
             app.UseStaticFiles();
 
-            app.UseRouting();
-            app.UseResponseCaching();
-
+            app.UseRouting(); 
+            app.UseCors();
+        
             app.UseAuthentication();
             app.UseIdentityServer();
             app.UseAuthorization();
             app.UseAnonymousId();
 
             app.UseSession();
+            app.UseResponseCompression();
+            app.UseResponseCaching();
 
             app.UseDatabaseTransaction();
 
@@ -477,52 +460,5 @@ namespace Academy.Server
                     pattern: "{controller:slugify}/{action:slugify=Index}/{id?}");
             });
         }
-    }
-
-    public class ExceptionActionFilter : ExceptionFilterAttribute
-    {
-        private readonly IWebHostEnvironment _hostingEnvironment;
-
-        public ExceptionActionFilter(IWebHostEnvironment hostingEnvironment)
-        {
-            _hostingEnvironment = hostingEnvironment;
-        }
-
-        #region Overrides of ExceptionFilterAttribute
-
-        public override async Task OnExceptionAsync(ExceptionContext context)
-        {
-            var actionDescriptor = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)context.ActionDescriptor;
-            Type controllerType = actionDescriptor.ControllerTypeInfo;
-
-            var controllerBase = typeof(ControllerBase);
-            var controller = typeof(Controller);
-
-            // Api's implements ControllerBase but not Controller
-            if (controllerType.IsSubclassOf(controllerBase) && !controllerType.IsSubclassOf(controller))
-            {
-                // Handle web api exception
-                var statusCode = StatusCodes.Status500InternalServerError;
-                var response = Result.Failed(statusCode);
-                context.HttpContext.Response.StatusCode = statusCode;
-                await context.HttpContext.Response.WriteAsJsonAsync(response.Value);
-            }
-
-            // Pages implements ControllerBase and Controller
-            if (controllerType.IsSubclassOf(controllerBase) && controllerType.IsSubclassOf(controller))
-            {
-                // Handle page exception
-            }
-
-            if (!_hostingEnvironment.IsDevelopment())
-            {
-                // Report exception to insights
-
-            }
-
-            await base.OnExceptionAsync(context);
-        }
-
-        #endregion
     }
 }

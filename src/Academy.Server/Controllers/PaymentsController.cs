@@ -33,43 +33,34 @@ namespace Academy.Server.Controllers
             unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
         }
 
-        [HttpPost("{paymentId}/checkout")]
-        public async Task<IActionResult> Checkout(int paymentId, string returnUrl, [FromBody] PayinDetailsModel form)
+        [HttpPost("{paymentId}/checkout/mobile")]
+        public async Task<IActionResult> MobileCheckout(int paymentId, string returnUrl, MobileDetailsModel form)
         {
-            PaymentDetails paymentDetails = null;
-            string paymentRedirectUrl = null;
+            var paymentDetails = PaymentDetails.SetMobileDetails((await paymentProcessor.GetIssuersAsync()).Where(_ => _.Mode == PaymentMode.Mobile).ToArray(), form.MobileNumber);
+            return await Checkout(paymentId, paymentDetails, returnUrl);
+        }
 
-            try
-            {
-                if (form.Mode == PaymentMode.Mobile)
-                {
-                    paymentDetails = new PaymentDetails((await paymentProcessor.GetIssuersAsync()).Where(_ => _.Type == PaymentIssuerType.Mobile).ToArray(), form.MobileNumber);
-                }
-                else if (form.Mode == PaymentMode.External)
-                {
-                    if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
-                        throw new ArgumentException("Url is not valid.", nameof(returnUrl));
+        [HttpPost("{paymentId}/checkout/external")]
+        public async Task<IActionResult> ExternalCheckout(int paymentId, string returnUrl)
+        {
+            var paymentDetails = PaymentDetails.SetExternalDetails();
+            return await Checkout(paymentId, paymentDetails, returnUrl);
+        }
 
-                    paymentRedirectUrl = Url.ActionLink(nameof(VerifyExternal), values: new { paymentId, returnUrl });
-                }
-                else throw new ArgumentNullException($"The payment mode is not valid.", nameof(form.Mode));
-            }
-            catch (ArgumentException ex) { return Result.Failed(StatusCodes.Status400BadRequest, new Error(ex.ParamName, ex.Message)); }
+        [NonAction]
+        public async Task<IActionResult> Checkout(int paymentId, PaymentDetails paymentDetails, string returnUrl)
+        {
+            if (!Uri.IsWellFormedUriString(returnUrl, UriKind.Absolute))
+                throw new ArgumentException("Url is not valid.", nameof(returnUrl));
 
             var query = unitOfWork.Query<Payment>();
             var payment = await query.FirstOrDefaultAsync(_ => _.Type == PaymentType.Payin && _.Id == paymentId);
             if (payment == null) return Result.Failed(StatusCodes.Status404NotFound);
 
-            payment.Mode = form.Mode;
-            payment.SetData(nameof(PaymentDetails), paymentDetails);
-            payment.RedirectUrl = paymentRedirectUrl;
-            await paymentProcessor.ProcessAsync(payment);
+            payment.RedirectUrl = Url.ActionLink(nameof(Verify), values: new { paymentId, returnUrl });
 
-            return Result.Succeed(new
-            {
-                payment.Status,
-                payment.ExternalUrl
-            });
+            await paymentProcessor.ProcessAsync(payment, paymentDetails);
+            return Result.Succeed();
         }
 
         [HttpGet("{paymentId}")]
@@ -82,23 +73,8 @@ namespace Academy.Server.Controllers
             return Result.Succeed(data: payment);
         }
 
-        [HttpPost("{paymentId}/verify")]
+        [HttpGet("{paymentId}/verify")]
         public async Task<IActionResult> Verify(int paymentId)
-        {
-            var query = unitOfWork.Query<Payment>();
-            var payment = await query.FirstOrDefaultAsync(_ => _.Id == paymentId);
-            if (payment == null) return Result.Failed(StatusCodes.Status404NotFound);
-
-            await paymentProcessor.VerifyAsync(payment);
-
-            return Result.Succeed(data: new
-            {
-                payment.Status
-            });
-        }
-
-        [HttpGet("{paymentId}/external/verify")]
-        public async Task<IActionResult> VerifyExternal(int paymentId)
         {
             var query = unitOfWork.Query<Payment>();
             var payment = await query.FirstOrDefaultAsync(_ => _.Type == PaymentType.Payin && _.Id == paymentId);

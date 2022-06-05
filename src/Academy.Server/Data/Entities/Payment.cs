@@ -36,13 +36,15 @@ namespace Academy.Server.Data.Entities
 
         public DateTimeOffset Issued { get; set; }
 
+        public DateTimeOffset? Processing { get; set; }
+
         public DateTimeOffset? Completed { get; set; }
 
         public string ExtensionData { get; set; }
 
         public string UAString { get; set; }
 
-        public string ExternalUrl { get; set; }
+        public string ReturnUrl { get; set; }
 
         public string RedirectUrl { get; set; }
     }
@@ -50,6 +52,7 @@ namespace Academy.Server.Data.Entities
     public enum PaymentMode
     {
         Mobile,
+        Card,
         External
     }
 
@@ -63,7 +66,7 @@ namespace Academy.Server.Data.Entities
     {
         Pending,
         Processing,
-        Complete,
+        Succeeded,
         Failed
     }
 

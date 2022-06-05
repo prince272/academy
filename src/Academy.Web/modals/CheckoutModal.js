@@ -33,8 +33,6 @@ const CheckoutModal = withRemount((props) => {
 
     let [payment, setPayment] = withAsync(useState(null));
 
-    if (!route.query.returnUrl) throw new Error(`The query parameter 'returnUrl' was not found. url: ${route.url}`);
-
     const client = useClient();
 
     const load = async () => {
@@ -61,12 +59,11 @@ const CheckoutModal = withRemount((props) => {
     };
 
     const submit = () => {
-
         form.handleSubmit(async (inputs) => {
             setSubmitting(true);
 
             const paymentMode = form.watch('mode');
-            let result = await client.post(`/payments/${paymentId}/checkout`, { ...inputs, mode: paymentMode })
+            let result = await client.post(`/payments/${paymentId}/checkout/${paymentMode}`, inputs, { params: { returnUrl: route.url } })
 
             if (result.error) {
                 const error = result.error;
@@ -77,10 +74,6 @@ const CheckoutModal = withRemount((props) => {
             }
 
             verifyPayment();
-
-            if (paymentMode == 'external') {
-                window.location.assign(payment.externalUrl);
-            }
         })();
     };
 
@@ -88,11 +81,16 @@ const CheckoutModal = withRemount((props) => {
         payment = await setPayment({ ...payment, status: 'processing' });
 
         for (let count = 0; count < 6; count++) {
-            const result = await client.post(`/payments/${payment.id}/verify`);
+            const result = await client.get(`/payments/${payment.id}`);
 
             if (!result.error) {
-                payment = await setPayment({ ...payment, ...result.data });
-                if (payment.status != 'processing') break;
+                payment = await setPayment(result.data);
+
+                if (payment.status == 'processing' && payment.mode == 'external') {
+                    window.location.assign(payment.redirectUrl);
+                    break;
+                }
+                else if (payment.status != 'processing') break;
             }
 
             await sleep(5000);
@@ -207,19 +205,17 @@ const CheckoutModal = withRemount((props) => {
                             <div className="mb-3 px-10"><span className="svg-icon svg-icon-lg text-danger"><BsXCircleFill /></span></div>
                             <div className="h3">Payment failed</div>
                             <div className="mb-3">Something went wrong while processing your payment.</div>
-                            <Link href={route.query.returnUrl}><a className="btn btn-danger">Return</a></Link>
+                            <Link href={payment.returnUrl}><a className="btn btn-danger">Return</a></Link>
                         </div>
                     </div>
                 )}
-                {payment.status == 'complete' && (
+                {payment.status == 'succeeded' && (
                     <div>
                         <div className="d-flex flex-column text-center justify-content-center p-4">
                             <div className="mb-3 px-10"><span className="svg-icon svg-icon-lg text-success"><BsCheckCircleFill /></span></div>
                             <div className="h3">Payment Complete</div>
                             <div className="mb-3">Thank you for your payment.</div>
-                            <button type="button" className="btn btn-success" onClick={() => {
-                                window.location.replace(route.query.returnUrl)
-                            }}>Continue</button>
+                            <Link href={payment.returnUrl}><a className="btn btn-success">Continue</a></Link>
                         </div>
                     </div>
                 )}
@@ -234,7 +230,7 @@ const CheckoutModal = withRemount((props) => {
                                 <button type="button" className="btn btn-primary" onClick={() => {
                                     verifyPayment();
                                 }}>Check</button>
-                                <Link href={route.query.returnUrl}><a className="btn btn-outline-secondary">Cancel</a></Link>
+                                <Link href={payment.returnUrl}><a className="btn btn-outline-secondary">Cancel</a></Link>
                             </div>
                         </div>
                     </div>

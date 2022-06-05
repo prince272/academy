@@ -4,14 +4,16 @@ using Academy.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Academy.Server.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220605112027_DatabaseMigr28")]
+    partial class DatabaseMigr28
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -275,6 +277,9 @@ namespace Academy.Server.Data.Migrations
                     b.Property<string>("ExtensionData")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ExternalUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
@@ -292,9 +297,6 @@ namespace Academy.Server.Data.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("Processing")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("Reason")
                         .HasColumnType("int");
