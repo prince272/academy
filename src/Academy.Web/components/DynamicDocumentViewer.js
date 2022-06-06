@@ -12,13 +12,7 @@ import { FaFire, FaCode } from 'react-icons/fa';
 import ReactDOMServer from 'react-dom/server';
 import parse, { domToReact } from 'html-react-parser';
 
-import { pascalCase } from 'change-case';
-
-import { arrayMove, formatNumber, preventDefault, sleep, stripHtml } from '../utils/helpers';
 import { Tab } from 'react-bootstrap';
-import "froala-editor/css/froala_editor.pkgd.min.css";
-import "froala-editor/css/froala_style.css";
-import FroalaEditorView from 'react-froala-wysiwyg/FroalaEditorView';
 
 class IFrame extends React.Component {
     state = { contentHeight: 100 };
@@ -146,7 +140,7 @@ const DynamicDocumentViewer = ({ document }) => {
     return (
         <div>
             <div>
-                {parse(ReactDOMServer.renderToStaticMarkup(<FroalaEditorView model={document} />) || '', {
+                {parse(document || '', {
                     replace: domNode => {
                         if (domNode.tagName == 'pre' && domNode.attribs && domNode.attribs['data-language'] !== undefined) {
                             const language = domNode.attribs['data-language'];

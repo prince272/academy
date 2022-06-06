@@ -221,7 +221,7 @@ export function computedStyleToInlineStyle(element, recursive = true) {
 
     if (recursive) {
         Array.from(element.children).forEach(child => {
-            applyInline(child, recursive);
+            computedStyleToInlineStyle(child, recursive);
         });
     }
 }
