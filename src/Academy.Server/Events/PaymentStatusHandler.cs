@@ -90,7 +90,7 @@ namespace Academy.Server.Events
                            body: await viewRenderer.RenderToStringAsync("Email/SponsorshipReceived", payment))).Forget();
 
                     if (payment.PhoneNumber != null)
-                        (smsSender.SendAsync(payment.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/SponsorshipReceived", payment))).Forget();
+                        (smsSender.SendAsync(payment.PhoneNumber, Sanitizer.StripHtml(await viewRenderer.RenderToStringAsync("Sms/SponsorshipReceived", payment)))).Forget();
                 }
             }
         }

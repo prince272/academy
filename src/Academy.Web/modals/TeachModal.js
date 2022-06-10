@@ -46,7 +46,7 @@ const TeachModal = (props) => {
             modal.close();
             await dialog.alert({
                 title: `Become a teacher`,
-                body: <>Your application for becoming a teacher was successful. You can now add your courses.</>
+                body: <>You can now add your courses and blog posts.</>
             });
 
             window.location.replace('/courses');

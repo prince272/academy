@@ -85,10 +85,7 @@ namespace Academy.Server.Controllers
 
             await unitOfWork.CreateAsync(post);
 
-            if ((post.Published != null) != (prevPublished != null))
-            {
-                await NotifyPublication(post);
-            }
+            await NotifyPublication(post);
 
             return Result.Succeed(data: post.Id);
         }
@@ -136,6 +133,7 @@ namespace Academy.Server.Controllers
             return Result.Succeed();
         }
 
+        [NonAction]
         public async Task NotifyPublication(Post post)
         {
             if (post.Published != null)
@@ -146,7 +144,7 @@ namespace Academy.Server.Controllers
                        body: await viewRenderer.RenderToStringAsync("Email/PostPublished", post))).Forget();
 
                 if (post.Teacher.PhoneNumber != null)
-                    (smsSender.SendAsync(post.Teacher.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/PostPublished", post))).Forget();
+                    (smsSender.SendAsync(post.Teacher.PhoneNumber, Sanitizer.StripHtml(await viewRenderer.RenderToStringAsync("Sms/PostPublished", post)))).Forget();
             }
             else
             {
@@ -156,7 +154,7 @@ namespace Academy.Server.Controllers
                        body: await viewRenderer.RenderToStringAsync("Email/PostReviewed", post))).Forget();
 
                 if (post.Teacher.PhoneNumber != null)
-                    (smsSender.SendAsync(post.Teacher.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/PostReviewed", post))).Forget();
+                    (smsSender.SendAsync(post.Teacher.PhoneNumber, Sanitizer.StripHtml(await viewRenderer.RenderToStringAsync("Sms/PostReviewed", post)))).Forget();
             }
         }
 

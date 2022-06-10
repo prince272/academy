@@ -380,7 +380,7 @@ namespace Academy.Server.Controllers
 
                 if  (user.PhoneNumber != null)
                 {
-                    smsSender.SendAsync(user.PhoneNumber, await viewRenderer.RenderToStringAsync("Sms/CourseCertification", (user, courseModel))).Forget();
+                    smsSender.SendAsync(user.PhoneNumber, Sanitizer.StripHtml(await viewRenderer.RenderToStringAsync("Sms/CourseCertification", (user, courseModel)))).Forget();
                 }
             }
 

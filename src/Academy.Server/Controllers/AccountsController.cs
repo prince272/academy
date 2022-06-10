@@ -173,7 +173,7 @@ namespace Academy.Server.Controllers
             if (ValidationHelper.PhoneOrEmail(form.Username))
             {
                 form.Code = await userManager.GenerateChangePhoneNumberTokenAsync(user, form.Username);
-                (smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ConfirmAccount", (user, form)))).Forget();
+                (smsSender.SendAsync(form.Username, Sanitizer.StripHtml(await viewRenderer.RenderToStringAsync("Sms/ConfirmAccount", (user, form))))).Forget();
             }
             else
             {
@@ -229,7 +229,7 @@ namespace Academy.Server.Controllers
             if (ValidationHelper.PhoneOrEmail(form.Username))
             {
                 form.Code = await userManager.GenerateChangePhoneNumberTokenAsync(user, form.Username);
-                (smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ChangeAccount", (user, form)))).Forget();
+                (smsSender.SendAsync(form.Username, Sanitizer.StripHtml(await viewRenderer.RenderToStringAsync("Sms/ChangeAccount", (user, form))))).Forget();
             }
             else
             {
@@ -306,7 +306,7 @@ namespace Academy.Server.Controllers
 
             if (ValidationHelper.PhoneOrEmail(form.Username))
             {
-                (smsSender.SendAsync(form.Username, await viewRenderer.RenderToStringAsync("Sms/ResetPassword", (user, form)))).Forget();
+                (smsSender.SendAsync(form.Username, Sanitizer.StripHtml(await viewRenderer.RenderToStringAsync("Sms/ResetPassword", (user, form))))).Forget();
             }
             else
             {
