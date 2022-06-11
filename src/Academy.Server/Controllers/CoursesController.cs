@@ -140,6 +140,42 @@ namespace Academy.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> List(int pageNumber, int pageSize, [FromQuery] CourseSearchModel search)
         {
+            var query = await GetCourseSearchQuery(search);
+
+            var pageInfo = new PageInfo(await query.CountAsync(), pageNumber, pageSize);
+
+            query = (pageInfo.SkipItems > 0 ? query.Skip(pageInfo.SkipItems) : query).Take(pageInfo.PageSize);
+
+            var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async courseId =>
+            {
+                var courseModel = await GetCourseModel(courseId) ?? throw new ArgumentNullException(nameof(courseId));
+                courseModel.Sections = null;
+                return courseModel;
+            });
+
+            return Result.Succeed(data: TypeMerger.Merge(new { Items = pageItems }, pageInfo));
+        }
+
+        [HttpGet("info")]
+        public async Task<IActionResult> ListInfo([FromQuery] CourseSearchModel search)
+        {
+            var query = await GetCourseSearchQuery(search);
+
+            var courses = await query.Select(course => new
+            {
+                course.Id,
+                course.Created,
+                course.Updated,
+
+            }).ToListAsync();
+
+            return Result.Succeed(data: courses);
+        }
+
+
+        [NonAction]
+        public async Task<IQueryable<Course>> GetCourseSearchQuery([FromQuery] CourseSearchModel search)
+        {
             var query = unitOfWork.Query<Course>();
 
             var user = await HttpContext.Request.GetCurrentUserAsync();
@@ -179,19 +215,7 @@ namespace Academy.Server.Controllers
                 query = query.WhereAny(predicates.ToArray());
             }
 
-
-            var pageInfo = new PageInfo(await query.CountAsync(), pageNumber, pageSize);
-
-            query = (pageInfo.SkipItems > 0 ? query.Skip(pageInfo.SkipItems) : query).Take(pageInfo.PageSize);
-
-            var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async courseId =>
-            {
-                var courseModel = await GetCourseModel(courseId) ?? throw new ArgumentNullException(nameof(courseId));
-                courseModel.Sections = null;
-                return courseModel;
-            });
-
-            return Result.Succeed(data: TypeMerger.Merge(new { Items = pageItems }, pageInfo));
+            return query;
         }
 
         [Authorize]

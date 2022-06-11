@@ -37,10 +37,6 @@ namespace Academy.Server.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> Upload()
         {
-            var user = await HttpContext.Request.GetCurrentUserAsync();
-            var permitted = user.HasRoles(RoleConstants.Admin) || user.HasRoles(RoleConstants.Teacher);
-            if (!permitted) return Result.Failed(StatusCodes.Status403Forbidden);
-
             var mediaName = Request.Headers["Upload-Name"].ToString();
             var mediaSize = long.Parse(Request.Headers["Upload-Size"]);
 

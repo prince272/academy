@@ -26,7 +26,7 @@ const ErrorView = ({ error, asPage }) => {
                             (<SvgServerDownIllus style={{ width: "auto", height: "184px" }} />)}
 
                     </div>
-                    {(error.message && <div className="mb-3">{error.message}</div>) || (error.status == 404 && <div className="mb-3">The page you are looking for does not exist.</div>)}
+                    {(error.message && <div className="mb-3">{error.message} status: {error.status}</div>) || (error.status == 404 && <div className="mb-3">The page you are looking for does not exist.</div>)}
                     <div className="hstack gap-3 mx-auto">
                         <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => {
                             window.location.assign("/");

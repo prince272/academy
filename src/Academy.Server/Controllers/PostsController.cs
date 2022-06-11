@@ -218,8 +218,42 @@ namespace Academy.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> List(int pageNumber, int pageSize, [FromQuery] PostSearchModel search)
         {
+            var query = await GetPostSearchQuery(search);
+
+            var pageInfo = new PageInfo(await query.CountAsync(), pageNumber, pageSize);
+
+            query = (pageInfo.SkipItems > 0 ? query.Skip(pageInfo.SkipItems) : query).Take(pageInfo.PageSize);
+
+            var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async postId =>
+            {
+                var postModel = await GetPostModel(postId) ?? throw new ArgumentNullException(nameof(postId));
+                return postModel;
+            });
+
+            return Result.Succeed(data: TypeMerger.Merge(new { Items = pageItems }, pageInfo));
+        }
+
+        [HttpGet("info")]
+        public async Task<IActionResult> ListInfo([FromQuery] PostSearchModel search)
+        {
+            var query = await GetPostSearchQuery(search);
+
+            var posts = await query.Select(post => new
+            {
+                post.Id,
+                post.Created,
+                post.Updated,
+
+            }).ToListAsync();
+
+            return Result.Succeed(data: posts);
+        }
+
+        [NonAction]
+        public async Task<IQueryable<Post>> GetPostSearchQuery([FromQuery] PostSearchModel search)
+        {
             var query = unitOfWork.Query<Post>()
-                .AsNoTracking();
+            .AsNoTracking();
 
             var user = await HttpContext.Request.GetCurrentUserAsync();
 
@@ -258,17 +292,7 @@ namespace Academy.Server.Controllers
                 query = query.WhereAny(predicates.ToArray());
             }
 
-            var pageInfo = new PageInfo(await query.CountAsync(), pageNumber, pageSize);
-
-            query = (pageInfo.SkipItems > 0 ? query.Skip(pageInfo.SkipItems) : query).Take(pageInfo.PageSize);
-
-            var pageItems = await (await (query.Select(_ => _.Id).ToListAsync())).SelectAsync(async postId =>
-            {
-                var postModel = await GetPostModel(postId) ?? throw new ArgumentNullException(nameof(postId));
-                return postModel;
-            });
-
-            return Result.Succeed(data: TypeMerger.Merge(new { Items = pageItems }, pageInfo));
+            return query;
         }
 
         [NonAction]

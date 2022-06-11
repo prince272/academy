@@ -445,12 +445,16 @@ export default function MyApp({ Component, pageProps, appSettings, error }) {
   );
 }
 
+let result = null;
+
 MyApp.getInitialProps = async (appContext) => {
   // calls page's `getInitialProps` and fills `appProps.pageProps`
   const appProps = await App.getInitialProps(appContext);
 
-  const httpClient = createHttpClient({ throwIfError: false }, appContext.ctx);
-  const result = (await httpClient.get('/', { cache: true }));
+  if (!result) {
+    const httpClient = createHttpClient({ throwIfError: false }, appContext.ctx);
+    result = (await httpClient.get('/'));
+  }
 
   if (result.error) {
     const error = result.error;

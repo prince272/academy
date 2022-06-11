@@ -164,7 +164,7 @@ const HomePage = () => {
                 <span className="svg-icon svg-icon-lg d-block text-danger me-2 heart"><BsHeartFill /></span>
                 <h2 className="mb-4 display-4 fw-bold text-white">Help keep Academy of Ours operations running, for anyone, anywhere by donating to us.</h2>
                 <div>
-                  <Link href={`${ModalPathPrefix}/sponsor`}>
+                  <Link href={`${ModalPathPrefix}/users/1/sponsor`}>
                     <a type="button" className="btn btn-light btn-lg  px-10"><span className="svg-icon svg-icon-sm d-inline-block text-danger me-2 heart"><BsHeartFill /></span>Sponsor</a>
                   </Link>
                 </div>
@@ -201,7 +201,7 @@ const HomePage = () => {
                 </div>
                 <h5 className="h3">For Students</h5>
                 <p className="lead">As students, the most important thing to remember is that laziness is our worst enemy.</p>
-                <Link href="/courses"><a className="btn btn-primary ">Start learning</a></Link>
+                <Link href="/courses"><a className="btn btn-primary">Start learning</a></Link>
               </div>
             </div>
           </div>

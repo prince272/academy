@@ -134,7 +134,7 @@ const PostPage = withRemount(({ remount, ...props }) => {
                                         </div>
                                     </div>
 
-                                    <div className="d-flex align-items-center"><div className="me-2 fw-bold">Share:</div><ShareButtons share={{ title: post.title, text: post.description, url: `${process.env.NEXT_PUBLIC_CLIENT_URL}/posts/${postId}` }} /> </div>
+                                    <div className="d-flex align-items-center"><div className="me-2 fw-bold">Share:</div><ShareButtons share={{ title: post.title, text: post.summary, url: `${process.env.NEXT_PUBLIC_CLIENT_URL}/posts/${postId}` }} /> </div>
                                 </div>
                                 <div className="hstack gap-3 flex-wrap mb-1">
                                     <div className="badge bg-primary fs-6">{appSettings.post.categories.find(category => category.value == post.category)?.name}</div>
