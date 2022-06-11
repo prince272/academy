@@ -7,5 +7,6 @@ Host: https://academyofours.com
 
 # Sitemaps
 Sitemap: https://academyofours.com/sitemap.xml
+Sitemap: https://academyofours.com/index-sitemap.xml
 Sitemap: https://academyofours.com/courses/sitemap.xml
 Sitemap: https://academyofours.com/posts/sitemap.xml
