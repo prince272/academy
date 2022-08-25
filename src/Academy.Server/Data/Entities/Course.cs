@@ -103,5 +103,8 @@ namespace Academy.Server.Data.Entities
 
         [Display(Name = "Fashion Design")]
         Fashion,
+
+        [Display(Name = "Religion")]
+        Religion,
     }
 }

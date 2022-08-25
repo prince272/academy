@@ -23,6 +23,8 @@ namespace Academy.Server.Utilities
             return options;
         }
 
+        // How can I create strong passwords with FluentValidation?
+        // source: https://stackoverflow.com/questions/63864594/how-can-i-create-strong-passwords-with-fluentvalidation
         public static IRuleBuilder<T, string> NewPassword<T>(this IRuleBuilder<T, string> ruleBuilder, int minimumLength = 6)
         {
             var options = ruleBuilder
