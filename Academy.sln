@@ -5,7 +5,17 @@ VisualStudioVersion = 17.0.31808.319
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BE79FC07-219D-4E51-B4CC-934D6D7F109E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Academy.Server", "src\Academy.Server\Academy.Server.csproj", "{551E23C7-4198-4A33-86BA-C4BDE3D23097}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Academy.Server", "src\Academy.Server\Academy.Server.csproj", "{551E23C7-4198-4A33-86BA-C4BDE3D23097}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gallery", "gallery", "{3CCD54D0-2CDA-49E1-AB4A-B5B737839242}"
+	ProjectSection(SolutionItems) = preProject
+		gallery\image1.png = gallery\image1.png
+		gallery\image2.png = gallery\image2.png
+		gallery\image3.png = gallery\image3.png
+		gallery\image4.png = gallery\image4.png
+		gallery\image5.png = gallery\image5.png
+		gallery\image6.png = gallery\image6.png
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
