@@ -242,3 +242,19 @@ function matchRules(el, sheets) {
     }
     return ret;
 }
+
+
+export function openLink(url, target = '_blank') {
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.target = target;
+    
+    // Function to remove the anchor element from the DOM
+    const removeAnchor = () => {
+      document.body.removeChild(anchor);
+    };
+    
+    anchor.addEventListener('click', removeAnchor, { once: true });
+    document.body.appendChild(anchor);
+    anchor.click();
+  }

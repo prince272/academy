@@ -11,7 +11,7 @@ import { Accordion } from 'react-bootstrap';
 import { ModalPathPrefix } from '../modals';
 import { useAppSettings } from '../utils/appSettings';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
-
+import { cleanObject, openLink } from '../utils/helpers';
 import parsePhoneNumber from 'libphonenumber-js';
 import PostsScrollMenu from '../components/PostsScrollMenu';
 
@@ -70,7 +70,7 @@ const HomePage = () => {
             <div className="col-md-7 order-1 order-md-0">
               <div className="p-3">
                 <h1 className="display-4 fw-bold"><span className="text-primary fw-bolder">Limitless</span> learning on the <span className="text-primary fw-bolder">GO!</span></h1>
-                <p className="lead">Online courses, video lessons and personalised support for every taste.</p>
+                <p className="lead">Online courses, video lessons and personalized support for every taste.</p>
                 <Link href="/courses"><a className="btn btn-primary  mb-3">Start learning</a></Link>
               </div>
             </div>
@@ -164,9 +164,7 @@ const HomePage = () => {
                 <span className="svg-icon svg-icon-lg d-block text-danger me-2 heart"><BsHeartFill /></span>
                 <h2 className="mb-4 display-4 fw-bold text-white">Help keep Academy of Ours operations running, for anyone, anywhere by donating to us.</h2>
                 <div>
-                  <Link href={`${ModalPathPrefix}/users/1/sponsor`}>
-                    <a type="button" className="btn btn-light btn-lg  px-10"><span className="svg-icon svg-icon-sm d-inline-block text-danger me-2 heart"><BsHeartFill /></span>Sponsor</a>
-                  </Link>
+                  <button type="button" className="btn btn-light btn-lg  px-10" onClick={() => openLink("https://github.com/sponsors/prince272")}><span className="svg-icon svg-icon-sm d-inline-block text-danger me-2 heart"><BsHeartFill /></span>Sponsor</button>
                 </div>
               </div>
             </div>

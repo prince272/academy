@@ -18,7 +18,7 @@ import ErrorView from '../components/ErrorView';
 import { Dropdown, Nav, Navbar, OverlayTrigger, Tooltip, Modal } from 'react-bootstrap';
 import Link from 'next/link';
 import { useClient } from '../utils/client';
-import { cleanObject } from '../utils/helpers';
+import { cleanObject, openLink } from '../utils/helpers';
 import { useRouter } from 'next/router';
 import Script from "next/script";
 
@@ -198,7 +198,7 @@ const Body = ({ children, pageSettings }) => {
               <Nav.Item className="me-2">
                 <button type="button" className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => {
                   setHeaderExpanded(false);
-                  router.replace({ pathname: `${ModalPathPrefix}/users/1/sponsor` })
+                  openLink("https://github.com/sponsors/prince272");
                 }}>Made with <span className="svg-icon svg-icon-sm d-inline-block me-2 heart text-danger"><BsHeartFill /></span></button>
               </Nav.Item>
 
@@ -215,21 +215,7 @@ const Body = ({ children, pageSettings }) => {
                   </Nav.Item>
 
                   <Nav.Item className="mb-3 mb-md-0">
-                    <Dropdown>
-                      <Dropdown.Toggle variant="outline-secondary" className="border-0 p-2">Education</Dropdown.Toggle>
-                      <Dropdown.Menu>
-                        <Link href="/teach" passHref><Dropdown.Item>For teachers</Dropdown.Item></Link>
-                        <Link href="/" passHref><Dropdown.Item>For students</Dropdown.Item></Link>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </Nav.Item>
-
-                  <Nav.Item className="mb-3 mb-md-0">
-                    <Link href="/contact"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setHeaderExpanded(false)}>Contact</a></Link>
-                  </Nav.Item>
-
-                  <Nav.Item className="mb-3 mb-md-0">
-                    <Link href="/about"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setHeaderExpanded(false)}>About</a></Link>
+                    <Link href="/teach"><a className="btn btn-outline-secondary btn-no-focus border-0 p-2" onClick={() => setHeaderExpanded(false)}>For teachers</a></Link>
                   </Nav.Item>
 
                   {client.user ? (
