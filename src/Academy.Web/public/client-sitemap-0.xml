@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://academyofours.com</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2022-06-11T16:18:52.447Z</lastmod></url>
-<url><loc>https://academyofours.com/about</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2022-06-11T16:18:52.447Z</lastmod></url>
-<url><loc>https://academyofours.com/accounts/signin-callback</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2022-06-11T16:18:52.447Z</lastmod></url>
-<url><loc>https://academyofours.com/accounts/signout-callback</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2022-06-11T16:18:52.447Z</lastmod></url>
-<url><loc>https://academyofours.com/contact</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2022-06-11T16:18:52.447Z</lastmod></url>
-<url><loc>https://academyofours.com/courses</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2022-06-11T16:18:52.447Z</lastmod></url>
-<url><loc>https://academyofours.com/posts</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2022-06-11T16:18:52.447Z</lastmod></url>
-<url><loc>https://academyofours.com/privacy</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2022-06-11T16:18:52.447Z</lastmod></url>
-<url><loc>https://academyofours.com/teach</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2022-06-11T16:18:52.447Z</lastmod></url>
-<url><loc>https://academyofours.com/terms</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2022-06-11T16:18:52.447Z</lastmod></url>
-<url><loc>https://academyofours.com/test</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2022-06-11T16:18:52.447Z</lastmod></url>
+<url><loc>https://academyofours.com</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2023-12-25T11:05:10.787Z</lastmod></url>
+<url><loc>https://academyofours.com/about</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2023-12-25T11:05:10.787Z</lastmod></url>
+<url><loc>https://academyofours.com/accounts/signin-callback</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2023-12-25T11:05:10.787Z</lastmod></url>
+<url><loc>https://academyofours.com/accounts/signout-callback</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2023-12-25T11:05:10.787Z</lastmod></url>
+<url><loc>https://academyofours.com/contact</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2023-12-25T11:05:10.787Z</lastmod></url>
+<url><loc>https://academyofours.com/courses</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2023-12-25T11:05:10.787Z</lastmod></url>
+<url><loc>https://academyofours.com/posts</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2023-12-25T11:05:10.787Z</lastmod></url>
+<url><loc>https://academyofours.com/privacy</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2023-12-25T11:05:10.787Z</lastmod></url>
+<url><loc>https://academyofours.com/teach</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2023-12-25T11:05:10.787Z</lastmod></url>
+<url><loc>https://academyofours.com/terms</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2023-12-25T11:05:10.787Z</lastmod></url>
+<url><loc>https://academyofours.com/test</loc><changefreq>daily</changefreq><priority>0.7</priority><lastmod>2023-12-25T11:05:10.787Z</lastmod></url>
 </urlset>
