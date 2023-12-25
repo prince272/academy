@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node server.js",
-    "build": "next build",
+    "build": "set NODE_OPTIONS=--openssl-legacy-provider && next build",
     "start": "NODE_ENV=production node server.js",
     "postbuild": "next-sitemap --config next-sitemap.config.js",
     "lint": "next lint"
