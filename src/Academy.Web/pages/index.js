@@ -122,7 +122,6 @@ const HomePage = () => {
                 <p className="lead mb-0">Our flexible courses mean you can study a broad range of courses without limitatins in how, what, when and where to learn.</p>
               </div>
             </div>
-
             <div className="col-sm-6 col-lg-4">
               <div className="text-center">
                 <div className="p-3 mb-4">
