@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "node server.js",
+    "dev": "set NODE_OPTIONS=--openssl-legacy-provider && node server.js",
     "build": "set NODE_OPTIONS=--openssl-legacy-provider && next build",
-    "start": "NODE_ENV=production node server.js",
+    "start": "NODE_ENV=production && next start",
     "postbuild": "next-sitemap --config next-sitemap.config.js",
     "lint": "next lint"
   },
