@@ -1,8 +1,8 @@
 ﻿using Academy.Server.Data.Entities;
-using IdentityServer4.EntityFramework.Entities;
-using IdentityServer4.EntityFramework.Extensions;
-using IdentityServer4.EntityFramework.Interfaces;
-using IdentityServer4.EntityFramework.Options;
+using Duende.IdentityServer.EntityFramework.Entities;
+using Duende.IdentityServer.EntityFramework.Extensions;
+using Duende.IdentityServer.EntityFramework.Interfaces;
+using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +33,8 @@ namespace Academy.Server.Data
 
         public DbSet<PersistedGrant> PersistedGrants { get; set; }
         public DbSet<DeviceFlowCodes> DeviceFlowCodes { get; set; }
+        public DbSet<Key> Keys { get; set; }
+
         public Task<int> SaveChangesAsync() => base.SaveChangesAsync();
 
         #endregion
